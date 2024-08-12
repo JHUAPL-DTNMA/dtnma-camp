@@ -14,23 +14,21 @@ ADMS_DIR = os.path.join(_util_path, "anms-adms")
 DTNMA_TOOLS_DIR = os.path.join(_util_path, "dtnma-tools")
 ''' DTNMA agent source path. '''
 
-def _good_file(path: str) -> bool:
+def _good_file(name: str) -> bool:
     ''' Determine if a file path is an ADM to load.
     '''
+    path = os.path.join(ADMS_DIR, name)
     if not os.path.isfile(path):
         return False
 
-    _, filename = os.path.split(path)
-    ext = os.path.splitext(filename)[1]
-    return ext == ".json" and not filename == "index.json"
+    _, ext = os.path.splitext(name)
+    return ext == ".json" and not name == "index.json"
 
 def adm_files() -> Tuple[str]:
     ''' Get a list of available ADMs from the test directory.
+    These are file names only, which are under :obj:`ADMS_DIR` parent dir.
     '''
-    paths = [
-        os.path.join(ADMS_DIR, name)
-        for name in os.listdir(ADMS_DIR)
-    ]
+    paths = [name for name in os.listdir(ADMS_DIR)]
     return tuple(filter(_good_file, paths))
 
 def run_camp(filepath, outpath, only_sql, only_ch, scrape=False) -> int:

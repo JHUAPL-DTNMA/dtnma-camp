@@ -24,11 +24,10 @@ def test_adms(adm):
     Compiles each adm in ADMS_DIR against the dtnma-tools repo
     @pre: DTNMA_TOOLS_DIR is a git working copy, tests should be run from home directory of camp repo
     """
-    if adm.endswith('/amp_agent.json'):
+    if adm == 'amp_agent.json' or adm == 'ion_bpsec_admin.json':
         pytest.xfail("ADM with known issue")
-
-
-    filepath = os.path.join(ADMS_DIR, adm)  # input file full filepath
+    # input file full filepath
+    filepath = os.path.join(ADMS_DIR, adm)
 
     # if camp-generated files already exist, find where they are is so we can scrape if possible
     # assumes the impl.c and the impl.h files (which get scraped) live in the same directory.

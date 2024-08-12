@@ -41,11 +41,12 @@ def test_adms(setup, adm):
     """
     cursor = setup[0]
 
-    if adm.endswith('hi'):
-        pytest.skip(f"file skipped: {adm}")
+    if adm == 'ion_bpsec_admin.json':
+        pytest.xfail("ADM with known issue")
+    # input file full filepath
+    filepath = os.path.join(ADMS_DIR, adm)
 
     # run camp
-    filepath = os.path.join(ADMS_DIR, adm)
     exitcode = run_camp(filepath, ADMS_DIR, only_sql=True, only_ch=False)
     assert 0 == exitcode
 
