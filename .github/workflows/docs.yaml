@@ -45,7 +45,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  ACE_REPO: "git+https://github.com/JHUAPL/dtnma-ace.git@apl-fy24"
+  ACE_REPO: "git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@aa879be"
 
 jobs:
   apidoc:

@@ -12,8 +12,18 @@ build
 dist
 .venv*/
 
+# Tool outputs
+agent/
+amp-sql/
+mgr/
+shared/
+
+# Test requisites
+tests/integration_test/anms-adms
+tests/integration_test/dtnma-tools
 # Test outputs
 testresults.xml
 .coverage
 coverage.xml
-/.pytest_cache/
+.pytest_cache/
+tests/adms/
