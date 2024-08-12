@@ -1,6 +1,8 @@
 # Editor files
 *~
 *.bak
+.project
+.pydevproject
 
 # Python intermediates
 __pycache__
@@ -20,3 +22,5 @@ shared/
 testresults.xml
 .coverage
 coverage.xml
+.pytest_cache/
+tests/adms/
