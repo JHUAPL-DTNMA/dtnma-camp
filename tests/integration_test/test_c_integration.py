@@ -3,7 +3,6 @@ import os
 import ace
 import shutil
 import subprocess
-from time import sleep
 from .util import ADMS_DIR, DTNMA_TOOLS_DIR, adm_files, run_camp
 
 
