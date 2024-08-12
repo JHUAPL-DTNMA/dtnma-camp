@@ -3,12 +3,11 @@ import os
 import ace
 import shutil
 import subprocess
-
-from .util import _run_camp, ADMS_DIR, DTNMA_TOOLS_DIR
 from time import sleep
+from .util import ADMS_DIR, DTNMA_TOOLS_DIR, adm_files, run_camp
+
 
 OUT_DIR = os.path.join(DTNMA_TOOLS_DIR, "src")
-ADM_SET = ace.AdmSet()
 
 @pytest.fixture(autouse=True)
 def setup():
@@ -19,17 +18,14 @@ def setup():
     subprocess.check_call(["git", "restore", "."], cwd=DTNMA_TOOLS_DIR)
     
 
-@pytest.mark.parametrize("adm", [f for f in os.listdir(ADMS_DIR) if os.path.isfile(os.path.join(ADMS_DIR, f))])
+@pytest.mark.parametrize("adm", adm_files())
 def test_adms(adm):
     """
     Compiles each adm in ADMS_DIR against the dtnma-tools repo
     @pre: DTNMA_TOOLS_DIR is a git working copy, tests should be run from home directory of camp repo
     """
-
-    # ensure file is .json or .yang (and not the index.json file)
-    ext = os.path.splitext(adm)[1]
-    if (ext != ".json" and ext != ".yang") or adm == "index.json":
-        pytest.skip("file skipped: {f} is not an adm file".format(f=adm))
+    if adm.endswith('/amp_agent.json'):
+        pytest.xfail("ADM with known issue")
 
 
     filepath = os.path.join(ADMS_DIR, adm)  # input file full filepath
@@ -37,13 +33,14 @@ def test_adms(adm):
     # if camp-generated files already exist, find where they are is so we can scrape if possible
     # assumes the impl.c and the impl.h files (which get scraped) live in the same directory.
     # also must be under folder named /agent for camp to correctly scrape, otherwise it
+    adm_set = ace.AdmSet()
     # generates a new file
-    norm_name = ADM_SET.load_from_file(filepath).norm_name
+    norm_name = adm_set.load_from_file(filepath).norm_name
     impl = "adm_{name}_impl.c".format(name=norm_name)
     outdir = _find_dir(impl, OUT_DIR)
 
     # run camp
-    exitcode = _run_camp(filepath, outdir, only_sql=False, only_ch=True, scrape=True)
+    exitcode = run_camp(filepath, outdir, only_sql=False, only_ch=True, scrape=True)
     assert 0 == exitcode
 
     # may need to move files around anyway

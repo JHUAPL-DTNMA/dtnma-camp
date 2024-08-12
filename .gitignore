@@ -18,6 +18,9 @@ amp-sql/
 mgr/
 shared/
 
+# Test requisites
+tests/integration_test/anms-adms
+tests/integration_test/dtnma-tools
 # Test outputs
 testresults.xml
 .coverage
