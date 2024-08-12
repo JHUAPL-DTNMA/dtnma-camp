@@ -29,7 +29,7 @@ def adm_files() -> Tuple[str]:
     These are file names only, which are under :obj:`ADMS_DIR` parent dir.
     '''
     paths = [name for name in os.listdir(ADMS_DIR)]
-    return tuple(filter(_good_file, paths))
+    return tuple(sorted(filter(_good_file, paths)))
 
 def run_camp(filepath, outpath, only_sql, only_ch, scrape=False) -> int:
     """
