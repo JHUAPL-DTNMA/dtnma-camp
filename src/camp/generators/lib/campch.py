@@ -653,7 +653,7 @@ def write_init_tables_function(c_file, adm, g_var_idx, mgr):
 #
 # Writes the init function to c_file
 #
-def write_init_function(c_file, adm: ace.models.AdmFile, g_var_idx: str, mgr: bool):
+def write_init_function(c_file, adm: ace.models.AdmModule, g_var_idx: str, mgr: bool):
     enum_name = cu.make_enum_name_from_str(adm.norm_namespace)
 
     vdb_adds            = "\tadm_add_adm_info(\"" + adm.norm_namespace + "\", " + enum_name + ");\n"
