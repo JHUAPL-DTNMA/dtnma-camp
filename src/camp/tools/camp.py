@@ -123,7 +123,7 @@ def run(args: argparse.Namespace):
         return 2
 
     for mdat in ('name', 'namespace', 'enum'):
-        if admset.get_child(adm, ace.models.Mdat, mdat) is None:
+        if admset.get_child(adm, ace.models.MetadataItem, mdat) is None:
             LOGGER.error('The ADM is missing an "%s" metadata item', mdat)
             return 2
 

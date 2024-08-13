@@ -345,11 +345,11 @@ class Writer(AbstractWriter):
                 return ''
             return getattr(obj, attr)
 
-        name = val_or_none(self.admset.get_child(self.adm, models.Mdat, 'name'))
-        ns = val_or_none(self.admset.get_child(self.adm, models.Mdat, 'namespace'))
-        version = val_or_none(self.admset.get_child(self.adm, models.Mdat, 'version'))
-        org = val_or_none(self.admset.get_child(self.adm, models.Mdat, 'organization'))
-        desc = escape_description_sql(val_or_none(self.admset.get_child(self.adm, models.Mdat, 'namespace'), 'description'))
+        name = val_or_none(self.admset.get_child(self.adm, models.MetadataItem, 'name'))
+        ns = val_or_none(self.admset.get_child(self.adm, models.MetadataItem, 'namespace'))
+        version = val_or_none(self.admset.get_child(self.adm, models.MetadataItem, 'version'))
+        org = val_or_none(self.admset.get_child(self.adm, models.MetadataItem, 'organization'))
+        desc = escape_description_sql(val_or_none(self.admset.get_child(self.adm, models.MetadataItem, 'namespace'), 'description'))
 
         adm_enum = self._var_name("adm_enum", None)
 
