@@ -24,7 +24,7 @@ name: Build and run tests
 on: [push]
 
 env:
-  ACE_REPO: "git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@aa879be"
+  ACE_REPO: "git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git"
 
 jobs:
   build:
