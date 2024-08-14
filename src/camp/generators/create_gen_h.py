@@ -288,7 +288,7 @@ class Writer(AbstractWriter, CHelperMixin):
         defines = ""  # the #defines and for all metadata (string)
 
         # Create the strings for the #defines and preceeding commented table
-        for obj in self.adm.mdat:
+        for obj in self.adm.ident:
             hex_str = format(obj.enum, '#04x')
             ari_str = cu.make_ari_name(self.adm.norm_name, cs.META, obj)
 

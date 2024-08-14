@@ -127,7 +127,7 @@ class Writer(AbstractWriter, CHelperMixin):
         body = ""
         add_str_template = self.make_std_meta_adm_build_template(cs.META)
 
-        for obj in self.adm.mdat:
+        for obj in self.adm.ident:
             _,fname,_ = campch.make_meta_function(self.adm, obj)
             ari       = cu.make_ari_name(self.adm.norm_name, cs.META, obj)
 

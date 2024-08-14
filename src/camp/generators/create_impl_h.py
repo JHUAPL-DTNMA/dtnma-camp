@@ -121,7 +121,7 @@ class Writer(AbstractWriter, CHelperMixin):
     #
     def write_metadata_functions(self, outfile):
         outfile.write("\n/* Metadata Functions */\n")
-        for obj in self.adm.mdat:
+        for obj in self.adm.ident:
             _,_,signature = campch.make_meta_function(self.adm, obj)
             outfile.write(signature + ";\n")
 

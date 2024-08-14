@@ -113,7 +113,7 @@ class Writer(AbstractWriter, CHelperMixin):
             "\n}}"
             "\n\n")
 
-        for obj in self.adm.mdat:
+        for obj in self.adm.ident:
             _,_,signature = campch.make_meta_function(self.adm, obj)
             outfile.write(metadata_funct_str.format(signature, obj.value))
 

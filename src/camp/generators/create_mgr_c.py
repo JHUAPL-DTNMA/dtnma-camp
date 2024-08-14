@@ -184,7 +184,7 @@ class Writer(AbstractWriter, CHelperMixin):
     # metadata is a list of the metadata to include
     #
     def write_init_metadata(self, outfile):
-        self._write_mgr_std_init_funct(outfile, cs.META, self.adm.mdat)
+        self._write_mgr_std_init_funct(outfile, cs.META, self.adm.ident)
         return
 
         body = ""
@@ -201,7 +201,7 @@ class Writer(AbstractWriter, CHelperMixin):
         added_coll = False
         added_parm = False
 
-        for obj in self.adm.mdat:
+        for obj in self.adm.ident:
             # Preliminary; gather all of the pieces of data we need
             ari      = cu.make_ari_name(self.adm.norm_name, cs.META, obj)
             amp_type = cu.make_amp_type_name_from_str(obj.type)
