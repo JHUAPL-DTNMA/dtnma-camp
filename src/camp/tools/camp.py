@@ -122,8 +122,8 @@ def run(args: argparse.Namespace):
         LOGGER.error("Loading error: %s", e)
         return 2
 
-    for mdat in ('name', 'namespace', 'enum'):
-        if admset.get_child(adm, ace.models.Ident, mdat) is None:
+    for mdat in ('name', 'enum', 'latest_revision'):
+        if getattr(adm, mdat) is None:
             LOGGER.error('The ADM is missing an "%s" metadata item', mdat)
             return 2
 
