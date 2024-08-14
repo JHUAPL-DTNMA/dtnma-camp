@@ -53,7 +53,7 @@ class Writer(AbstractWriter, CHelperMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._g_var_idx = "g_" + self.adm.norm_namespace.lower() + "_idx"
+        self._g_var_idx = "g_" + self.adm.norm_name.lower() + "_idx"
 
     def file_path(self) -> str:
         # Interface for AbstractWriter
@@ -131,7 +131,7 @@ class Writer(AbstractWriter, CHelperMixin):
         coll_decl_str = "\n\tari_t *id = NULL;\n"
         parm_decl_str = "\n\tmetadata_t *meta = NULL;\n"
         add_str_template  = self._make_std_adm_build_add_template(coll_type)
-        meta_add_template = campch.make_std_meta_add_coll_template(coll_type, self.adm.norm_namespace)
+        meta_add_template = campch.make_std_meta_add_coll_template(coll_type, self.adm.norm_name)
 
         added_coll = False
         added_parm = False
@@ -139,7 +139,7 @@ class Writer(AbstractWriter, CHelperMixin):
         for obj in objlist:
             try:
                 # Gather all of the pieces of data we need
-                ari      = cu.make_ari_name(self.adm.norm_namespace, coll_type, obj)
+                ari      = cu.make_ari_name(self.adm.norm_name, coll_type, obj)
                 amp_type = cu.make_amp_type_name_from_str(obj.type)
                 paramspec = getattr(obj, 'parmspec', None)
                 parms    = paramspec.items if paramspec else []
@@ -176,7 +176,7 @@ class Writer(AbstractWriter, CHelperMixin):
         if added_coll:
             body = coll_decl_str + body
 
-        campch.write_formatted_init_function(outfile, self.adm.norm_namespace, coll_type, body)
+        campch.write_formatted_init_function(outfile, self.adm.norm_name, coll_type, body)
 
     #
     # Writes the init_metadata() function to the open file descriptor passed as c_file
@@ -191,7 +191,7 @@ class Writer(AbstractWriter, CHelperMixin):
         coll_decl_str = "\n\tari_t *id = NULL;\n"
         parm_decl_str = "\n\tmetadata_t *meta = NULL;\n"
 
-        meta_add_template = campch.make_std_meta_add_coll_template(cs.CONST, self.adm.norm_namespace)
+        meta_add_template = campch.make_std_meta_add_coll_template(cs.CONST, self.adm.norm_name)
 
         # NOTE: this function uses the CONST modifiers for most things, but needs the META IDX here:
         const_idx = cs.get_adm_idx(cs.CONST)
@@ -203,7 +203,7 @@ class Writer(AbstractWriter, CHelperMixin):
 
         for obj in self.adm.mdat:
             # Preliminary; gather all of the pieces of data we need
-            ari      = cu.make_ari_name(self.adm.norm_namespace, cs.META, obj)
+            ari      = cu.make_ari_name(self.adm.norm_name, cs.META, obj)
             amp_type = cu.make_amp_type_name_from_str(obj.type)
 
             # format the meta_add_.* template for this item
@@ -221,7 +221,7 @@ class Writer(AbstractWriter, CHelperMixin):
         if added_coll:
             body = coll_decl_str + body
 
-        campch.write_formatted_init_function(outfile, self.adm.norm_namespace, cs.META, body)
+        campch.write_formatted_init_function(outfile, self.adm.norm_name, cs.META, body)
 
     #
     # Writes the init_constants() function to the open file descriptor passed as c_file
@@ -252,14 +252,14 @@ class Writer(AbstractWriter, CHelperMixin):
 
         add_op_ari_template = "\n\tadm_add_op_ari(id, {}, NULL);"
         build_str_template  = campch.make_adm_build_ari_template(cs.OP, self._g_var_idx, True)
-        meta_add_template   = campch.make_std_meta_add_coll_template(cs.OP, self.adm.norm_namespace)
+        meta_add_template   = campch.make_std_meta_add_coll_template(cs.OP, self.adm.norm_name)
 
         added_coll = False
         added_parm = False
 
         for obj in self.adm.oper:
             # Preliminary; gather all of the pieces of data we need
-            ari      = cu.make_ari_name(self.adm.norm_namespace, cs.OP, obj)
+            ari      = cu.make_ari_name(self.adm.norm_name, cs.OP, obj)
             amp_type = cu.make_amp_type_name_from_str(obj.result_type)
             in_types = obj.in_type if obj.in_type else []
 
@@ -291,7 +291,7 @@ class Writer(AbstractWriter, CHelperMixin):
         if added_coll:
             body = coll_decl_str + body
 
-        campch.write_formatted_init_function(outfile, self.adm.norm_namespace, cs.OP, body)
+        campch.write_formatted_init_function(outfile, self.adm.norm_name, cs.OP, body)
 
     #
     # Writes the init_variables() function to the open file descriptor passed as c_file
@@ -313,7 +313,7 @@ class Writer(AbstractWriter, CHelperMixin):
 
         build_str_template   = campch.make_adm_build_ari_template(cs.CTRL, self._g_var_idx, True)
         add_ctrldef_template = "\n\tadm_add_ctrldef_ari(id, {}, NULL);"
-        enum_name            = cu.make_enum_name_from_str(self.adm.norm_namespace)
+        enum_name            = cu.make_enum_name_from_str(self.adm.norm_name)
         meta_add_template    = "meta_add_" + cs.get_sname(cs.CTRL).lower() + "(id, " + enum_name + ", \"{0}\", \"{1}\");\n"
 
         added_coll = False
@@ -321,7 +321,7 @@ class Writer(AbstractWriter, CHelperMixin):
 
         for obj in self.adm.ctrl:
             # Gather the pieces of data that we need
-            ari   = cu.make_ari_name(self.adm.norm_namespace, cs.CTRL, obj)
+            ari   = cu.make_ari_name(self.adm.norm_name, cs.CTRL, obj)
             parms = obj.parmspec.items if obj.parmspec else []
 
             # Format the meta_add_.* template for this item
@@ -353,7 +353,7 @@ class Writer(AbstractWriter, CHelperMixin):
         if added_coll:
             body = coll_decl_str + body
 
-        campch.write_formatted_init_function(outfile, self.adm.norm_namespace, cs.CTRL, body)
+        campch.write_formatted_init_function(outfile, self.adm.norm_name, cs.CTRL, body)
 
 
     #

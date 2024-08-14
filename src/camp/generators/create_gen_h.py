@@ -74,7 +74,7 @@ class Writer(AbstractWriter, CHelperMixin):
     #
     def write_defines(self, outfile):
         name_upper = self.adm.norm_name.upper()
-        ns_upper = self.adm.norm_namespace.upper()
+        ns_upper = self.adm.norm_name.upper()
         defines_str = """\
 
 #ifndef ADM_{0}_H_
@@ -91,7 +91,7 @@ class Writer(AbstractWriter, CHelperMixin):
     #
     def write_endifs(self, outfile):
         name_upper = self.adm.norm_name.upper()
-        ns_upper = self.adm.norm_namespace.replace("/", "_").upper()
+        ns_upper = self.adm.norm_name.replace("/", "_").upper()
         endifs_str = """\
 
 #endif /* _HAVE_{1}_ADM_ */
@@ -121,9 +121,9 @@ class Writer(AbstractWriter, CHelperMixin):
  * ADM ROOT STRING:{}
  */
 """
-        outfile.write(documentation_str.format(header_str, self.adm.norm_namespace))
+        outfile.write(documentation_str.format(header_str, self.adm.norm_name))
 
-        g_var_idx = "g_" + self.adm.norm_namespace.replace("/", "_").lower() + "_idx"
+        g_var_idx = "g_" + self.adm.norm_name.replace("/", "_").lower() + "_idx"
         outfile.write("extern vec_idx_t {}[11];\n".format(g_var_idx))
 
     #
@@ -133,7 +133,7 @@ class Writer(AbstractWriter, CHelperMixin):
         header_str = campch.make_formatted_comment_header("AGENT NICKNAME DEFINITIONS", True, True)
         outfile.write(header_str)
 
-        ns = self.adm.norm_namespace.lower()
+        ns = self.adm.norm_name.lower()
         enum_name = cu.make_enum_name_from_str(ns)
         outfile.write("#define {0} {1}\n".format(enum_name, self.adm.enum))
 
@@ -290,7 +290,7 @@ class Writer(AbstractWriter, CHelperMixin):
         # Create the strings for the #defines and preceeding commented table
         for obj in self.adm.mdat:
             hex_str = format(obj.enum, '#04x')
-            ari_str = cu.make_ari_name(self.adm.norm_namespace, cs.META, obj)
+            ari_str = cu.make_ari_name(self.adm.norm_name, cs.META, obj)
 
             table   = table   + self.format_table_entry(False, obj.name, obj.description, obj.type, obj.value)
 
@@ -298,7 +298,7 @@ class Writer(AbstractWriter, CHelperMixin):
             defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
 
         # Write everything to file
-        self.write_definition_table_header(outfile, self.adm.norm_namespace.upper()+" META-DATA DEFINITIONS", True)
+        self.write_definition_table_header(outfile, self.adm.norm_name.upper()+" META-DATA DEFINITIONS", True)
         outfile.write(table   + " */\n")
         outfile.write(defines + "\n")
 
@@ -315,13 +315,13 @@ class Writer(AbstractWriter, CHelperMixin):
         # Create the strings for the #defines and preceeding commented table
         for obj in self.adm.edd:
             hex_str = format(obj.enum, '#04x')
-            ari_str = cu.make_ari_name(self.adm.norm_namespace, cs.EDD, obj)
+            ari_str = cu.make_ari_name(self.adm.norm_name, cs.EDD, obj)
 
             table   = table   + self.format_table_entry(False, obj.name, obj.description, obj.type, "")
             defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
 
         # Write everything to file
-        self.write_definition_table_header(outfile, self.adm.norm_namespace.upper()+" EXTERNALLY DEFINED DATA DEFINITIONS", False)
+        self.write_definition_table_header(outfile, self.adm.norm_name.upper()+" EXTERNALLY DEFINED DATA DEFINITIONS", False)
         outfile.write(table   + " */\n")
         outfile.write(defines + "\n")
 
@@ -338,13 +338,13 @@ class Writer(AbstractWriter, CHelperMixin):
         # Create the strings for the #defines and preceeding commented table
         for obj in self.adm.var:
             hex_str = format(obj.enum, '#04x')
-            ari_str = cu.make_ari_name(self.adm.norm_namespace, cs.VAR, obj)
+            ari_str = cu.make_ari_name(self.adm.norm_name, cs.VAR, obj)
 
             table   = table   + self.format_table_entry(False, obj.name, obj.description, obj.type, "")
             defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
 
         # Write everything to file
-        self.write_definition_table_header(outfile, self.adm.norm_namespace.upper()+" VARIABLE DEFINITIONS", False)
+        self.write_definition_table_header(outfile, self.adm.norm_name.upper()+" VARIABLE DEFINITIONS", False)
         outfile.write(table + " */\n")
         outfile.write(defines + "\n")
 
@@ -361,13 +361,13 @@ class Writer(AbstractWriter, CHelperMixin):
         # Create the strings for the #defines and preceeding commented table
         for obj in self.adm.rptt:
             hex_str = format(obj.enum, '#04x')
-            ari_str = cu.make_ari_name(self.adm.norm_namespace, cs.RPTT, obj)
+            ari_str = cu.make_ari_name(self.adm.norm_name, cs.RPTT, obj)
 
             table   = table   + self.format_table_entry(False, obj.name, obj.description, "TNVC", "")
             defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
 
         # Write everything to file
-        self.write_definition_table_header(outfile, self.adm.norm_namespace.upper()+" REPORT DEFINITIONS", False)
+        self.write_definition_table_header(outfile, self.adm.norm_name.upper()+" REPORT DEFINITIONS", False)
         outfile.write(table   + " */\n")
         outfile.write(defines + "\n")
 
@@ -384,13 +384,13 @@ class Writer(AbstractWriter, CHelperMixin):
         # Create the strings for the #defines and preceeding commented table
         for obj in self.adm.tblt:
             hex_str = format(obj.enum, '#04x')
-            ari_str = cu.make_ari_name(self.adm.norm_namespace, cs.TBLT, obj)
+            ari_str = cu.make_ari_name(self.adm.norm_name, cs.TBLT, obj)
 
             table   = table   + self.format_table_entry(False, obj.name, obj.description, "", "")
             defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
 
         # Write everything to file
-        self.write_definition_table_header(outfile, self.adm.norm_namespace.upper()+" TABLE DEFINITIONS", False)
+        self.write_definition_table_header(outfile, self.adm.norm_name.upper()+" TABLE DEFINITIONS", False)
         outfile.write(table + " */\n")
         outfile.write(defines + "\n")
 
@@ -407,13 +407,13 @@ class Writer(AbstractWriter, CHelperMixin):
         # Create the strings for the #defines and preceeding commented table
         for obj in self.adm.ctrl:
             hex_str = format(obj.enum, '#04x')
-            ari_str = cu.make_ari_name(self.adm.norm_namespace, cs.CTRL, obj)
+            ari_str = cu.make_ari_name(self.adm.norm_name, cs.CTRL, obj)
 
             table   = table   + self.format_table_entry(False, obj.name, obj.description, "", "")
             defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
 
         # write everything to file
-        self.write_definition_table_header(outfile, self.adm.norm_namespace.upper()+" CONTROL DEFINITIONS", False)
+        self.write_definition_table_header(outfile, self.adm.norm_name.upper()+" CONTROL DEFINITIONS", False)
         outfile.write(table + " */\n")
         outfile.write(defines + "\n")
 
@@ -430,13 +430,13 @@ class Writer(AbstractWriter, CHelperMixin):
         # Create the strings for the #defines and preceeding commented table
         for obj in self.adm.const:
             hex_str = format(obj.enum, '#04x')
-            ari_str = cu.make_ari_name(self.adm.norm_namespace, cs.CONST, obj)
+            ari_str = cu.make_ari_name(self.adm.norm_name, cs.CONST, obj)
 
             table   = table   + self.format_table_entry(False, obj.name, obj.description, obj.type, obj.value)
             defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
 
         # write everything to file
-        self.write_definition_table_header(outfile, self.adm.norm_namespace.upper() + " CONSTANT DEFINITIONS", True)
+        self.write_definition_table_header(outfile, self.adm.norm_name.upper() + " CONSTANT DEFINITIONS", True)
         outfile.write(table   + " */\n")
         outfile.write(defines + "\n")
 
@@ -453,13 +453,13 @@ class Writer(AbstractWriter, CHelperMixin):
         # Create the strings for the #defines and preceeding commented table
         for obj in self.adm.oper:
             hex_str = format(obj.enum, '#04x')
-            ari_str = cu.make_ari_name(self.adm.norm_namespace,  cs.OP, obj)
+            ari_str = cu.make_ari_name(self.adm.norm_name,  cs.OP, obj)
 
             table   = table   + self.format_table_entry(False, obj.name, obj.description, obj.result_type, "")
             defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
 
         # write everything to file
-        self.write_definition_table_header(outfile, self.adm.norm_namespace.upper()+" OPERATOR DEFINITIONS", False)
+        self.write_definition_table_header(outfile, self.adm.norm_name.upper()+" OPERATOR DEFINITIONS", False)
         outfile.write(table   + " */\n")
         outfile.write(defines + "\n")
 
@@ -476,13 +476,13 @@ class Writer(AbstractWriter, CHelperMixin):
         # Create the strings for the #defines and preceeding commented table
         for obj in self.adm.mac:
             hex_str = format(obj.enum, '#04x')
-            ari_str = cu.make_ari_name(self.adm.norm_namespace, cs.MACRO, obj)
+            ari_str = cu.make_ari_name(self.adm.norm_name, cs.MACRO, obj)
 
             table   = table   + self.format_table_entry(False, obj.name, obj.description, "mc", "")
             defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
 
         # write everything to file
-        self.write_definition_table_header(outfile, self.adm.norm_namespace.upper()+" MACRO DEFINITIONS", False)
+        self.write_definition_table_header(outfile, self.adm.norm_name.upper()+" MACRO DEFINITIONS", False)
         outfile.write(table   + " */\n")
         outfile.write(defines + "\n")
 
@@ -492,7 +492,7 @@ class Writer(AbstractWriter, CHelperMixin):
     # name is the name returned by get_adm_names()
     #
     def write_initialization_functions(self, outfile):
-        name = self.adm.norm_namespace
+        name = self.adm.norm_name
         body = 	(
             "/* Initialization functions. */\n"
             "void {0}_init();\n"

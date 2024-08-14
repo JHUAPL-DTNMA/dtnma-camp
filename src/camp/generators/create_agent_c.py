@@ -36,7 +36,7 @@ class Writer(AbstractWriter, CHelperMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._g_var_idx = "g_" + self.adm.norm_namespace.lower() + "_idx"
+        self._g_var_idx = "g_" + self.adm.norm_name.lower() + "_idx"
 
     def file_path(self) -> str:
         # Interface for AbstractWriter
@@ -129,11 +129,11 @@ class Writer(AbstractWriter, CHelperMixin):
 
         for obj in self.adm.mdat:
             _,fname,_ = campch.make_meta_function(self.adm, obj)
-            ari       = cu.make_ari_name(self.adm.norm_namespace, cs.META, obj)
+            ari       = cu.make_ari_name(self.adm.norm_name, cs.META, obj)
 
             body += add_str_template.format("0", ari, fname)
 
-        campch.write_formatted_init_function(outfile, self.adm.norm_namespace, cs.META, body)
+        campch.write_formatted_init_function(outfile, self.adm.norm_name, cs.META, body)
 
     #
     # Constructs and writes the init_constants function
@@ -148,7 +148,7 @@ class Writer(AbstractWriter, CHelperMixin):
         for obj in self.adm.const:
             parms_tf = "0"
             _,fname,_ = campch.make_constant_function(self.adm, obj)
-            ari       = cu.make_ari_name(self.adm.norm_namespace, cs.CONST, obj)
+            ari       = cu.make_ari_name(self.adm.norm_name, cs.CONST, obj)
 
             #FIXME: can const have parameters?
 #            if obj.parmspec:
@@ -156,7 +156,7 @@ class Writer(AbstractWriter, CHelperMixin):
 
             body += add_str.format(parms_tf, ari, fname)
 
-        campch.write_formatted_init_function(outfile, self.adm.norm_namespace, cs.CONST, body)
+        campch.write_formatted_init_function(outfile, self.adm.norm_name, cs.CONST, body)
 
     #
     # Constructs and writes the init_edd function
@@ -171,14 +171,14 @@ class Writer(AbstractWriter, CHelperMixin):
         for obj in self.adm.edd:
             parms_tf = "0"
             _,fname,_ = campch.make_collect_function(self.adm, obj)
-            ari       = cu.make_ari_name(self.adm.norm_namespace, cs.EDD, obj)
+            ari       = cu.make_ari_name(self.adm.norm_name, cs.EDD, obj)
 
             if obj.parmspec and obj.parmspec.items:
                 parms_tf = "1"
 
             body += add_str.format(parms_tf, ari, fname)
 
-        campch.write_formatted_init_function(outfile, self.adm.norm_namespace, cs.EDD, body)
+        campch.write_formatted_init_function(outfile, self.adm.norm_name, cs.EDD, body)
 
 
     #
@@ -193,12 +193,12 @@ class Writer(AbstractWriter, CHelperMixin):
         adm_add_op_template = "\n\tadm_add_"+cs.get_sname(cs.OP)+"(" + self._g_var_idx + "["+cs.get_adm_idx(cs.OP)+"], {0}, {1}, {2});"
 
         for obj in self.adm.oper:
-            ari      = cu.make_ari_name(self.adm.norm_namespace, cs.OP, obj)
+            ari      = cu.make_ari_name(self.adm.norm_name, cs.OP, obj)
             in_types = obj.in_type if obj.in_type else []
 
             body += adm_add_op_template.format(ari, len(in_types), ari.lower())
 
-        campch.write_formatted_init_function(outfile, self.adm.norm_namespace, cs.OP, body)
+        campch.write_formatted_init_function(outfile, self.adm.norm_name, cs.OP, body)
 
     #
     # Writes the init_variables body
@@ -220,11 +220,11 @@ class Writer(AbstractWriter, CHelperMixin):
         adm_add_template = "\n\tadm_add_ctrldef(" + self._g_var_idx + "["+cs.get_adm_idx(cs.CTRL)+"], {0}, {1}, {2});"
 
         for obj in self.adm.ctrl:
-            ari = cu.make_ari_name(self.adm.norm_namespace, cs.CTRL, obj)
+            ari = cu.make_ari_name(self.adm.norm_name, cs.CTRL, obj)
             parms = obj.parmspec.items if obj.parmspec else []
             body += adm_add_template.format(ari, len(parms), ari.lower())
 
-        campch.write_formatted_init_function(outfile, self.adm.norm_namespace, cs.CTRL, body)
+        campch.write_formatted_init_function(outfile, self.adm.norm_name, cs.CTRL, body)
 
     #
     # Constructs and writes the init_macros function
