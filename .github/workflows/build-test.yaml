@@ -25,6 +25,7 @@ on: [push]
 
 env:
   ACE_REPO: "git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@haining-ace-yang-updates"
+  ADMS_REPO: "https://github.com/JHUAPL-DTNMA/dtnma-adms.git"
 
 jobs:
   build:
@@ -135,7 +136,7 @@ jobs:
         run: |
           pip3 install ${ACE_REPO}
           pip install -e '.[test]'
-          git clone https://github.com/JHUAPL-DTNMA/dtnma-adms.git tests/integration_test/anms-adms
+          git clone ${ADMS_REPO} tests/integration_test/anms-adms
       - name: Test
         run: python3 -m pytest -v --cov=camp tests/integration_test/test_sql_integration.py
 
@@ -161,7 +162,7 @@ jobs:
           pip3 install -e '.[test]'
       - name: Prep repos
         run: |
-          git clone https://github.com/JHUAPL-DTNMA/dtnma-adms.git tests/integration_test/anms-adms
+          git clone ${ADMS_REPO} tests/integration_test/anms-adms
           git clone https://github.com/JHUAPL-DTNMA/dtnma-tools.git tests/integration_test/dtnma-tools
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build ruby build-essential autoconf libtool civetweb libcivetweb-dev libssl-dev libcjson-dev          
