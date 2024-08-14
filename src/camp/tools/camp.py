@@ -122,11 +122,6 @@ def run(args: argparse.Namespace):
         LOGGER.error("Loading error: %s", e)
         return 2
 
-    for mdat in ('name', 'enum', 'latest_revision'):
-        if getattr(adm, mdat) is None:
-            LOGGER.error('The ADM is missing an "%s" metadata item', mdat)
-            return 2
-
     # Call each generator to generate files for the JSON ADM
     LOGGER.info("Generating files under %s", args.out)
     generators = []
