@@ -383,7 +383,7 @@ class Writer(AbstractWriter):
             edd_fp_id = self.make_fp_id(edd_obj_id)
 
             name = edd.name
-            etype = edd.type
+            etype = edd.typeobj.type_text
             desc = escape_description_sql(edd.description)
             parmspec = edd.parameters.items if edd.parameters else []
             num_parmspec = len(parmspec)
@@ -428,10 +428,10 @@ class Writer(AbstractWriter):
         for oper in self.adm.oper:
             oper_name = oper.name
             oper_desc = escape_description_sql(oper.description)
-            result_type = oper.result_type
+            result_type = oper.result.typeobj.type_text
 
             oper_obj_id, oper_def_id, oper_act_id = self.make_sql_ids(self._make_ari(cs.OP, oper))
-            tnvc_collection_template,tnvc_entry_template,tnvc_unk_entry_template = self.create_insert_tnvc_templates(cs.OP, len(oper.in_type))
+            tnvc_collection_template,tnvc_entry_template,tnvc_unk_entry_template = self.create_insert_tnvc_templates(cs.OP, len(oper.operands.items))
 
             lines += [
                 "",
@@ -439,8 +439,8 @@ class Writer(AbstractWriter):
                 tnvc_collection_template.format("operands for "+ oper_name),
             ]
 
-            for in_type in oper.in_type:
-                t = in_type.type.lower()
+            for in_type in oper.operands.items:
+                t = in_type.typeobj.type_text.lower()
 
                 # UNK has one fewer parameter
                 if t == "unk":
@@ -450,9 +450,9 @@ class Writer(AbstractWriter):
 
             # TODO: UNK is not a valid type, comment the actual_def for this out for now until ADM resolved
             if result_type.upper() == 'UNK':
-                lines += ["-- " + actual_def_template.format(oper_obj_id, oper_desc, result_type, len(oper.in_type), oper_act_id)]
+                lines += ["-- " + actual_def_template.format(oper_obj_id, oper_desc, result_type, len(oper.operands.items), oper_act_id)]
             else:
-                lines += [actual_def_template.format(oper_obj_id, oper_desc, result_type, len(oper.in_type), oper_act_id)]
+                lines += [actual_def_template.format(oper_obj_id, oper_desc, result_type, len(oper.operands.items), oper_act_id)]
 
         return lines
 
@@ -779,14 +779,14 @@ class Writer(AbstractWriter):
         return lines + self.write_gen_const_functions(self.adm.const, cs.CONST)
 
     def write_mdat_functions(self):
-        ''' Genreate lines for all of the MDATs in the ADM
+        ''' Generate lines for all of the MDATs in the ADM
         '''
         lines = [
             "",
             "",
             "-- MDAT",
         ]
-        return lines + self.write_gen_const_functions(self.adm.mdat, cs.META)
+        return lines + self.write_gen_const_functions(self.adm.ident, cs.META)
 
 
     def write_mac_functions(self):
