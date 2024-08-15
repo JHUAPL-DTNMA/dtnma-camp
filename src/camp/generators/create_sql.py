@@ -343,13 +343,14 @@ class Writer(AbstractWriter):
         def val_or_none(obj, attr='value'):
             if obj is None:
                 return ''
-            return getattr(obj, attr)
+            return obj
 
-        name = val_or_none(self.admset.get_child(self.adm, models.Ident, 'name'))
-        ns = val_or_none(self.admset.get_child(self.adm, models.Ident, 'namespace'))
-        version = val_or_none(self.admset.get_child(self.adm, models.Ident, 'version'))
-        org = val_or_none(self.admset.get_child(self.adm, models.Ident, 'organization'))
-        desc = escape_description_sql(val_or_none(self.admset.get_child(self.adm, models.Ident, 'namespace'), 'description'))
+        # TODO Karen fix
+        name = val_or_none(self.admset.get_child(self.adm, 'name'))
+        ns = val_or_none(self.admset.get_child(self.adm, 'namespace'))
+        version = val_or_none(self.admset.get_child(self.adm, 'version'))
+        org = val_or_none(self.admset.get_child(self.adm, 'organization'))
+        desc = escape_description_sql(val_or_none(self.admset.get_child(self.adm, 'namespace'), 'description'))
 
         adm_enum = self._var_name("adm_enum", None)
 
