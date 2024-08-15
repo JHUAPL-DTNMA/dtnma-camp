@@ -138,7 +138,7 @@ class Writer(AbstractWriter):
         :param item: object to make the IDs for.
         :return: the augmented ARI text.
         '''
-        ns = str(self.adm.enum)
+        ns = str(self.adm.norm_name).upper()
         ari = cu.make_ari_name(ns, coll, item).lower()
         return ari
 
@@ -180,7 +180,7 @@ class Writer(AbstractWriter):
 
         # convert to object type enumeration to decimal for function
         obj_type_enum = str(int(cs.ari_type_enum(obj_type), 16))
-        formatted = general_template.format(obj_type_enum, "{}", self.adm.enum, "{}")#self._sql_ns, "{}")
+        formatted = general_template.format(obj_type_enum, "{}", self.adm.norm_name, "{}")#self._sql_ns, "{}")
         return formatted
 
 
@@ -304,13 +304,13 @@ class Writer(AbstractWriter):
                 "",
                 "use amp_core;",
                 "",
-                "SET @adm_enum = {};".format(self.adm.enum)
+                "SET @adm_enum = {};".format(self.adm.norm_name)
             ]
         elif self.dialect == 'pgsql':
             lines += [
                 "DO",
                 "$do$",
-                "DECLARE adm_enum INTEGER := {};".format(self.adm.enum),
+                "DECLARE adm_enum INTEGER := {};".format(self.adm.norm_name),
             ]
             for name in sorted(self._vars_def):
                 lines.append(f"DECLARE {name} INTEGER;")
@@ -347,14 +347,14 @@ class Writer(AbstractWriter):
 
         name = val_or_none(self.admset.get_child(self.adm, 'name'))
         #ns = val_or_none(self.admset.get_child(self.adm, 'namespace'))
-        ns = self.adm.norm_name
+        ns = self.adm.norm_name.upper()
         version = val_or_none(self.admset.get_child(self.adm, 'version'))
         org = val_or_none(self.admset.get_child(self.adm, 'organization'))
         desc = escape_description_sql(self.admset.get_child(self.adm, "description").arg)#val_or_none(self.admset.get_child(self.adm, models.Mdat, 'namespace'), 'description'))
 
         adm_enum = self._var_name("adm_enum", None)
 
-        formatted_template = meta_template.format(org, ns, version, name, adm_enum, desc, self.adm.enum)#self._sql_ns)
+        formatted_template = meta_template.format(org, ns, version, name, adm_enum, desc, self.adm.norm_name)#self._sql_ns)
         return [
             "",
             formatted_template

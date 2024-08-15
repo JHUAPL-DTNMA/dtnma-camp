@@ -78,7 +78,7 @@ class Writer(AbstractWriter, CHelperMixin):
     # scraper is the Scraper class object for this ADM
     #
     def write_setup(self, outfile):
-        outfile.write("void {}_setup()\n{{\n\n".format(self.adm.enum))
+        outfile.write("void {}_setup()\n{{\n\n".format(self.adm.norm_name))
 
         self._scraper.write_custom_body(outfile, "setup")
 
@@ -91,7 +91,7 @@ class Writer(AbstractWriter, CHelperMixin):
     # scraper is the Scraper class object for this ADM
     #
     def write_cleanup(self, outfile):
-        outfile.write("void {}_cleanup()\n{{\n\n".format(self.adm.enum))
+        outfile.write("void {}_cleanup()\n{{\n\n".format(self.adm.norm_name))
 
         self._scraper.write_custom_body(outfile, "cleanup")
 

@@ -53,7 +53,7 @@ class Writer(AbstractWriter, CHelperMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._g_var_idx = f"g_{self.adm.enum}_idx"
+        self._g_var_idx = f"g_{self.adm.norm_name}_idx"
 
     def file_path(self) -> str:
         # Interface for AbstractWriter
@@ -131,7 +131,7 @@ class Writer(AbstractWriter, CHelperMixin):
         coll_decl_str = "\n\tari_t *id = NULL;\n"
         parm_decl_str = "\n\tmetadata_t *meta = NULL;\n"
         add_str_template  = self._make_std_adm_build_add_template(coll_type)
-        meta_add_template = campch.make_std_meta_add_coll_template(coll_type, str(self.adm.enum))
+        meta_add_template = campch.make_std_meta_add_coll_template(coll_type, str(self.adm.norm_name))
 
         added_coll = False
         added_parm = False
@@ -183,7 +183,7 @@ class Writer(AbstractWriter, CHelperMixin):
         if added_coll:
             body = coll_decl_str + body
 
-        campch.write_formatted_init_function(outfile, str(self.adm.enum), coll_type, body)
+        campch.write_formatted_init_function(outfile, str(self.adm.norm_name), coll_type, body)
 
     #
     # Writes the init_metadata() function to the open file descriptor passed as c_file
@@ -259,14 +259,14 @@ class Writer(AbstractWriter, CHelperMixin):
 
         add_op_ari_template = "\n\tadm_add_op_ari(id, {}, NULL);"
         build_str_template  = campch.make_adm_build_ari_template(cs.OP, self._g_var_idx, True)
-        meta_add_template   = campch.make_std_meta_add_coll_template(cs.OP, str(self.adm.enum))
+        meta_add_template   = campch.make_std_meta_add_coll_template(cs.OP, str(self.adm.norm_name))
 
         added_coll = False
         added_parm = False
 
         for obj in self.adm.oper:
             # Preliminary; gather all of the pieces of data we need
-            ari      = cu.make_ari_name(str(self.adm.enum), cs.OP, obj)
+            ari      = cu.make_ari_name(str(self.adm.norm_name), cs.OP, obj)
             amp_type = cu.make_amp_type_name_from_str(obj.result.name)
             in_types = obj.operands.items if obj.operands.items else []
 
@@ -298,7 +298,7 @@ class Writer(AbstractWriter, CHelperMixin):
         if added_coll:
             body = coll_decl_str + body
 
-        campch.write_formatted_init_function(outfile, str(self.adm.enum), cs.OP, body)
+        campch.write_formatted_init_function(outfile, str(self.adm.norm_name), cs.OP, body)
 
     #
     # Writes the init_variables() function to the open file descriptor passed as c_file
@@ -320,7 +320,7 @@ class Writer(AbstractWriter, CHelperMixin):
 
         build_str_template   = campch.make_adm_build_ari_template(cs.CTRL, self._g_var_idx, True)
         add_ctrldef_template = "\n\tadm_add_ctrldef_ari(id, {}, NULL);"
-        enum_name            = cu.make_enum_name_from_str(str(self.adm.enum))
+        enum_name            = cu.make_enum_name_from_str(str(self.adm.norm_name))
         meta_add_template    = "meta_add_" + cs.get_sname(cs.CTRL).lower() + "(id, " + enum_name + ", \"{0}\", \"{1}\");\n"
 
         added_coll = False
@@ -328,7 +328,7 @@ class Writer(AbstractWriter, CHelperMixin):
 
         for obj in self.adm.ctrl:
             # Gather the pieces of data that we need
-            ari   = cu.make_ari_name(str(self.adm.enum), cs.CTRL, obj)
+            ari   = cu.make_ari_name(str(self.adm.norm_name), cs.CTRL, obj)
             parms = obj.parameters.items if obj.parameters else []
 
             # Format the meta_add_.* template for this item
@@ -360,7 +360,7 @@ class Writer(AbstractWriter, CHelperMixin):
         if added_coll:
             body = coll_decl_str + body
 
-        campch.write_formatted_init_function(outfile, str(self.adm.enum), cs.CTRL, body)
+        campch.write_formatted_init_function(outfile, str(self.adm.norm_name), cs.CTRL, body)
 
 
     #

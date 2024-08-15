@@ -67,8 +67,8 @@ class Writer(AbstractWriter, CHelperMixin):
         self._scraper.write_custom_functions(outfile)
 
         # The setup and clean up functions
-        outfile.write(f"void {self.adm.enum}_setup();\n")
-        outfile.write(f"void {self.adm.enum}_cleanup();\n\n")
+        outfile.write(f"void {self.adm.norm_name}_setup();\n")
+        outfile.write(f"void {self.adm.norm_name}_cleanup();\n\n")
 
         self.write_metadata_functions(outfile)
         self.write_constant_functions(outfile)
