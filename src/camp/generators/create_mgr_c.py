@@ -140,7 +140,7 @@ class Writer(AbstractWriter, CHelperMixin):
             try:
                 # Gather all of the pieces of data we need
                 ari      = cu.make_ari_name(self.adm.norm_name, coll_type, obj)
-                amp_type = cu.make_amp_type_name_from_str(obj.typeobj)
+                amp_type = cu.make_amp_type_name_from_str(obj.typeobj.type_text)
                 paramspec = getattr(obj, 'parmspec', None)
                 parms    = paramspec.items if paramspec else []
 
@@ -204,7 +204,7 @@ class Writer(AbstractWriter, CHelperMixin):
         for obj in self.adm.ident:
             # Preliminary; gather all of the pieces of data we need
             ari      = cu.make_ari_name(self.adm.norm_name, cs.META, obj)
-            amp_type = cu.make_amp_type_name_from_str(obj.typeobj)
+            amp_type = cu.make_amp_type_name_from_str(obj.typeobj.type_text)
 
             # format the meta_add_.* template for this item
             meta_add_str = meta_add_template.format(amp_type, obj.name, obj.description)
@@ -260,8 +260,8 @@ class Writer(AbstractWriter, CHelperMixin):
         for obj in self.adm.oper:
             # Preliminary; gather all of the pieces of data we need
             ari      = cu.make_ari_name(self.adm.norm_name, cs.OP, obj)
-            amp_type = cu.make_amp_type_name_from_str(obj.result_type)
-            in_types = obj.in_type if obj.in_type else []
+            amp_type = cu.make_amp_type_name_from_str(obj.result.typeobj.type_text)
+            in_types = obj.operands.items if obj.operands.items else []
 
             # Format the meta_add_.* template for this item
             meta_str = meta_add_template.format(amp_type, obj.name, obj.description)
@@ -279,7 +279,7 @@ class Writer(AbstractWriter, CHelperMixin):
             body += "\n\t" + meta_str
 
             for in_type in in_types:
-                parm_type = cu.make_amp_type_name_from_str(in_type.type)
+                parm_type = cu.make_amp_type_name_from_str(in_type.typeobj.type_text)
                 body += add_parm_template.format("O{}".format(in_type.position + 1), parm_type)
 
             added_coll = True

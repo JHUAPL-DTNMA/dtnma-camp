@@ -456,7 +456,7 @@ def write_init_var_function(c_file, adm, g_var_idx, mgr):
     for obj in adm.var:
         # Preliminaries
         ari      = cu.make_ari_name(adm.norm_name, cs.VAR, obj)
-        amp_type = cu.make_amp_type_name_from_str(obj.typeobj)
+        amp_type = cu.make_amp_type_name_from_str(obj.typeobj.type_text)
 
         var_name    = obj.name
         description = obj.description or ''
@@ -479,7 +479,7 @@ def write_init_var_function(c_file, adm, g_var_idx, mgr):
         # If postfixs are present, append the expr_create string, and prepend
         # the adm_add_var_from_expr stringq
         if pfxs:
-            init_type = cu.make_amp_type_name_from_str(obj.initializer.type)
+            init_type = cu.make_amp_type_name_from_str(obj.typeobj.type_text)
 
             expr_str = expr_create_str.format(init_type) + expr_str
             expr_str += add_var_from_expr.format(init_type)
