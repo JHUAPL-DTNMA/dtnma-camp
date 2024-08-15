@@ -129,13 +129,13 @@ class Writer(AbstractWriter, CHelperMixin):
         const_function_str = (
             "\n{0}"
             "\n{{"
-            "\n\treturn tnv_from_uvast({1});"
+            "\n\treturn tnv_from_uvast({1});"       # TODO Karen not necessarily everything is uvast?
             "\n}}"
             "\n")
 
         for obj in self.adm.const:
             _,_,signature = campch.make_constant_function(self.adm, obj)
-            outfile.write(const_function_str.format(signature, getattr(obj, 'value', '')))
+            outfile.write(const_function_str.format(signature, getattr(obj, 'init_value', '')))
 
     #
     # writes the table functions to the file passed
