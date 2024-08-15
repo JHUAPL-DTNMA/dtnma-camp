@@ -292,7 +292,7 @@ class Writer(AbstractWriter, CHelperMixin):
             hex_str = format(obj.enum, '#04x')
             ari_str = cu.make_ari_name(self.adm.norm_name, cs.META, obj)
 
-            table   = table   + self.format_table_entry(False, obj.name, obj.description, obj.typeobj, obj.value)
+            table   = table   + self.format_table_entry(False, obj.name, obj.description, obj.typeobj.type_text, obj.value)
 
             defines = defines + "// \"{}\"\n".format(obj.name)
             defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
@@ -317,7 +317,7 @@ class Writer(AbstractWriter, CHelperMixin):
             hex_str = format(obj.enum, '#04x')
             ari_str = cu.make_ari_name(self.adm.norm_name, cs.EDD, obj)
 
-            table   = table   + self.format_table_entry(False, obj.name, obj.description, obj.typeobj, "")
+            table   = table   + self.format_table_entry(False, obj.name, obj.description, obj.typeobj.type_text, "")
             defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
 
         # Write everything to file
@@ -340,7 +340,7 @@ class Writer(AbstractWriter, CHelperMixin):
             hex_str = format(obj.enum, '#04x')
             ari_str = cu.make_ari_name(self.adm.norm_name, cs.VAR, obj)
 
-            table   = table   + self.format_table_entry(False, obj.name, obj.description, obj.typeobj, "")
+            table   = table   + self.format_table_entry(False, obj.name, obj.description, obj.typeobj.type_text, "")
             defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
 
         # Write everything to file
@@ -432,7 +432,7 @@ class Writer(AbstractWriter, CHelperMixin):
             hex_str = format(obj.enum, '#04x')
             ari_str = cu.make_ari_name(self.adm.norm_name, cs.CONST, obj)
 
-            table   = table   + self.format_table_entry(False, obj.name, obj.description, obj.typeobj, obj.init_value)
+            table   = table   + self.format_table_entry(False, obj.name, obj.description, obj.typeobj.type_text, obj.init_value)
             defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
 
         # write everything to file
