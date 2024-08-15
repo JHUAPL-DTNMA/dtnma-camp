@@ -67,8 +67,8 @@ class Writer(AbstractWriter, CHelperMixin):
         self._scraper.write_custom_functions(outfile)
 
         # The setup and clean up functions
-        outfile.write("void "+self.adm.norm_name+"_setup();\n")
-        outfile.write("void "+self.adm.norm_name+"_cleanup();\n\n")
+        outfile.write(f"void {self.adm.enum}_setup();\n")
+        outfile.write(f"void {self.adm.enum}_cleanup();\n\n")
 
         self.write_metadata_functions(outfile)
         self.write_constant_functions(outfile)
@@ -121,7 +121,7 @@ class Writer(AbstractWriter, CHelperMixin):
     #
     def write_metadata_functions(self, outfile):
         outfile.write("\n/* Metadata Functions */\n")
-        for obj in self.adm.ident:
+        for obj in self.adm.metadata_list.items:
             _,_,signature = campch.make_meta_function(self.adm, obj)
             outfile.write(signature + ";\n")
 

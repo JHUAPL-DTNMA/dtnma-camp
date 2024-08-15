@@ -127,7 +127,7 @@ class Writer(AbstractWriter, CHelperMixin):
         body = ""
         add_str_template = self.make_std_meta_adm_build_template(cs.META)
 
-        for obj in self.adm.ident:
+        for obj in self.adm.metadata_list.items:
             _,fname,_ = campch.make_meta_function(self.adm, obj)
             ari       = cu.make_ari_name(self.adm.norm_name, cs.META, obj)
 
@@ -151,7 +151,7 @@ class Writer(AbstractWriter, CHelperMixin):
             ari       = cu.make_ari_name(self.adm.norm_name, cs.CONST, obj)
 
             #FIXME: can const have parameters?
-#            if obj.parmspec:
+#            if obj.paramspec:
 #                parms_tf = "1"
 
             body += add_str.format(parms_tf, ari, fname)
@@ -173,7 +173,7 @@ class Writer(AbstractWriter, CHelperMixin):
             _,fname,_ = campch.make_collect_function(self.adm, obj)
             ari       = cu.make_ari_name(self.adm.norm_name, cs.EDD, obj)
 
-            if obj.parameters and obj.parameters.items:
+            if hasattr(obj, 'parameters') and obj.parameters.items:
                 parms_tf = "1"
 
             body += add_str.format(parms_tf, ari, fname)
@@ -221,7 +221,7 @@ class Writer(AbstractWriter, CHelperMixin):
 
         for obj in self.adm.ctrl:
             ari = cu.make_ari_name(self.adm.norm_name, cs.CTRL, obj)
-            parms = obj.parameters.items if obj.parameters else []
+            parms = obj.parameters.items if hasattr(obj, 'parameters') else []
             body += adm_add_template.format(ari, len(parms), ari.lower())
 
         campch.write_formatted_init_function(outfile, self.adm.norm_name, cs.CTRL, body)

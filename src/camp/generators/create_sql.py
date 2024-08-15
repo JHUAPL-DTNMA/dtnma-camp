@@ -78,9 +78,9 @@ class Writer(AbstractWriter):
         self._vars_use = set()
 
         # The first half of the namespace
-        ns = self.adm.norm_name
+        """ns = self.adm.norm_namespace
         hl_ns = ns.split('/')[0].lower()
-        self._sql_ns = self._var_name(f"{hl_ns}_namespace_id")
+        self._sql_ns = self._var_name(f"{hl_ns}_namespace_id")"""
 
     def file_path(self) -> str:
         # Interface for AbstractWriter
@@ -138,7 +138,7 @@ class Writer(AbstractWriter):
         :param item: object to make the IDs for.
         :return: the augmented ARI text.
         '''
-        ns = self.adm.norm_name
+        ns = str(self.adm.enum)
         ari = cu.make_ari_name(ns, coll, item).lower()
         return ari
 
@@ -180,7 +180,7 @@ class Writer(AbstractWriter):
 
         # convert to object type enumeration to decimal for function
         obj_type_enum = str(int(cs.ari_type_enum(obj_type), 16))
-        formatted = general_template.format(obj_type_enum, "{}", self._sql_ns, "{}")
+        formatted = general_template.format(obj_type_enum, "{}", self.adm.enum, "{}")#self._sql_ns, "{}")
         return formatted
 
 
@@ -239,7 +239,7 @@ class Writer(AbstractWriter):
 
 
         name = item.nm
-        if name.casefold().startswith('mdat.'):
+        if name.casefold().startswith('metadata_list.'):
             name = 'meta' + name[4:]
         elif name.casefold().startswith('oper.'):
             name = 'op' + name[4:]
@@ -340,21 +340,21 @@ class Writer(AbstractWriter):
         # format with org, namespace, version, name, description from namespace, ns from get_highlevel_ns
         meta_template = "CALL SP__insert_adm_defined_namespace('{}', '{}', '{}', '{}', {}, NULL, '{}', {});"
 
-        def val_or_none(obj, attr='value'):
+        def val_or_none(obj, attr='arg'):
             if obj is None:
                 return ''
-            return obj
+            return getattr(obj, attr)
 
-        # TODO Karen fix
         name = val_or_none(self.admset.get_child(self.adm, 'name'))
-        ns = val_or_none(self.admset.get_child(self.adm, 'namespace'))
+        #ns = val_or_none(self.admset.get_child(self.adm, 'namespace'))
+        ns = self.adm.norm_name
         version = val_or_none(self.admset.get_child(self.adm, 'version'))
         org = val_or_none(self.admset.get_child(self.adm, 'organization'))
-        desc = escape_description_sql(val_or_none(self.admset.get_child(self.adm, 'namespace'), 'description'))
+        desc = escape_description_sql(self.admset.get_child(self.adm, "description").arg)#val_or_none(self.admset.get_child(self.adm, models.Mdat, 'namespace'), 'description'))
 
         adm_enum = self._var_name("adm_enum", None)
 
-        formatted_template = meta_template.format(org, ns, version, name, adm_enum, desc, self._sql_ns)
+        formatted_template = meta_template.format(org, ns, version, name, adm_enum, desc, self.adm.enum)#self._sql_ns)
         return [
             "",
             formatted_template
@@ -378,12 +378,20 @@ class Writer(AbstractWriter):
         # Format with edd obj id and edd name (only used if no parmspec)
         edd_actual_def_template = "CALL SP__insert_edd_actual_definition({}, 'The singleton value for {}', NULL, {});"
 
-        for edd in self.adm.edd:
+        for i, edd in enumerate(self.adm.edd):
             edd_obj_id, edd_def_id, edd_act_id = self.make_sql_ids(self._make_ari(cs.EDD, edd))
             edd_fp_id = self.make_fp_id(edd_obj_id)
 
             name = edd.name
-            etype = edd.typeobj.type_text
+            if hasattr(edd.typeobj, 'type_text'):
+                etype = edd.typeobj.type_text
+            else:
+                etype = []
+                for col in edd.typeobj.columns:
+                    if hasattr(col.base, 'type_text'):
+                        etype.append(col.base.type_text)
+                    else:
+                         etype.append(col.base.base.type_text)
             desc = escape_description_sql(edd.description)
             parmspec = edd.parameters.items if edd.parameters else []
             num_parmspec = len(parmspec)
@@ -397,7 +405,7 @@ class Writer(AbstractWriter):
                 lines += [insert_formal_parmspec_template.format(num_parmspec, name, edd_fp_id, edd_obj_id)]
 
                 for parm in parmspec:
-                    lines += [insert_entry_template.format(edd_fp_id, parm.position + 1, parm.name, parm.typeobj.type_text)]
+                    lines += [insert_entry_template.format(edd_fp_id, parm.position + 1, parm.name, parm.name)]
 
             # Only put actual definition here if no parmspec
             if not parmspec:
@@ -428,7 +436,7 @@ class Writer(AbstractWriter):
         for oper in self.adm.oper:
             oper_name = oper.name
             oper_desc = escape_description_sql(oper.description)
-            result_type = oper.result.typeobj.type_text
+            result_type = oper.result.name
 
             oper_obj_id, oper_def_id, oper_act_id = self.make_sql_ids(self._make_ari(cs.OP, oper))
             tnvc_collection_template,tnvc_entry_template,tnvc_unk_entry_template = self.create_insert_tnvc_templates(cs.OP, len(oper.operands.items))
@@ -440,7 +448,7 @@ class Writer(AbstractWriter):
             ]
 
             for in_type in oper.operands.items:
-                t = in_type.typeobj.type_text.lower()
+                t = in_type.name.lower()
 
                 # UNK has one fewer parameter
                 if t == "unk":
@@ -581,8 +589,8 @@ class Writer(AbstractWriter):
 
         # Parameter types of referenced object, if there are any
         types = (
-            [parm.typeobj.type_text for parm in found_ref.parameters.items]
-            if hasattr(found_ref, 'parmspec') and found_ref.parmspec
+            [parm.name for parm in found_ref.parameters.items]
+            if hasattr(found_ref, 'parameters') and found_ref.parameters
             else []
         )
 
@@ -658,7 +666,7 @@ class Writer(AbstractWriter):
             report_name = rptt.name
             report_desc = escape_description_sql(rptt.description)
             definitions = rptt.definition.items if rptt.definition else []
-            parmspec = rptt.parmspec.items if rptt.parmspec else []
+            parmspec = rptt.parameters.items if rptt.parameters else []
 
             report_id, report_def_id, report_act_id = self.make_sql_ids(self._make_ari(cs.RPTT, rptt))
 
@@ -731,7 +739,7 @@ class Writer(AbstractWriter):
                 fp_spec_id = self._var_name("fp_spec_id")
                 lines += [insert_formal_parmspec_template.format(len(parmspec), ctrl_name, fp_spec_id, ctrl_id)]
                 for parm in parmspec:
-                    lines += [insert_entry_template.format(fp_spec_id, parm.position + 1, parm.name, parm.typeobj.type_text)]
+                    lines += [insert_entry_template.format(fp_spec_id, parm.position + 1, parm.name, parm.name)]
             else:
                 fp_spec_id = "null"
 
@@ -759,11 +767,10 @@ class Writer(AbstractWriter):
             c_desc = escape_description_sql(obj.description)
 
             const_id, const_def_id, const_act_id = self.make_sql_ids(self._make_ari(coll, obj))
-
             lines += [
                 "",
                 insert_obj_template.format(c_name, const_id),
-                insert_const_actual_def_template.format(const_id, c_desc, obj.typeobj.type_text, obj.init_value, const_act_id),
+                insert_const_actual_def_template.format(const_id, c_desc, obj.typeobj, obj.init_value, const_act_id),
             ]
 
         return lines
@@ -779,14 +786,34 @@ class Writer(AbstractWriter):
         return lines + self.write_gen_const_functions(self.adm.const, cs.CONST)
 
     def write_mdat_functions(self):
-        ''' Generate lines for all of the MDATs in the ADM
+        ''' Genreate lines for all of the MDATs in the ADM
         '''
+        coll = cs.META
+        objects = self.adm.metadata_list.items
+        insert_obj_template = self.create_insert_obj_metadata_template(coll)
+
+        # Format with const id, definition, type, value, and const def id
+        insert_const_actual_def_template = "CALL SP__insert_const_actual_definition({}, '{}', '{}', '{}', {});"
+
         lines = [
             "",
             "",
             "-- MDAT",
         ]
-        return lines + self.write_gen_const_functions(self.adm.ident, cs.META)
+        for obj in objects:
+            c_name = obj.name
+            c_desc = escape_description_sql(obj.arg)
+
+            const_id, const_def_id, const_act_id = self.make_sql_ids(self._make_ari(coll, obj))
+
+            lines += [
+                "",
+                insert_obj_template.format(c_name, const_id),
+                #using metadata keyword for type
+                insert_const_actual_def_template.format(const_id, c_desc, obj.name, obj.arg, const_act_id),
+            ]
+
+        return lines
 
 
     def write_mac_functions(self):
@@ -811,7 +838,7 @@ class Writer(AbstractWriter):
         for mac in self.adm.mac:
             mac_name = mac.name
             mac_desc = escape_description_sql(mac.description)
-            parmspec = mac.parmspec.items if mac.parmspec else []
+            parmspec = mac.parameters.items if mac.parameters else []
             num_parmspec = len(parmspec)
             definition = mac.action.items if mac.action else []
 
@@ -825,7 +852,7 @@ class Writer(AbstractWriter):
                 fp_spec_id = self._var_name("fp_spec_id")
                 lines += [insert_formal_parmspec_template.format(len(parmspec), mac_name, fp_spec_id)]
                 for parm in parmspec:
-                    lines += [insert_ac_formal_parmspec_entry_template.format(fp_spec_id, parm.position + 1, parm.name, parm.typeobj.type_text)]
+                    lines += [insert_ac_formal_parmspec_entry_template.format(fp_spec_id, parm.position + 1, parm.name, parm.type)]
 
                 lines += [insert_ac_id_template.format(num_parmspec, mac_name)]
 

@@ -78,7 +78,7 @@ class Writer(AbstractWriter, CHelperMixin):
     # scraper is the Scraper class object for this ADM
     #
     def write_setup(self, outfile):
-        outfile.write("void {}_setup()\n{{\n\n".format(self.adm.norm_name.lower()))
+        outfile.write("void {}_setup()\n{{\n\n".format(self.adm.enum))
 
         self._scraper.write_custom_body(outfile, "setup")
 
@@ -91,7 +91,7 @@ class Writer(AbstractWriter, CHelperMixin):
     # scraper is the Scraper class object for this ADM
     #
     def write_cleanup(self, outfile):
-        outfile.write("void {}_cleanup()\n{{\n\n".format(self.adm.norm_name.lower()))
+        outfile.write("void {}_cleanup()\n{{\n\n".format(self.adm.enum))
 
         self._scraper.write_custom_body(outfile, "cleanup")
 
@@ -113,9 +113,9 @@ class Writer(AbstractWriter, CHelperMixin):
             "\n}}"
             "\n\n")
 
-        for obj in self.adm.ident:
+        for obj in self.adm.metadata_list.items:
             _,_,signature = campch.make_meta_function(self.adm, obj)
-            outfile.write(metadata_funct_str.format(signature, obj.value))
+            outfile.write(metadata_funct_str.format(signature, obj.arg))
 
     #
     # Writes the constant functions to the file passed
