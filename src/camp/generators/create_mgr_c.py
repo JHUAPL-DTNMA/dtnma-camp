@@ -74,7 +74,7 @@ class Writer(AbstractWriter, CHelperMixin):
         self.write_init_constants(outfile)
         self.write_init_edd_function(outfile)
         self.write_init_ops(outfile)
-        self.write_init_variables_function(outfile)
+        # self.write_init_variables_function(outfile)
         self.write_init_controls_function(outfile)
         # self.write_init_macros(outfile)
         # self.write_init_reports(outfile)
