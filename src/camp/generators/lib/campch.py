@@ -401,7 +401,7 @@ def write_init_macro_function(c_file, adm, g_var_idx, mgr):
             body += meta_add_macro_template.format(mac_name, description)
             added_meta = True
             for parm in parms:
-                amp_type = cu.make_amp_type_name_from_str(parm.type)
+                amp_type = cu.make_amp_type_name_from_str(parm.typeobj.type_text)
                 body += meta_add_parm_template.format(parm.name, amp_type)
 
     # only add these declarations if the variables will be used; to avoid compiler warnings in C code
@@ -577,7 +577,7 @@ def write_parameterized_init_reports_function(c_file, adm, g_var_idx, mgr):
 
             # Create meta_add_parm string for each parameter found
             for parm in params:
-                amp_type = cu.make_amp_type_name_from_str(parm.type)
+                amp_type = cu.make_amp_type_name_from_str(parm.typeobj.type_text)
                 meta_add_parm_str += meta_add_parm_template.format(parm.name, amp_type)
 
             # Add to body string

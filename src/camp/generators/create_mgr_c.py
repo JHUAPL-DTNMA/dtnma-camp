@@ -43,7 +43,7 @@ add_parm_template = "\tmeta_add_parm(meta, \"{0}\", {1});\n"
 def make_add_parms_str(parms):
     add_parms_str = ""
     for parm in parms:
-        p_type = cu.make_amp_type_name_from_str(parm.type)
+        p_type = cu.make_amp_type_name_from_str(parm.typeobj.type_text)
         add_parms_str = add_parms_str + add_parm_template.format(parm.name, p_type)
 
     return add_parms_str

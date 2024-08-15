@@ -397,7 +397,7 @@ class Writer(AbstractWriter):
                 lines += [insert_formal_parmspec_template.format(num_parmspec, name, edd_fp_id, edd_obj_id)]
 
                 for parm in parmspec:
-                    lines += [insert_entry_template.format(edd_fp_id, parm.position + 1, parm.name, parm.type)]
+                    lines += [insert_entry_template.format(edd_fp_id, parm.position + 1, parm.name, parm.typeobj.type_text)]
 
             # Only put actual definition here if no parmspec
             if not parmspec:
@@ -581,7 +581,7 @@ class Writer(AbstractWriter):
 
         # Parameter types of referenced object, if there are any
         types = (
-            [parm.type for parm in found_ref.parameters.items]
+            [parm.typeobj.type_text for parm in found_ref.parameters.items]
             if hasattr(found_ref, 'parmspec') and found_ref.parmspec
             else []
         )
@@ -731,7 +731,7 @@ class Writer(AbstractWriter):
                 fp_spec_id = self._var_name("fp_spec_id")
                 lines += [insert_formal_parmspec_template.format(len(parmspec), ctrl_name, fp_spec_id, ctrl_id)]
                 for parm in parmspec:
-                    lines += [insert_entry_template.format(fp_spec_id, parm.position + 1, parm.name, parm.type)]
+                    lines += [insert_entry_template.format(fp_spec_id, parm.position + 1, parm.name, parm.typeobj.type_text)]
             else:
                 fp_spec_id = "null"
 
@@ -763,7 +763,7 @@ class Writer(AbstractWriter):
             lines += [
                 "",
                 insert_obj_template.format(c_name, const_id),
-                insert_const_actual_def_template.format(const_id, c_desc, obj.typeobj, obj.value, const_act_id),
+                insert_const_actual_def_template.format(const_id, c_desc, obj.typeobj, obj.init_value, const_act_id),
             ]
 
         return lines
@@ -825,7 +825,7 @@ class Writer(AbstractWriter):
                 fp_spec_id = self._var_name("fp_spec_id")
                 lines += [insert_formal_parmspec_template.format(len(parmspec), mac_name, fp_spec_id)]
                 for parm in parmspec:
-                    lines += [insert_ac_formal_parmspec_entry_template.format(fp_spec_id, parm.position + 1, parm.name, parm.type)]
+                    lines += [insert_ac_formal_parmspec_entry_template.format(fp_spec_id, parm.position + 1, parm.name, parm.typeobj.type_text)]
 
                 lines += [insert_ac_id_template.format(num_parmspec, mac_name)]
 
