@@ -456,7 +456,7 @@ def write_init_var_function(c_file, adm, g_var_idx, mgr):
     for obj in adm.var:
         # Preliminaries
         ari      = cu.make_ari_name(adm.norm_name, cs.VAR, obj)
-        amp_type = cu.make_amp_type_name_from_str(obj.type)
+        amp_type = cu.make_amp_type_name_from_str(obj.typeobj)
 
         var_name    = obj.name
         description = obj.description or ''

@@ -762,7 +762,7 @@ class Writer(AbstractWriter):
             lines += [
                 "",
                 insert_obj_template.format(c_name, const_id),
-                insert_const_actual_def_template.format(const_id, c_desc, obj.type, obj.value, const_act_id),
+                insert_const_actual_def_template.format(const_id, c_desc, obj.typeobj, obj.value, const_act_id),
             ]
 
         return lines

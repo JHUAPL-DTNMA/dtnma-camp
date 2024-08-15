@@ -140,7 +140,7 @@ class Writer(AbstractWriter, CHelperMixin):
             try:
                 # Gather all of the pieces of data we need
                 ari      = cu.make_ari_name(self.adm.norm_name, coll_type, obj)
-                amp_type = cu.make_amp_type_name_from_str(obj.type)
+                amp_type = cu.make_amp_type_name_from_str(obj.typeobj)
                 paramspec = getattr(obj, 'parmspec', None)
                 parms    = paramspec.items if paramspec else []
 
@@ -204,7 +204,7 @@ class Writer(AbstractWriter, CHelperMixin):
         for obj in self.adm.ident:
             # Preliminary; gather all of the pieces of data we need
             ari      = cu.make_ari_name(self.adm.norm_name, cs.META, obj)
-            amp_type = cu.make_amp_type_name_from_str(obj.type)
+            amp_type = cu.make_amp_type_name_from_str(obj.typeobj)
 
             # format the meta_add_.* template for this item
             meta_add_str = meta_add_template.format(amp_type, obj.name, obj.description)
