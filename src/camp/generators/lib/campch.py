@@ -663,15 +663,15 @@ def write_init_function(c_file, adm: ace.models.AdmModule, g_var_idx: str, mgr: 
 
     # order of init functions matters
     obj_types = {
-        cs.META: 'mdat',
+        # cs.META: 'mdat',
         cs.CONST: 'const',
         cs.EDD: 'edd',
         cs.OP: 'oper',
         cs.VAR: 'var',
         cs.CTRL: 'ctrl',
-        cs.MACRO: 'mac',
-        cs.RPTT: 'rptt',
-        cs.TBLT: 'tblt',
+        # cs.MACRO: 'mac',
+        # cs.RPTT: 'rptt',
+        # cs.TBLT: 'tblt',
     }
 
     init_decls = ""
