@@ -76,9 +76,9 @@ class Writer(AbstractWriter, CHelperMixin):
         self.write_init_ops(outfile)
         self.write_init_variables_function(outfile)
         self.write_init_controls_function(outfile)
-        self.write_init_macros(outfile)
-        self.write_init_reports(outfile)
-        self.write_init_tables(outfile)
+        # self.write_init_macros(outfile)
+        # self.write_init_reports(outfile)
+        # self.write_init_tables(outfile)
 
     #
     # Writes all of the #includes for this file

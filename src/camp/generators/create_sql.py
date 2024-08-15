@@ -78,7 +78,7 @@ class Writer(AbstractWriter):
         self._vars_use = set()
 
         # The first half of the namespace
-        ns = self.adm.norm_namespace
+        ns = self.adm.norm_name
         hl_ns = ns.split('/')[0].lower()
         self._sql_ns = self._var_name(f"{hl_ns}_namespace_id")
 
@@ -97,11 +97,11 @@ class Writer(AbstractWriter):
         body += self.write_edd_functions()
         body += self.write_oper_functions()
         body += self.write_var_functions()
-        body += self.write_tblt_functions()
-        body += self.write_rptt_functions()
+        # body += self.write_tblt_functions()
+        # body += self.write_rptt_functions()
         body += self.write_ctrl_functions()
         body += self.write_const_functions()
-        body += self.write_mac_functions()
+        # body += self.write_mac_functions()
 
         head += self.body_pre()
         body += self.body_post()
@@ -138,7 +138,7 @@ class Writer(AbstractWriter):
         :param item: object to make the IDs for.
         :return: the augmented ARI text.
         '''
-        ns = self.adm.norm_namespace
+        ns = self.adm.norm_name
         ari = cu.make_ari_name(ns, coll, item).lower()
         return ari
 
@@ -284,7 +284,7 @@ class Writer(AbstractWriter):
             "--",
             "-- -------------------------------------------------------------------",
             "",
-            "-- ADM: '{}'".format(self.adm.norm_namespace),
+            "-- ADM: '{}'".format(self.adm.norm_name),
             "",
         ]
 

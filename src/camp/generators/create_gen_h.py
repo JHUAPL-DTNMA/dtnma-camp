@@ -55,11 +55,11 @@ class Writer(AbstractWriter, CHelperMixin):
 
         self.write_edd_definitions(outfile)
         self.write_variable_definitions(outfile)
-        self.write_rptt_definitions(outfile)
-        self.write_tblt_definitions(outfile)
+        # self.write_rptt_definitions(outfile)
+        # self.write_tblt_definitions(outfile)
         self.write_ctrl_definitions(outfile)
         self.write_const_definitions(outfile)
-        self.write_macro_definitions(outfile)
+        # self.write_macro_definitions(outfile)
         self.write_op_definitions(outfile)
 
         self.write_initialization_functions(outfile)

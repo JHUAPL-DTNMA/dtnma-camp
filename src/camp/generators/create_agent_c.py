@@ -57,9 +57,9 @@ class Writer(AbstractWriter, CHelperMixin):
         self.write_init_op_function(outfile)
         self.write_init_var_function(outfile)
         self.write_init_control_function(outfile)
-        self.write_init_macro_function(outfile)
-        self.write_init_reports_function(outfile)
-        self.write_init_tables_function(outfile)
+        # self.write_init_macro_function(outfile)
+        # self.write_init_reports_function(outfile)
+        # self.write_init_tables_function(outfile)
 
     #
     # Writes all of the #includes for this c file
