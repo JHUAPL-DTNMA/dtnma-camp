@@ -455,7 +455,7 @@ class Writer(AbstractWriter, CHelperMixin):
             hex_str = format(obj.enum, '#04x')
             ari_str = cu.make_ari_name(self.adm.norm_name,  cs.OP, obj)
 
-            table   = table   + self.format_table_entry(False, obj.name, obj.description, obj.result_type, "")
+            table   = table   + self.format_table_entry(False, obj.name, obj.description, obj.result.typeobj, "")
             defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
 
         # write everything to file
