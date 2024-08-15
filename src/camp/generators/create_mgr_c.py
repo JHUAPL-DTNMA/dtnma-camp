@@ -322,7 +322,7 @@ class Writer(AbstractWriter, CHelperMixin):
         for obj in self.adm.ctrl:
             # Gather the pieces of data that we need
             ari   = cu.make_ari_name(self.adm.norm_name, cs.CTRL, obj)
-            parms = obj.parmspec.items if obj.parmspec else []
+            parms = obj.parameters.items if obj.parameters else []
 
             # Format the meta_add_.* template for this item
             meta_str = meta_add_template.format(obj.name, obj.description)
@@ -341,7 +341,7 @@ class Writer(AbstractWriter, CHelperMixin):
             body += "\n\t" + meta_str
 
             for parm in parms:
-                parm_type = cu.make_amp_type_name_from_str(parm.type)
+                parm_type = cu.make_amp_type_name_from_str(parm.typeobj.type_text)
                 body += add_parm_template.format(parm.name, parm_type)
 
             added_coll = True

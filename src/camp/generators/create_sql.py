@@ -384,7 +384,7 @@ class Writer(AbstractWriter):
             name = edd.name
             etype = edd.type
             desc = escape_description_sql(edd.description)
-            parmspec = edd.parmspec.items if edd.parmspec else []
+            parmspec = edd.parameters.items if edd.parameters else []
             num_parmspec = len(parmspec)
             lines += [
                 "",
@@ -580,7 +580,7 @@ class Writer(AbstractWriter):
 
         # Parameter types of referenced object, if there are any
         types = (
-            [parm.type for parm in found_ref.parmspec.items]
+            [parm.type for parm in found_ref.parameters.items]
             if hasattr(found_ref, 'parmspec') and found_ref.parmspec
             else []
         )
@@ -718,7 +718,7 @@ class Writer(AbstractWriter):
         for ctrl in self.adm.ctrl:
             ctrl_name = ctrl.name
             ctrl_desc = escape_description_sql(ctrl.description)
-            parmspec = ctrl.parmspec.items if ctrl.parmspec else []
+            parmspec = ctrl.parameters.items if ctrl.parameters else []
 
             ctrl_id, ctrl_def_id, ctrl_act_id = self.make_sql_ids(self._make_ari(cs.CTRL, ctrl))
             lines += [

@@ -173,7 +173,7 @@ class Writer(AbstractWriter, CHelperMixin):
             _,fname,_ = campch.make_collect_function(self.adm, obj)
             ari       = cu.make_ari_name(self.adm.norm_name, cs.EDD, obj)
 
-            if obj.parmspec and obj.parmspec.items:
+            if obj.parameters and obj.parameters.items:
                 parms_tf = "1"
 
             body += add_str.format(parms_tf, ari, fname)
@@ -194,7 +194,7 @@ class Writer(AbstractWriter, CHelperMixin):
 
         for obj in self.adm.oper:
             ari      = cu.make_ari_name(self.adm.norm_name, cs.OP, obj)
-            in_types = obj.in_type if obj.in_type else []
+            in_types = obj.operands.items if obj.operands.items else []
 
             body += adm_add_op_template.format(ari, len(in_types), ari.lower())
 
@@ -221,7 +221,7 @@ class Writer(AbstractWriter, CHelperMixin):
 
         for obj in self.adm.ctrl:
             ari = cu.make_ari_name(self.adm.norm_name, cs.CTRL, obj)
-            parms = obj.parmspec.items if obj.parmspec else []
+            parms = obj.parameters.items if obj.parameters else []
             body += adm_add_template.format(ari, len(parms), ari.lower())
 
         campch.write_formatted_init_function(outfile, self.adm.norm_name, cs.CTRL, body)
