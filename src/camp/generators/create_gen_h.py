@@ -139,7 +139,7 @@ class Writer(AbstractWriter, CHelperMixin):
 
         ns = self.c_norm_name.upper()
         enum_name = cu.make_enum_name_from_str(ns)
-        outfile.write("#define {0} {1}\n".format(enum_name, self.c_norm_name))
+        outfile.write("#define {0} {1}\n".format(enum_name, self.adm.enum))
 
     #
     # Function for formatting the description field in the tables.
@@ -292,14 +292,15 @@ class Writer(AbstractWriter, CHelperMixin):
         defines = ""  # the #defines and for all metadata (string)
 
         # Create the strings for the #defines and preceeding commented table
+        enum = 0
         for obj in self.adm.metadata_list.items:
-            #hex_str = format(obj.enum, '#04x')
+            hex_str = format(enum, '#04x')
             ari_str = cu.make_ari_name(self.c_norm_name, cs.META, obj)
 
             table   = table   + self.format_table_entry(False, obj.name, ari_str, obj.name, obj.arg)#obj.description, obj.type, obj.value)
 
-            defines = defines + "// \"{}\"\n".format(obj.name)
-            #defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
+            defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
+            enum += 1
 
         # Write everything to file
         self.write_definition_table_header(outfile, f"{self.c_norm_name.upper()} META-DATA DEFINITIONS", True)
