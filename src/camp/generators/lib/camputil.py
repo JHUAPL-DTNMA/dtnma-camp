@@ -72,7 +72,10 @@ def make_ari_name(name, coll, item):
 # t_name is the name of the type
 #
 def make_amp_type_name_from_str(t_name):
-    return "AMP_TYPE_{}".format(t_name.upper())
+    # return "AMP_TYPE_{}".format(t_name.upper())
+    
+    # TODO type fixes
+    return "AMP_TYPE_UNK"
 
 #
 # Makes and returns the adm enum type string for the passed
