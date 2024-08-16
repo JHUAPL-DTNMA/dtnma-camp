@@ -192,7 +192,7 @@ def make_formatted_comment_header(name, c_open, c_close):
 #
 def make_collect_function(adm, edd):
     basename = "get_{}".format(edd.name.lower())
-    fullname = "{0}_{1}".format(adm.norm_name.lower(), basename)
+    fullname = "{0}_{1}".format(cu.yang_to_c(adm.norm_name).lower(), basename)
     signature = "tnv_t *{}(tnvc_t *parms)".format(fullname)
     return basename, fullname, signature
 
@@ -203,7 +203,7 @@ def make_collect_function(adm, edd):
 def make_meta_function(adm, meta):
     keyword = cs.get_sname(cs.META)
     basename = "{0}_{1}".format(keyword, meta.name.lower())
-    fullname = "{0}_{1}".format(adm.norm_name.lower(), basename)
+    fullname = "{0}_{1}".format(cu.yang_to_c(adm.norm_name).lower(), basename)
     signature = "tnv_t *{}(tnvc_t *parms)".format(fullname)
     return basename, fullname, signature
 
@@ -214,7 +214,7 @@ def make_meta_function(adm, meta):
 def make_constant_function(adm, const):
     keyword = "get"
     basename = "{0}_{1}".format(keyword, const.name.lower())
-    fullname = "{0}_{1}".format(adm.norm_name.lower(), basename)
+    fullname = "{0}_{1}".format(cu.yang_to_c(adm.norm_name).lower(), basename)
     signature = "tnv_t *{}(tnvc_t *parms)".format(fullname)
     return basename, fullname, signature
 
@@ -225,7 +225,7 @@ def make_constant_function(adm, const):
 def make_control_function(adm, control):
     keyword = cs.get_sname(cs.CTRL)
     basename = "{0}_{1}".format(keyword, control.name.lower())
-    fullname = "{0}_{1}".format(adm.norm_name.lower(), basename)
+    fullname = "{0}_{1}".format(cu.yang_to_c(adm.norm_name).lower(), basename)
     signature = "tnv_t *{}(eid_t *def_mgr, tnvc_t *parms, int8_t *status)".format(fullname)
     return basename, fullname, signature
 
@@ -236,7 +236,7 @@ def make_control_function(adm, control):
 def make_operator_function(adm, op):
     keyword = cs.get_sname(cs.OP)
     basename = "{0}_{1}".format(keyword, op.name.lower())
-    fullname = "{0}_{1}".format(adm.norm_name.lower(), basename)
+    fullname = "{0}_{1}".format(cu.yang_to_c(adm.norm_name).lower(), basename)
     signature = "tnv_t *{}(vector_t *stack)".format(fullname)
     return basename, fullname, signature
 
@@ -247,7 +247,7 @@ def make_operator_function(adm, op):
 def make_table_function(adm, tbl):
     keyword = cs.get_sname(cs.TBLT)
     basename = "{0}_{1}".format(keyword, tbl.name.lower())
-    fullname = "{0}_{1}".format(adm.norm_name.lower(), basename)
+    fullname = "{0}_{1}".format(cu.yang_to_c(adm.norm_name).lower(), basename)
     signature = "tbl_t *{}(ari_t *id)".format(fullname)
     return basename, fullname, signature
 
@@ -357,13 +357,13 @@ def write_init_macro_function(c_file, adm, g_var_idx, mgr):
     adm_add_macdef_str     = "\n\tadm_add_macdef(def);"
     meta_add_parm_template = "\n\tmeta_add_parm(meta, \"{0}\", {1});"
 
-    enum_name = cu.make_enum_name_from_str(adm.norm_name)
+    enum_name = cu.make_enum_name_from_str(cu.yang_to_c(adm.norm_name))
     meta_add_macro_template = "\n\tmeta = meta_add_macro" + "(def->ari, " + enum_name + ", \"{0}\", \"{1}\");"
     build_ari_str_template  = make_adm_build_ari_template(cs.MACRO, g_var_idx, False)
 
     for obj in adm.mac:
         # Preliminaries
-        ari = cu.make_ari_name(adm.norm_name, cs.MACRO, obj)
+        ari = cu.make_ari_name(cu.yang_to_c(adm.norm_name), cs.MACRO, obj)
         mac_name    = obj.name
         description = obj.description or ''
 
@@ -410,7 +410,7 @@ def write_init_macro_function(c_file, adm, g_var_idx, mgr):
     if added_meta:
         body = meta_decl_str + body
 
-    write_formatted_init_function(c_file, adm.norm_name, cs.MACRO, body)
+    write_formatted_init_function(c_file, cu.yang_to_c(adm.norm_name), cs.MACRO, body)
 
 # Builds a template for the
 # ```
@@ -448,14 +448,14 @@ def write_init_var_function(c_file, adm, g_var_idx, mgr):
     # gives you the adm_build_ari(...)
     build_str_template = "\n" + make_adm_build_ari_template(cs.VAR, g_var_idx, True)
     # gives you the meta_add_var(... )
-    meta_add_template = make_std_meta_add_coll_template(cs.VAR, adm.norm_name)
+    meta_add_template = make_std_meta_add_coll_template(cs.VAR, cu.yang_to_c(adm.norm_name))
 
     added_coll = False
     added_expr = False
 
     for obj in adm.var:
         # Preliminaries
-        ari      = cu.make_ari_name(adm.norm_name, cs.VAR, obj)
+        ari      = cu.make_ari_name(cu.yang_to_c(adm.norm_name), cs.VAR, obj)
         amp_type = cu.make_amp_type_name_from_str(obj.typeobj.type_text)
 
         var_name    = obj.name
@@ -503,7 +503,7 @@ def write_init_var_function(c_file, adm, g_var_idx, mgr):
     if added_coll:
         body = coll_decl_str + body
 
-    write_formatted_init_function(c_file, adm.norm_name, cs.VAR, body)
+    write_formatted_init_function(c_file, cu.yang_to_c(adm.norm_name), cs.VAR, body)
 
 
 #
@@ -527,7 +527,7 @@ def write_parameterized_init_reports_function(c_file, adm, g_var_idx, mgr):
     add_item_template = "\n\trpttpl_add_item(def, {});"
     adm_add_str       = "\n\tadm_add_rpttpl(def);"
 
-    enum_name = cu.make_enum_name_from_str(adm.norm_name)
+    enum_name = cu.make_enum_name_from_str(cu.yang_to_c(adm.norm_name))
     meta_add_rpt_template  = "meta_add_rpttpl(def->id, " + enum_name + ", \"{0}\", \"{1}\");"
     meta_add_parm_template = "\n\tmeta_add_parm(meta, \"{0}\", {1});"
 
@@ -536,7 +536,7 @@ def write_parameterized_init_reports_function(c_file, adm, g_var_idx, mgr):
         rpt_name    = obj.name
         description = obj.description or ''
 
-        ari    = cu.make_ari_name(adm.norm_name, cs.RPTT, obj)
+        ari    = cu.make_ari_name(cu.yang_to_c(adm.norm_name), cs.RPTT, obj)
         params = obj.parmspec.items if obj.parmspec else []
         defs   = obj.definition.items if obj.definition else []
 
@@ -589,7 +589,7 @@ def write_parameterized_init_reports_function(c_file, adm, g_var_idx, mgr):
     if added_meta:
         body = meta_decl_str + body
 
-    write_formatted_init_function(c_file, adm.norm_name, cs.RPTT, body)
+    write_formatted_init_function(c_file, cu.yang_to_c(adm.norm_name), cs.RPTT, body)
 
 #
 # Writes the init_tables funtion for the passed adm name and
@@ -601,7 +601,7 @@ def write_init_tables_function(c_file, adm, g_var_idx, mgr):
     tbl_create_template = "\n\tdef = tblt_create({0}, {1});"
 
     build_ari_template = make_adm_build_ari_template(cs.TBLT, g_var_idx, False)
-    enum_name = cu.make_enum_name_from_str(adm.norm_name)
+    enum_name = cu.make_enum_name_from_str(cu.yang_to_c(adm.norm_name))
 
     add_tblt_str      = "\n\tadm_add_tblt(def);"
     meta_add_template = "\n\tmeta_add_tblt(def->id, " + enum_name + ", \"{0}\", \"{1}\");"
@@ -611,7 +611,7 @@ def write_init_tables_function(c_file, adm, g_var_idx, mgr):
 
     for obj in adm.tblt:
         # Preliminaries
-        ari = cu.make_ari_name(adm.norm_name, cs.TBLT, obj)
+        ari = cu.make_ari_name(cu.yang_to_c(adm.norm_name), cs.TBLT, obj)
         tbl_name    = obj.name
         description = obj.description or ''
 
@@ -648,18 +648,18 @@ def write_init_tables_function(c_file, adm, g_var_idx, mgr):
     if added_table:
         body = tbl_decl_str + body
 
-    write_formatted_init_function(c_file, adm.norm_name, cs.TBLT, body)
+    write_formatted_init_function(c_file, cu.yang_to_c(adm.norm_name), cs.TBLT, body)
 
 #
 # Writes the init function to c_file
 #
 def write_init_function(c_file, adm: ace.models.AdmModule, g_var_idx: str, mgr: bool):
-    enum_name = cu.make_enum_name_from_str(adm.norm_name)
+    enum_name = cu.make_enum_name_from_str(cu.yang_to_c(adm.norm_name))
 
-    vdb_adds            = "\tadm_add_adm_info(\"" + adm.norm_name + "\", " + enum_name + ");\n"
+    vdb_adds            = "\tadm_add_adm_info(\"" + cu.yang_to_c(adm.norm_name) + "\", " + enum_name + ");\n"
     vdb_add_template    = "\n\tVDB_ADD_NN(((" + enum_name + " * 20) + {0}), &({1}[{0}]));"
-    init_decl_template = "static void " + adm.norm_name + "_init_{0}(void);\n"
-    init_call_template = "\n\t" + adm.norm_name + "_init_{0}();"
+    init_decl_template = "static void " + cu.yang_to_c(adm.norm_name) + "_init_{0}(void);\n"
+    init_call_template = "\n\t" + cu.yang_to_c(adm.norm_name) + "_init_{0}();"
 
     # order of init functions matters
     obj_types = {
@@ -677,7 +677,7 @@ def write_init_function(c_file, adm: ace.models.AdmModule, g_var_idx: str, mgr: 
     init_decls = ""
     init_calls = ""
     if not mgr:
-        init_calls = "\n\t" + adm.norm_name + "_setup();"
+        init_calls = "\n\t" + cu.yang_to_c(adm.norm_name) + "_setup();"
 
     for coll, attrname in obj_types.items():
         init_decls += init_decl_template.format(cs.get_sname(coll).lower())
@@ -691,7 +691,7 @@ def write_init_function(c_file, adm: ace.models.AdmModule, g_var_idx: str, mgr: 
     body = vdb_adds + "\n\n" + init_calls
 
     c_file.write(init_decls + "\n")
-    write_formatted_init_function(c_file, adm.norm_name, None, body)
+    write_formatted_init_function(c_file, cu.yang_to_c(adm.norm_name), None, body)
 
 def make_cplusplus_open():
     ''' Open an "extern C" block for C++ inclusion. '''

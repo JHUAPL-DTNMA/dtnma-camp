@@ -40,17 +40,19 @@ class Writer(AbstractWriter, CHelperMixin):
     def __init__(self, admset, adm, out_path, scrape: bool):
         super().__init__(admset, adm, out_path)
 
+        self.c_norm_name = cu.yang_to_c(self.adm.norm_name)
+
         full_path = self.file_path()
         scrape_src = full_path if scrape and os.path.exists(full_path) else None
         self._scraper = H_Scraper(scrape_src)
 
     def file_path(self) -> str:
         # Interface for AbstractWriter
-        return os.path.join(self.out_path, "agent", f"adm_{self.adm.norm_name}_impl.h")
+        return os.path.join(self.out_path, "agent", f"adm_{self.c_norm_name}_impl.h")
 
     def write(self, outfile: TextIO):
         # Interface for AbstractWriter
-        campch.write_h_file_header(outfile, f"adm_{self.adm.norm_name}_impl.h")
+        campch.write_h_file_header(outfile, f"adm_{self.c_norm_name}_impl.h")
 
         self.write_defines(outfile)
 
@@ -67,8 +69,8 @@ class Writer(AbstractWriter, CHelperMixin):
         self._scraper.write_custom_functions(outfile)
 
         # The setup and clean up functions
-        outfile.write(f"void {self.adm.norm_name}_setup();\n")
-        outfile.write(f"void {self.adm.norm_name}_cleanup();\n\n")
+        outfile.write(f"void {self.c_norm_name}_setup();\n")
+        outfile.write(f"void {self.c_norm_name}_cleanup();\n\n")
 
         self.write_metadata_functions(outfile)
         self.write_constant_functions(outfile)
@@ -86,7 +88,7 @@ class Writer(AbstractWriter, CHelperMixin):
     # name is the name returned from get_adm_names()
     #
     def write_defines(self, outfile):
-        name_upper = self.adm.norm_name.upper()
+        name_upper = self.c_norm_name.upper()
         define_str = """\
 #ifndef ADM_{0}_IMPL_H_
 #define ADM_{0}_IMPL_H_
@@ -95,7 +97,7 @@ class Writer(AbstractWriter, CHelperMixin):
         outfile.write(define_str.format(name_upper))
 
     def write_endifs(self, outfile):
-        name_upper = self.adm.norm_name.upper()
+        name_upper = self.c_norm_name.upper()
         endifs_str = """\
 
 #endif /* ADM_{0}_IMPL_H_ */

@@ -39,23 +39,25 @@ class Writer(AbstractWriter, CHelperMixin):
     def __init__(self, admset, adm, out_path, scrape: bool):
         super().__init__(admset, adm, out_path)
 
+        self.c_norm_name = cu.yang_to_c(self.adm.norm_name)
+
         full_path = self.file_path()
         scrape_src = full_path if scrape and os.path.exists(full_path) else None
         self._scraper = C_Scraper(scrape_src)
 
     def file_path(self) -> str:
         # Interface for AbstractWriter
-        return os.path.join(self.out_path, "agent", f"adm_{self.adm.norm_name}_impl.c")
+        return os.path.join(self.out_path, "agent", f"adm_{self.c_norm_name}_impl.c")
 
     def write(self, outfile: TextIO):
         # Interface for AbstractWriter
-        campch.write_c_file_header(outfile, f"adm_{self.adm.norm_name}_impl.c")
+        campch.write_c_file_header(outfile, f"adm_{self.c_norm_name}_impl.c")
 
         # Custom includes tag
         self._scraper.write_custom_includes(outfile)
         outfile.write(campch.make_includes([
             "shared/adm/adm.h",
-            "adm_{}_impl.h".format(self.adm.norm_name.lower())
+            "adm_{}_impl.h".format(self.c_norm_name.lower())
         ]))
 
         # Add any custom functions scraped
@@ -78,7 +80,7 @@ class Writer(AbstractWriter, CHelperMixin):
     # scraper is the Scraper class object for this ADM
     #
     def write_setup(self, outfile):
-        outfile.write("void {}_setup()\n{{\n\n".format(self.adm.norm_name))
+        outfile.write("void {}_setup()\n{{\n\n".format(self.c_norm_name))
 
         self._scraper.write_custom_body(outfile, "setup")
 
@@ -91,7 +93,7 @@ class Writer(AbstractWriter, CHelperMixin):
     # scraper is the Scraper class object for this ADM
     #
     def write_cleanup(self, outfile):
-        outfile.write("void {}_cleanup()\n{{\n\n".format(self.adm.norm_name))
+        outfile.write("void {}_cleanup()\n{{\n\n".format(self.c_norm_name))
 
         self._scraper.write_custom_body(outfile, "cleanup")
 

@@ -80,3 +80,10 @@ def make_amp_type_name_from_str(t_name):
 #
 def make_enum_name_from_str(name):
     return "ADM_ENUM_{}".format(name.upper())
+
+#
+# Translates a valid YANG identifier to a valid C99 fragment
+# identifier is a valid YANG identifier
+#
+def yang_to_c(identifier):
+    return identifier.replace('_','__').replace('-','_').replace('.','_p_')
