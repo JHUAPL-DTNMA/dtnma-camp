@@ -68,7 +68,6 @@ class Writer(AbstractWriter, CHelperMixin):
 
         self.write_metadata_functions(outfile)
         self.write_constant_functions(outfile)
-        # self.write_table_functions(outfile)
         self.write_edd_functions(outfile)
         self.write_control_functions(outfile)
         self.write_operator_functions(outfile)

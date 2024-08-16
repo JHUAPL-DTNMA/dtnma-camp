@@ -58,7 +58,7 @@ class Writer(AbstractWriter, CHelperMixin):
         self.write_metadata_definitions(outfile)
 
         self.write_edd_definitions(outfile)
-        # self.write_variable_definitions(outfile)
+        self.write_variable_definitions(outfile)
         self.write_ctrl_definitions(outfile)
         self.write_const_definitions(outfile)
         self.write_op_definitions(outfile)

@@ -77,7 +77,6 @@ class Writer(AbstractWriter, CHelperMixin):
         self.write_collect_functions(outfile)
         self.write_control_functions(outfile)
         self.write_operator_functions(outfile)
-        # self.write_table_functions(outfile)
 
         outfile.write(campch.make_cplusplus_close())
         self.write_endifs(outfile)
