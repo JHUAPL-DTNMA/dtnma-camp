@@ -116,8 +116,9 @@ class Writer(AbstractWriter, CHelperMixin):
             "\n\n")
 
         for obj in self.adm.metadata_list.items:
+            val = cu.sanitize_newlines(obj.arg)
             _,_,signature = campch.make_meta_function(self.adm, obj)
-            outfile.write(metadata_funct_str.format(signature, obj.arg))
+            outfile.write(metadata_funct_str.format(signature, val))
 
     #
     # Writes the constant functions to the file passed

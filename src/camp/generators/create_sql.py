@@ -335,7 +335,7 @@ class Writer(AbstractWriter):
         return lines
 
     def write_metadata_function(self):
-        ''' Genreate lines for the ADM metadata
+        ''' Generate lines for the ADM metadata
         '''
         # format with org, namespace, version, name, description from namespace, ns from get_highlevel_ns
         meta_template = "CALL SP__insert_adm_defined_namespace('{}', '{}', '{}', '{}', {}, NULL, '{}', {});"
