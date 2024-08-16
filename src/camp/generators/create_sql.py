@@ -97,11 +97,8 @@ class Writer(AbstractWriter):
         body += self.write_edd_functions()
         body += self.write_oper_functions()
         # body += self.write_var_functions()
-        # body += self.write_tblt_functions()
-        # body += self.write_rptt_functions()
         body += self.write_ctrl_functions()
         body += self.write_const_functions()
-        # body += self.write_mac_functions()
 
         head += self.body_pre()
         body += self.body_post()
@@ -511,40 +508,6 @@ class Writer(AbstractWriter):
         
         return lines
 
-    def write_tblt_functions(self):
-        ''' Genreate lines for all of the TBLTs in the ADM
-        '''
-        lines = [
-            "",
-            "",
-            "-- TBLT",
-        ]
-
-        insert_obj_template = self.create_insert_obj_metadata_template(cs.TBLT)
-
-        # Format with table object id (above), table description, tblt definition id
-        insert_def_template = "CALL SP__insert_table_template_actual_definition({}, '{}', " + self._var_name("tbl_tnvc_id") + ", {});"
-
-        for tblt in self.adm.tblt:
-            tblt_name = tblt.name
-            tblt_desc = escape_description_sql(tblt.description)
-
-            tblt_id, tblt_def_id, tblt_act_id = self.make_sql_ids(self._make_ari(cs.TBLT, tblt))
-            add_tnvc_coll_template,insert_column_template,_ = self.create_insert_tnvc_templates(cs.TBL, len(tblt.columns.items))
-
-            lines += [
-                "",
-                insert_obj_template.format(tblt_name, tblt_id),
-                add_tnvc_coll_template.format('columns for the '+tblt_name+' table'),
-            ]
-
-            for col in tblt.columns.items:
-                lines += [insert_column_template.format(col.type.lower(), col.position + 1, "'" + col.name + "'", col.position + 1)]
-
-            lines += [insert_def_template.format(tblt_id, tblt_desc, tblt_def_id)]
-
-        return lines
-
     def handle_report_fp_ap(self, item, lines, report_id):
         ''' Helper function to handle creation of stored procedures for the
         fps and aps within the reports templates in the ADM
@@ -642,73 +605,6 @@ class Writer(AbstractWriter):
             result = aid
 
         return result
-
-    def write_rptt_functions(self):
-        ''' Genreate lines for all of the RPTTs in the ADM
-        '''
-        lines = [
-            "",
-            "",
-            "-- RPTT",
-        ]
-
-        insert_report_template = self.create_insert_ac_id_template(cs.RPTT, "ac for report template {}")
-        insert_obj_template = self.create_insert_obj_metadata_template(cs.RPTT)
-
-        # Format with entry id name and enum of entry
-        insert_entry_template = "CALL SP__insert_ac_actual_entry(" + self._var_name("rptt_ac_id") + ", {0}, {1}, " + self._var_name("r_ac_rpt_entry_", None) + "{1});"
-
-        # Format with report id, report description, report_def_id
-        insert_formal_def_template = "CALL SP__insert_report_template_formal_definition({}, '{}', {}, " + self._var_name("rptt_ac_id") + ", {});"
-        # Format with report id, report name
-        insert_actual_def_template = "CALL SP__insert_report_actual_definition({0}, null, null, 'Singleton value for {1}', {2});"
-        for rptt in self.adm.rptt:
-            report_name = rptt.name
-            report_desc = escape_description_sql(rptt.description)
-            definitions = rptt.definition.items if rptt.definition else []
-            parmspec = rptt.parameters.items if rptt.parameters else []
-
-            report_id, report_def_id, report_act_id = self.make_sql_ids(self._make_ari(cs.RPTT, rptt))
-
-            lines +=  [
-                "",
-                insert_obj_template.format(report_name, report_id),
-            ]
-
-            # For each definition in the rptt template
-            defn_lines = [
-                insert_report_template.format(len(definitions), report_name, report_id),
-            ]
-            for item in definitions:
-                item_id = self.handle_report_fp_ap(item, lines, report_id)
-
-                # preallocate names
-                self._var_name(item_id, False)
-                self._var_name(f"r_ac_rpt_entry_{item.position + 1}")
-                # Keeping this in a separate list because it has to happen
-                # after all of the calls to handle_report_fp_ap()
-                defn_lines += [insert_entry_template.format(item_id, item.position + 1)]
-
-            lines += defn_lines
-
-            # check if has formal parameter
-            if parmspec:
-                fp_spec_id = self._var_name("fp_spec_id")
-            else:
-                fp_spec_id = "null"
-
-            self._var_name(report_def_id)
-            lines += [
-                "",
-                insert_formal_def_template.format(report_id, report_desc, fp_spec_id, report_def_id),
-                ]
-            if not parmspec:
-                lines += [
-                    "",
-                    insert_actual_def_template.format(report_id, report_name, report_act_id),
-                ]
-
-        return lines
 
     def write_ctrl_functions(self):
         ''' Genreate lines for all of the CTRLs in the ADM
@@ -812,60 +708,6 @@ class Writer(AbstractWriter):
                 #using metadata keyword for type
                 insert_const_actual_def_template.format(const_id, c_desc, obj.name, obj.arg, const_act_id),
             ]
-
-        return lines
-
-
-    def write_mac_functions(self):
-        ''' Genreate lines for all of the MACs in the ADM
-        '''
-        lines = [
-            "",
-            "",
-            "-- MAC",
-        ]
-
-        insert_obj_template = self.create_insert_obj_metadata_template(cs.MACRO)
-        insert_formal_parmspec_template, insert_ac_formal_parmspec_entry_template = self.create_insert_formal_parmspec_templates("parms for the {} macro")
-        insert_ac_id_template = self.create_insert_ac_id_template(cs.MACRO, "ac for {} macro")
-
-        # Format with def id, def enumeration in this macro
-        insert_ac_formal_entry_template = "CALL SP__insert_ac_formal_entry(" + self._var_name("mac_ac_id") + ", {}, {}, " + self._var_name("r_ac_entry_id") + ");"
-
-        # Format with mac id, description, fp_spec_id, number of parmspec (?), and mac def id
-        insert_mac_formal_def_template = "\nCALL SP__insert_macro_formal_definition({}, '{}', {}, {}, " + self._var_name("mac_ac_id") + ", {});"
-
-        for mac in self.adm.mac:
-            mac_name = mac.name
-            mac_desc = escape_description_sql(mac.description)
-            parmspec = mac.parameters.items if mac.parameters else []
-            num_parmspec = len(parmspec)
-            definition = mac.action.items if mac.action else []
-
-            mac_id, mac_def_id, mac_act_id = self.make_sql_ids(self._make_ari(cs.MACRO, m))
-            lines += [
-                "",
-                insert_obj_template.format(mac_name, mac_id),
-            ]
-
-            if parmspec:
-                fp_spec_id = self._var_name("fp_spec_id")
-                lines += [insert_formal_parmspec_template.format(len(parmspec), mac_name, fp_spec_id)]
-                for parm in parmspec:
-                    lines += [insert_ac_formal_parmspec_entry_template.format(fp_spec_id, parm.position + 1, parm.name, parm.type)]
-
-                lines += [insert_ac_id_template.format(num_parmspec, mac_name)]
-
-            for item in definition:
-                def_id,_,_,_ = self.make_definition_ids(item)
-                lines += [insert_ac_formal_entry_template.format(def_id, item.position + 1)]
-
-            #lines += [insert_mac_formal_def_template.format(mac_id, mac_desc, fp_spec_id, num_parmspec, mac_def_id)]
-            # according to the comment in all_routines.sql,
-            # num_parmspec at this line is p_max_call_depth int(10) unsigned - max call depth of the macro
-            # however, we don't know how to specify that
-            max_call_depth = 0
-            lines += [insert_mac_formal_def_template.format(mac_id, mac_desc, fp_spec_id, max_call_depth, mac_def_id)]
 
         return lines
 

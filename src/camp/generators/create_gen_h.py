@@ -59,11 +59,8 @@ class Writer(AbstractWriter, CHelperMixin):
 
         self.write_edd_definitions(outfile)
         # self.write_variable_definitions(outfile)
-        # self.write_rptt_definitions(outfile)
-        # self.write_tblt_definitions(outfile)
         self.write_ctrl_definitions(outfile)
         self.write_const_definitions(outfile)
-        # self.write_macro_definitions(outfile)
         self.write_op_definitions(outfile)
 
         self.write_initialization_functions(outfile)
@@ -354,52 +351,6 @@ class Writer(AbstractWriter, CHelperMixin):
         outfile.write(defines + "\n")
 
     #
-    # Writes the report template definitions and #defines to the file
-    # h_file is an open file descriptor to write to
-    # name and ns are the values returned by get_adm_names()
-    # templates is a list of report templates to include
-    #
-    def write_rptt_definitions(self, outfile):
-        table   = ""  # the commented table of all reports (string)
-        defines = ""  # the #defines and for all reports (string)
-
-        # Create the strings for the #defines and preceeding commented table
-        for obj in self.adm.rptt:
-            hex_str = format(obj.enum, '#04x')
-            ari_str = cu.make_ari_name(self.c_norm_name, cs.RPTT, obj)
-
-            table   = table   + self.format_table_entry(False, obj.name, obj.description, "TNVC", "")
-            defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
-
-        # Write everything to file
-        self.write_definition_table_header(outfile, f"{self.c_norm_name.upper()} REPORT DEFINITIONS", False)
-        outfile.write(table   + " */\n")
-        outfile.write(defines + "\n")
-
-    #
-    # Writes the table definitions and #defines to the file
-    # h_file is an open file descriptor to write to
-    # name and ns are the values returned by get_adm_names()
-    # tbls is a list of tabels to include
-    #
-    def write_tblt_definitions(self, outfile):
-        table   = ""  # the commented table of all tables (string)
-        defines = ""  # the #defines and for all tables (string)
-
-        # Create the strings for the #defines and preceeding commented table
-        for obj in self.adm.tblt:
-            hex_str = format(obj.enum, '#04x')
-            ari_str = cu.make_ari_name(self.c_norm_name, cs.TBLT, obj)
-
-            table   = table   + self.format_table_entry(False, obj.name, obj.description, "", "")
-            defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
-
-        # Write everything to file
-        self.write_definition_table_header(outfile, f"{self.c_norm_name.upper()} TABLE DEFINITIONS", False)
-        outfile.write(table + " */\n")
-        outfile.write(defines + "\n")
-
-    #
     # Writes the control definitions and #defines to the file
     # h_file is an open file descriptor to write to
     # name and ns are the values returned by get_adm_names()
@@ -465,29 +416,6 @@ class Writer(AbstractWriter, CHelperMixin):
 
         # write everything to file
         self.write_definition_table_header(outfile, f"{self.c_norm_name.upper()} OPERATOR DEFINITIONS", False)
-        outfile.write(table   + " */\n")
-        outfile.write(defines + "\n")
-
-    #
-    # Writes the macro definitions and #defines to the file
-    # h_file is an open file descriptor to write to
-    # name and ns are the values returned by get_adm_names()
-    # macros is a list of macros to include
-    #
-    def write_macro_definitions(self, outfile):
-        table   = ""  # the commented table of all macros (string)
-        defines = ""  # the #defines and for all macros (string)
-
-        # Create the strings for the #defines and preceeding commented table
-        for obj in self.adm.mac:
-            hex_str = format(obj.enum, '#04x')
-            ari_str = cu.make_ari_name(self.c_norm_name, cs.MACRO, obj)
-
-            table   = table   + self.format_table_entry(False, obj.name, obj.description, "mc", "")
-            defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
-
-        # write everything to file
-        self.write_definition_table_header(outfile, f"{self.c_norm_name} MACRO DEFINITIONS", False)
         outfile.write(table   + " */\n")
         outfile.write(defines + "\n")
 
