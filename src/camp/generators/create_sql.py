@@ -479,7 +479,7 @@ class Writer(AbstractWriter):
         for var in self.adm.var:
             var_name = var.name
             var_desc = escape_description_sql(var.description)
-            var_value = var.init_ari.value
+            # var_value = var.init_value
 
             var_id, _, var_act_id = self.make_sql_ids(self._make_ari(cs.VAR, var))
 
