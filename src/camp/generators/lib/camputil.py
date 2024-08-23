@@ -92,6 +92,14 @@ def yang_to_c(identifier):
     return identifier.replace('_','__').replace('-','_').replace('.','_p_')
 
 #
+# Translates a valid YANG identifier to a valid SQL identifier
+# identifier is a valid YANG identifier
+#
+def yang_to_sql(identifier):
+    return identifier.replace('_','__').replace('-','_').replace('.','_p_')
+
+
+#
 # Adds \ to the end of a new line of string
 # str is the string to be modified
 #

@@ -84,7 +84,7 @@ class Writer(AbstractWriter):
 
     def file_path(self) -> str:
         # Interface for AbstractWriter
-        return os.path.join(self.out_path, "amp-sql", "Agent_Scripts", f"adm_{self.adm.norm_name}.sql")
+        return os.path.join(self.out_path, "amp-sql", "Agent_Scripts", f"adm_{cu.yang_to_sql(self.adm.norm_name)}.sql")
 
     def write(self, outfile: TextIO):
         # Interface for AbstractWriter
@@ -135,7 +135,7 @@ class Writer(AbstractWriter):
         :param item: object to make the IDs for.
         :return: the augmented ARI text.
         '''
-        ns = str(self.adm.norm_name).upper()
+        ns = cu.yang_to_sql(self.adm.norm_name).upper()
         ari = cu.make_ari_name(ns, coll, item).lower()
         return ari
 
@@ -177,7 +177,7 @@ class Writer(AbstractWriter):
 
         # convert to object type enumeration to decimal for function
         obj_type_enum = str(int(cs.ari_type_enum(obj_type), 16))
-        formatted = general_template.format(obj_type_enum, "{}", self.adm.norm_name, "{}")#self._sql_ns, "{}")
+        formatted = general_template.format(obj_type_enum, "{}", cu.yang_to_sql(self.adm.norm_name), "{}")#self._sql_ns, "{}")
         return formatted
 
 
@@ -266,7 +266,7 @@ class Writer(AbstractWriter):
         lines = [
             "-- -------------------------------------------------------------------",
             "--",
-            "-- File Name: adm_{}.sql".format(self.adm.norm_name),
+            "-- File Name: adm_{}.sql".format(cu.yang_to_sql(self.adm.norm_name)),
             "--",
             "-- Description: TODO",
             "--",
@@ -281,7 +281,7 @@ class Writer(AbstractWriter):
             "--",
             "-- -------------------------------------------------------------------",
             "",
-            "-- ADM: '{}'".format(self.adm.norm_name),
+            "-- ADM: '{}'".format(cu.yang_to_sql(self.adm.norm_name)),
             "",
         ]
 
@@ -301,13 +301,13 @@ class Writer(AbstractWriter):
                 "",
                 "use amp_core;",
                 "",
-                "SET @adm_enum = {};".format(self.adm.norm_name)
+                "SET @adm_enum = {};".format(cu.yang_to_sql(self.adm.norm_name))
             ]
         elif self.dialect == 'pgsql':
             lines += [
                 "DO",
                 "$do$",
-                "DECLARE adm_enum INTEGER := {};".format(self.adm.norm_name),
+                "DECLARE adm_enum INTEGER := {};".format(cu.yang_to_sql(self.adm.norm_name)),
             ]
             for name in sorted(self._vars_def):
                 lines.append(f"DECLARE {name} INTEGER;")
@@ -344,14 +344,14 @@ class Writer(AbstractWriter):
 
         name = val_or_none(self.admset.get_child(self.adm, 'name'))
         #ns = val_or_none(self.admset.get_child(self.adm, 'namespace'))
-        ns = self.adm.norm_name.upper()
+        ns = cu.yang_to_sql(self.adm.norm_name).upper()
         version = val_or_none(self.admset.get_child(self.adm, 'version'))
         org = val_or_none(self.admset.get_child(self.adm, 'organization'))
         desc = escape_description_sql(self.admset.get_child(self.adm, "description").arg)#val_or_none(self.admset.get_child(self.adm, models.Mdat, 'namespace'), 'description'))
 
         adm_enum = self._var_name("adm_enum", None)
 
-        formatted_template = meta_template.format(org, ns, version, name, adm_enum, desc, self.adm.norm_name)#self._sql_ns)
+        formatted_template = meta_template.format(org, ns, version, name, adm_enum, desc, cu.yang_to_sql(self.adm.norm_name))#self._sql_ns)
         return [
             "",
             formatted_template
@@ -462,7 +462,7 @@ class Writer(AbstractWriter):
         return lines
 
     def write_var_functions(self):
-        ''' Genreate lines for all of the VARs in the ADM
+        ''' Generate lines for all of the VARs in the ADM
         '''
         lines = [
             "",
@@ -470,41 +470,22 @@ class Writer(AbstractWriter):
             "-- VAR",
         ]
 
-        # ac_comment = "-- create ac for expression"
+        var_template = self.create_insert_obj_metadata_template(cs.VAR)
+        lines += [var_template]
 
-        # var_template = self.create_insert_obj_metadata_template(cs.VAR)
-        # insert_ac_id_template = self.create_insert_ac_id_template(cs.VAR)
+        # format with var id, description, var def id
+        # TODO: should be encoding the out type of the variable instead of passing hardcoded '20' for all
+        var_def_template = "CALL SP__insert_variable_definition({}, '{}', 20, " + self._var_name("var_ac_id") + ", {});"
+        for var in self.adm.var:
+            var_name = var.name
+            var_desc = escape_description_sql(var.description)
+            var_value = var.init_ari.value
 
-        # # format with entry id, enumeration of entry in this var
-        # insert_actual_entry_template = "CALL SP__insert_ac_actual_entry(" + self._var_name("var_ac_id") + ", {0}, {1}, " + self._var_name("r_ac_entry_id_", None) + "{1} );"
+            var_id, _, var_act_id = self.make_sql_ids(self._make_ari(cs.VAR, var))
 
-        # # format with var id, description, var def id
-        # # TODO: should be encoding the out type of the variable instead of passing hardcoded '20' for all
-        # var_def_template = "CALL SP__insert_variable_definition({}, '{}', 20, " + self._var_name("var_ac_id") + ", {});"
-        # for var in self.adm.var:
-        #     var_name = var.name
-        #     var_desc = escape_description_sql(var.description)
-        #     postfix = var.initializer.postfix.items
-
-        #     var_id, var_def_id, var_act_id = self.make_sql_ids(self._make_ari(cs.VAR, var))
-        #     ac_description = f"ac for the expression used by {var_id}"
-        #     lines += [
-        #         "",
-        #         ac_comment,
-        #         var_template.format(var_name, var_id),
-        #         insert_ac_id_template.format(len(postfix), ac_description, var_id),
-        #     ]
-
-        #     for item in postfix:
-        #         pfx_obj_id, pfx_def_id, pfx_act_id, line = self.make_definition_ids(item)
-        #         lines += [line]
-        #         lines += [insert_actual_entry_template.format(pfx_act_id, item.position + 1)]
-        #         # preallocate names
-        #         self._var_name(f"r_ac_entry_id_{item.position + 1}")
-
-        #     lines += [
-        #         var_def_template.format(var_id, var_desc, var_act_id),
-        #     ]
+            lines += [
+                var_def_template.format(cu.yang_to_sql(var_id), var_desc, var_act_id),
+            ]
         
         return lines
 
