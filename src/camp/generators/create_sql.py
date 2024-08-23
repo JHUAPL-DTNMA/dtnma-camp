@@ -76,6 +76,7 @@ class Writer(AbstractWriter):
         self._var_prefix = "@" if self.dialect == 'mysql' else ''
         self._vars_def = set()
         self._vars_use = set()
+        self.sql_name = cu.yang_to_sql(self.adm.norm_name)
 
         # The first half of the namespace
         """ns = self.adm.norm_namespace
@@ -84,7 +85,7 @@ class Writer(AbstractWriter):
 
     def file_path(self) -> str:
         # Interface for AbstractWriter
-        return os.path.join(self.out_path, "amp-sql", "Agent_Scripts", f"adm_{cu.yang_to_sql(self.adm.norm_name)}.sql")
+        return os.path.join(self.out_path, "amp-sql", "Agent_Scripts", f"adm_{self.sql_name}.sql")
 
     def write(self, outfile: TextIO):
         # Interface for AbstractWriter
@@ -135,7 +136,7 @@ class Writer(AbstractWriter):
         :param item: object to make the IDs for.
         :return: the augmented ARI text.
         '''
-        ns = cu.yang_to_sql(self.adm.norm_name).upper()
+        ns = self.sql_name.upper()
         ari = cu.make_ari_name(ns, coll, item).lower()
         return ari
 
@@ -177,7 +178,7 @@ class Writer(AbstractWriter):
 
         # convert to object type enumeration to decimal for function
         obj_type_enum = str(int(cs.ari_type_enum(obj_type), 16))
-        formatted = general_template.format(obj_type_enum, "{}", cu.yang_to_sql(self.adm.norm_name), "{}")#self._sql_ns, "{}")
+        formatted = general_template.format(obj_type_enum, "{}", self.sql_name, "{}")#self._sql_ns, "{}")
         return formatted
 
 
@@ -266,7 +267,7 @@ class Writer(AbstractWriter):
         lines = [
             "-- -------------------------------------------------------------------",
             "--",
-            "-- File Name: adm_{}.sql".format(cu.yang_to_sql(self.adm.norm_name)),
+            "-- File Name: adm_{}.sql".format(self.sql_name),
             "--",
             "-- Description: TODO",
             "--",
@@ -281,7 +282,7 @@ class Writer(AbstractWriter):
             "--",
             "-- -------------------------------------------------------------------",
             "",
-            "-- ADM: '{}'".format(cu.yang_to_sql(self.adm.norm_name)),
+            "-- ADM: '{}'".format(self.sql_name),
             "",
         ]
 
@@ -301,13 +302,13 @@ class Writer(AbstractWriter):
                 "",
                 "use amp_core;",
                 "",
-                "SET @adm_enum = {};".format(cu.yang_to_sql(self.adm.norm_name))
+                "SET @adm_enum = {};".format(self.sql_name)
             ]
         elif self.dialect == 'pgsql':
             lines += [
                 "DO",
                 "$do$",
-                "DECLARE adm_enum INTEGER := {};".format(cu.yang_to_sql(self.adm.norm_name)),
+                "DECLARE adm_enum INTEGER := {};".format(self.sql_name),
             ]
             for name in sorted(self._vars_def):
                 lines.append(f"DECLARE {name} INTEGER;")
@@ -344,14 +345,14 @@ class Writer(AbstractWriter):
 
         name = val_or_none(self.admset.get_child(self.adm, 'name'))
         #ns = val_or_none(self.admset.get_child(self.adm, 'namespace'))
-        ns = cu.yang_to_sql(self.adm.norm_name).upper()
+        ns = self.sql_name.upper()
         version = val_or_none(self.admset.get_child(self.adm, 'version'))
         org = val_or_none(self.admset.get_child(self.adm, 'organization'))
         desc = escape_description_sql(self.admset.get_child(self.adm, "description").arg)#val_or_none(self.admset.get_child(self.adm, models.Mdat, 'namespace'), 'description'))
 
         adm_enum = self._var_name("adm_enum", None)
 
-        formatted_template = meta_template.format(org, ns, version, name, adm_enum, desc, cu.yang_to_sql(self.adm.norm_name))#self._sql_ns)
+        formatted_template = meta_template.format(org, ns, version, name, adm_enum, desc, self.sql_name)#self._sql_ns)
         return [
             "",
             formatted_template
@@ -484,7 +485,7 @@ class Writer(AbstractWriter):
             var_id, _, var_act_id = self.make_sql_ids(self._make_ari(cs.VAR, var))
 
             lines += [
-                var_def_template.format(cu.yang_to_sql(var_id), var_desc, var_act_id),
+                var_def_template.format(self.sql_name, var_desc, var_act_id),
             ]
         
         return lines
