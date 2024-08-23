@@ -353,19 +353,15 @@ def make_std_meta_add_coll_template(coll, name):
 def write_init_var_function(c_file, adm, g_var_idx, mgr):
     body = ""
     coll_decl_str = "\n\tari_t *id = NULL;\n"
-    expr_decl_str = "\n\texpr_t *expr = NULL;\n"
 
-    expr_create_str   = "\n\texpr = expr_create({});"
-    expr_add_str      = "\n\texpr_add_item(expr, {});"
-    add_var_from_expr = "\n\tadm_add_var_from_expr(id, {}, expr);"
+    # TODO fix typing
+    tnv_decl_str = "\n\ttnv_t *tnv = tnv_from_int({});\n"
+    add_var_from_tnv = "\n\tadm_add_var_from_tnv(id, *tnv);"
 
     # gives you the adm_build_ari(...)
     build_str_template = "\n" + make_adm_build_ari_template(cs.VAR, g_var_idx, True)
     # gives you the meta_add_var(... )
     meta_add_template = make_std_meta_add_coll_template(cs.VAR, cu.yang_to_c(adm.norm_name))
-
-    added_coll = False
-    added_expr = False
 
     for obj in adm.var:
         # Preliminaries
@@ -375,35 +371,14 @@ def write_init_var_function(c_file, adm, g_var_idx, mgr):
         var_name    = obj.name
         description = obj.description or ''
 
-        expr_str = ""
-
-        # Add to the expr str for each postfix
-        pfxs = obj.initializer.postfix.items if obj.initializer else []
-        for pfx in pfxs:
-            pfx_ns,pfx_coll,pfx_name = cu.ari_get_names(pfx)
-            pfx_ari = cu.make_ari_name_from_str(pfx_ns, pfx_coll, pfx_name)
-            pfx_g_var_idx = cu.get_g_var_idx(pfx_ns)
-            #FIXME: _,param_flag  = retriever.postfix_has_params(pfx)
-            param_flag = "0"
-
-            pfx_build_ari = make_adm_build_ari_template(pfx_coll, pfx_g_var_idx, False).format(param_flag, pfx_ari)
-
-            expr_str += expr_add_str.format(pfx_build_ari)
-
-        # If postfixs are present, append the expr_create string, and prepend
-        # the adm_add_var_from_expr stringq
-        if pfxs:
-            init_type = cu.make_amp_type_name_from_str(obj.typeobj.type_text)
-
-            expr_str = expr_create_str.format(init_type) + expr_str
-            expr_str += add_var_from_expr.format(init_type)
-
-            added_expr = True
+        val = obj.init_ari.value
 
         # Add formatted strings to body
         body += "\n\n\t/* {} */".format(var_name.upper())
         body +=  build_str_template.format("0", ari)
-        body += expr_str
+
+        body += tnv_decl_str.format(val)
+        body += add_var_from_tnv
 
         # Additional meta_add function needs to be called if this is the mgr code generation
         if mgr:
@@ -412,8 +387,6 @@ def write_init_var_function(c_file, adm, g_var_idx, mgr):
         added_coll = True
 
     # only add these declarations if the variables will be used; to avoid compiler warnings
-    if added_expr:
-        body = expr_decl_str + body
     if added_coll:
         body = coll_decl_str + body
 
