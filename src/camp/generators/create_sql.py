@@ -470,41 +470,41 @@ class Writer(AbstractWriter):
             "-- VAR",
         ]
 
-        ac_comment = "-- create ac for expression"
+        # ac_comment = "-- create ac for expression"
 
-        var_template = self.create_insert_obj_metadata_template(cs.VAR)
-        insert_ac_id_template = self.create_insert_ac_id_template(cs.VAR)
+        # var_template = self.create_insert_obj_metadata_template(cs.VAR)
+        # insert_ac_id_template = self.create_insert_ac_id_template(cs.VAR)
 
-        # format with entry id, enumeration of entry in this var
-        insert_actual_entry_template = "CALL SP__insert_ac_actual_entry(" + self._var_name("var_ac_id") + ", {0}, {1}, " + self._var_name("r_ac_entry_id_", None) + "{1} );"
+        # # format with entry id, enumeration of entry in this var
+        # insert_actual_entry_template = "CALL SP__insert_ac_actual_entry(" + self._var_name("var_ac_id") + ", {0}, {1}, " + self._var_name("r_ac_entry_id_", None) + "{1} );"
 
-        # format with var id, description, var def id
-        # TODO: should be encoding the out type of the variable instead of passing hardcoded '20' for all
-        var_def_template = "CALL SP__insert_variable_definition({}, '{}', 20, " + self._var_name("var_ac_id") + ", {});"
-        for var in self.adm.var:
-            var_name = var.name
-            var_desc = escape_description_sql(var.description)
-            postfix = var.initializer.postfix.items
+        # # format with var id, description, var def id
+        # # TODO: should be encoding the out type of the variable instead of passing hardcoded '20' for all
+        # var_def_template = "CALL SP__insert_variable_definition({}, '{}', 20, " + self._var_name("var_ac_id") + ", {});"
+        # for var in self.adm.var:
+        #     var_name = var.name
+        #     var_desc = escape_description_sql(var.description)
+        #     postfix = var.initializer.postfix.items
 
-            var_id, var_def_id, var_act_id = self.make_sql_ids(self._make_ari(cs.VAR, var))
-            ac_description = f"ac for the expression used by {var_id}"
-            lines += [
-                "",
-                ac_comment,
-                var_template.format(var_name, var_id),
-                insert_ac_id_template.format(len(postfix), ac_description, var_id),
-            ]
+        #     var_id, var_def_id, var_act_id = self.make_sql_ids(self._make_ari(cs.VAR, var))
+        #     ac_description = f"ac for the expression used by {var_id}"
+        #     lines += [
+        #         "",
+        #         ac_comment,
+        #         var_template.format(var_name, var_id),
+        #         insert_ac_id_template.format(len(postfix), ac_description, var_id),
+        #     ]
 
-            for item in postfix:
-                pfx_obj_id, pfx_def_id, pfx_act_id, line = self.make_definition_ids(item)
-                lines += [line]
-                lines += [insert_actual_entry_template.format(pfx_act_id, item.position + 1)]
-                # preallocate names
-                self._var_name(f"r_ac_entry_id_{item.position + 1}")
+        #     for item in postfix:
+        #         pfx_obj_id, pfx_def_id, pfx_act_id, line = self.make_definition_ids(item)
+        #         lines += [line]
+        #         lines += [insert_actual_entry_template.format(pfx_act_id, item.position + 1)]
+        #         # preallocate names
+        #         self._var_name(f"r_ac_entry_id_{item.position + 1}")
 
-            lines += [
-                var_def_template.format(var_id, var_desc, var_act_id),
-            ]
+        #     lines += [
+        #         var_def_template.format(var_id, var_desc, var_act_id),
+        #     ]
         
         return lines
 

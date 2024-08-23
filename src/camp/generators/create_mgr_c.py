@@ -146,7 +146,6 @@ class Writer(AbstractWriter, CHelperMixin):
                 # format the meta_add_.* template for this item
                 meta_add_str = ''
                 for valname in ['init_value', 'arg']:
-                    print(obj.name, type(obj))
                     if hasattr(obj, valname):
                         meta_add_str = meta_add_template.format(amp_type, obj.name, getattr(obj, valname))
                         return

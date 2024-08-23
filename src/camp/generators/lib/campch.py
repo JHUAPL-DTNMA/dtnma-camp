@@ -371,14 +371,17 @@ def write_init_var_function(c_file, adm, g_var_idx, mgr):
         var_name    = obj.name
         description = obj.description or ''
 
-        val = obj.init_ari.value
+        added_coll = False
 
-        # Add formatted strings to body
-        body += "\n\n\t/* {} */".format(var_name.upper())
-        body +=  build_str_template.format("0", ari)
+        if obj.init_ari:
+            val = obj.init_ari.value
 
-        body += tnv_decl_str.format(val)
-        body += add_var_from_tnv
+            # Add formatted strings to body
+            body += "\n\n\t/* {} */".format(var_name.upper())
+            body +=  build_str_template.format("0", ari)
+
+            body += tnv_decl_str.format(val)
+            body += add_var_from_tnv
 
         # Additional meta_add function needs to be called if this is the mgr code generation
         if mgr:
@@ -386,9 +389,9 @@ def write_init_var_function(c_file, adm, g_var_idx, mgr):
 
         added_coll = True
 
-    # only add these declarations if the variables will be used; to avoid compiler warnings
-    if added_coll:
-        body = coll_decl_str + body
+        # only add these declarations if the variables will be used; to avoid compiler warnings
+        if added_coll:
+            body = coll_decl_str + body
 
     write_formatted_init_function(c_file, cu.yang_to_c(adm.norm_name), cs.VAR, body)
 
