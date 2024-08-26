@@ -41,8 +41,6 @@ def test_adms(setup, adm):
     """
     cursor = setup[0]
 
-    if adm == 'ion_bpsec_admin.json':
-        pytest.xfail("ADM with known issue")
     # input file full filepath
     filepath = os.path.join(ADMS_DIR, adm)
 
