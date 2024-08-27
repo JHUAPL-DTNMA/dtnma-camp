@@ -53,7 +53,7 @@ def ari_get_names(jari):
 # make the ari for i_name is the name of the item
 #
 def make_ari_name_from_str(name, coll, i_name):
-    name = name.replace("/", "_")
+    i_name = yang_to_c(i_name)
     template = "{0}_{1}_{2}"
     return template.format(name.upper(), cs.get_sname(coll).upper(), i_name.upper())
 

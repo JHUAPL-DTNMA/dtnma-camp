@@ -268,8 +268,10 @@ class Writer(AbstractWriter, CHelperMixin):
             amp_type = cu.make_amp_type_name_from_str(obj.result.name)
             in_types = obj.operands.items if obj.operands.items else []
 
+            obj_name = cu.yang_to_c(obj.name)
+
             # Format the meta_add_.* template for this item
-            meta_str = meta_add_template.format(amp_type, obj.name, obj.description)
+            meta_str = meta_add_template.format(amp_type, obj_name, obj.description)
 
             # A couple of variables depend on the presence or absence of parms
             parms_tf = "0"
@@ -329,8 +331,10 @@ class Writer(AbstractWriter, CHelperMixin):
             ari   = cu.make_ari_name(self.c_norm_name, cs.CTRL, obj)
             parms = obj.parameters.items if obj.parameters else []
 
+            obj_name = cu.yang_to_c(obj.name)
+
             # Format the meta_add_.* template for this item
-            meta_str = meta_add_template.format(obj.name, obj.description)
+            meta_str = meta_add_template.format(obj_name, obj.description)
 
             # A couple of variables depend on the presence or absence of parms
             parms_tf = "0"
@@ -340,7 +344,7 @@ class Writer(AbstractWriter, CHelperMixin):
                 meta_str = "meta = " + meta_str
 
             # Add formatted strings to the body of the function
-            body += "\n\n\t/* {} */".format(obj.name.upper())
+            body += "\n\n\t/* {} */".format(obj_name.upper())
             body += "\n" + build_str_template.format(parms_tf, ari)
             body += add_ctrldef_template.format(len(parms))
             body += "\n\t" + meta_str

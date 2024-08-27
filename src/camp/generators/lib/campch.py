@@ -194,7 +194,7 @@ def _make_fullname(adm, basename):
 # collect functions; where basename = edd_<edd-name> and fullname = <name>_<basename>
 #
 def make_collect_function(adm, edd):
-    basename = "get_{}".format(edd.name.lower())
+    basename = "get_{}".format(cu.yang_to_c(edd.name).lower())
     fullname = _make_fullname(adm, basename)
     signature = "tnv_t *{}(tnvc_t *parms)".format(fullname)
     return basename, fullname, signature
@@ -205,7 +205,7 @@ def make_collect_function(adm, edd):
 #
 def make_meta_function(adm, meta):
     keyword = cs.get_sname(cs.META)
-    basename = "{0}_{1}".format(keyword, meta.name.lower())
+    basename = "{0}_{1}".format(keyword, cu.yang_to_c(meta.name).lower())
     fullname = _make_fullname(adm, basename)
     signature = "tnv_t *{}(tnvc_t *parms)".format(fullname)
     return basename, fullname, signature
@@ -216,7 +216,7 @@ def make_meta_function(adm, meta):
 #
 def make_constant_function(adm, const):
     keyword = "get"
-    basename = "{0}_{1}".format(keyword, const.name.lower())
+    basename = "{0}_{1}".format(keyword, cu.yang_to_c(const.name).lower())
     fullname = _make_fullname(adm, basename)
     signature = "tnv_t *{}(tnvc_t *parms)".format(fullname)
     return basename, fullname, signature
@@ -227,7 +227,7 @@ def make_constant_function(adm, const):
 #
 def make_control_function(adm, control):
     keyword = cs.get_sname(cs.CTRL)
-    basename = "{0}_{1}".format(keyword, control.name.lower())
+    basename = "{0}_{1}".format(keyword, cu.yang_to_c(control.name).lower())
     fullname = _make_fullname(adm, basename)
     signature = "tnv_t *{}(eid_t *def_mgr, tnvc_t *parms, int8_t *status)".format(fullname)
     return basename, fullname, signature
@@ -238,7 +238,7 @@ def make_control_function(adm, control):
 #
 def make_operator_function(adm, op):
     keyword = cs.get_sname(cs.OP)
-    basename = "{0}_{1}".format(keyword, op.name.lower())
+    basename = "{0}_{1}".format(keyword, cu.yang_to_c(op.name).lower())
     fullname = _make_fullname(adm, basename)
     signature = "tnv_t *{}(vector_t *stack)".format(fullname)
     return basename, fullname, signature
@@ -374,7 +374,7 @@ def write_init_var_function(c_file, adm, g_var_idx, mgr):
         ari      = cu.make_ari_name(norm_name, cs.VAR, obj)
         amp_type = cu.make_amp_type_name_from_str(obj.typeobj.type_text)
 
-        var_name    = obj.name
+        var_name    = cu.yang_to_c(obj.name)
         description = obj.description or ''
 
         added_coll = False
