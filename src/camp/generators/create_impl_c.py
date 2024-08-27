@@ -131,7 +131,7 @@ class Writer(AbstractWriter, CHelperMixin):
         const_function_str = (
             "\n{0}"
             "\n{{"
-            "\n\treturn tnv_from_uvast({1});"       # TODO Karen not necessarily everything is uvast?
+            "\n\treturn tnv_from_str(\"{1}\");"    # TODO type fixes
             "\n}}"
             "\n")
 
