@@ -365,29 +365,6 @@ class Writer(AbstractWriter, CHelperMixin):
         campch.write_formatted_init_function(outfile, self.c_norm_name, cs.CTRL, body)
 
 
-    #
-    # Writes the init_macros() function to the open file descriptor passed as c_file
-    # name is the value returned from get_adm_names()
-    # macros is a list of macros to include
-    #
-    def write_init_macros(self, outfile):
-        campch.write_init_macro_function(outfile, self.adm, self._g_var_idx, True)
-
-
-    #
-    # Writes the init_reports() function to the open file descriptor passed as c_file
-    # name is the value returned from get_adm_names()
-    #
-    def write_init_reports(self, outfile):
-        campch.write_parameterized_init_reports_function(outfile, self.adm, self._g_var_idx, True)
-
-    #
-    # Writes the init_tables() function to the open file descriptor passed as c_file
-    # name is the value returns from get_adm_names()
-    #
-    def write_init_tables(self, outfile):
-        campch.write_init_tables_function(outfile, self.adm, self._g_var_idx, True)
-
     # Builds a template for the
     # ```
     # id = adm_build_ari(...)

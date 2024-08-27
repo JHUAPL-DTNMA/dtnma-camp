@@ -168,14 +168,3 @@ class Writer(AbstractWriter, CHelperMixin):
         for obj in self.adm.oper:
             _,_,signature = campch.make_operator_function(self.adm, obj)
             outfile.write(signature + ";\n")
-
-    #
-    # Writes the table functions to the passed file, new_h
-    # name is the value returned from get_adm_names
-    # tables is a list of tables to include
-    #
-    def write_table_functions(self, outfile):
-        outfile.write("\n\n/* Table Build Functions */\n")
-        for obj in self.adm.tblt:
-            _,_,signature = campch.make_table_function(self.adm, obj)
-            outfile.write(signature + ";\n")

@@ -140,44 +140,6 @@ class Writer(AbstractWriter, CHelperMixin):
             outfile.write(const_function_str.format(signature, getattr(obj, 'init_value', '')))
 
     #
-    # writes the table functions to the file passed
-    # outfile is an open file descriptor to write to
-    # name is the value returned from get_adm_names()
-    # table is a list of tables to include
-    # scraper is the Scraper object associated with this ADM
-    #
-    def write_table_functions(self, outfile):
-        outfile.write("\n/* Table Functions */\n\n")
-        table_function_begin_str = (
-            "\n{0}"
-            "\n{1}"
-            "\n{{"
-            "\n\ttbl_t *table = NULL;"
-            "\n\tif((table = tbl_create(id)) == NULL)"
-            "\n\t{{"
-            "\n\t\treturn NULL;"
-            "\n\t}}"
-            "\n\n")
-        conditional_body_str = (
-            "\n\t{"
-            "\n\t\treturn NULL;"
-            "\n\t}"
-            "\n\n")
-        table_function_end_str = "\treturn table;\n}\n\n"
-
-        for obj in self.adm.tblt:
-            basename,_,signature = campch.make_table_function(self.adm, obj)
-            description          = campch.multiline_comment_format(obj.description or '')
-
-            outfile.write(table_function_begin_str.format(description, signature))
-
-            # Add custom body tags and any scrapped lines found
-            self._scraper.write_custom_body(outfile, basename)
-
-            # Close out the function
-            outfile.write(table_function_end_str)
-
-    #
     # Writes the edd functions to the file passed
     # outfile is an open file descriptor to write to
     # name is the value returned from get_adm_names()

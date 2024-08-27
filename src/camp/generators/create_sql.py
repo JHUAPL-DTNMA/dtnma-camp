@@ -215,7 +215,7 @@ class Writer(AbstractWriter):
         return collection_template, entry_template, unk_entry_template
 
     # Helper function for insert_ac functions
-    # obj_type is the type of object (OP, MACRO, etc.)
+    # obj_type is the type of object (OP, etc.)
     # description_format is any formatting you wish to impose on the description
     # Returns template for insert_ac_id function, format with number of acs and the description
     def create_insert_ac_id_template(self, obj_type, description_format="{}"):

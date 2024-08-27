@@ -58,9 +58,6 @@ class Writer(AbstractWriter, CHelperMixin):
         self.write_init_op_function(outfile)
         self.write_init_var_function(outfile)
         self.write_init_control_function(outfile)
-        # self.write_init_macro_function(outfile)
-        # self.write_init_reports_function(outfile)
-        # self.write_init_tables_function(outfile)
 
     #
     # Writes all of the #includes for this c file
@@ -226,34 +223,4 @@ class Writer(AbstractWriter, CHelperMixin):
             body += adm_add_template.format(ari, len(parms), ari.lower())
 
         campch.write_formatted_init_function(outfile, self.c_norm_name, cs.CTRL, body)
-
-    #
-    # Constructs and writes the init_macros function
-    #
-    # c_file is an open file descriptor to write to,
-    # name is the value returned from get_adm_names()
-    # macros is a list of macros to add
-    #
-    def write_init_macro_function(self, outfile):
-        campch.write_init_macro_function(outfile, self.adm, self._g_var_idx, False)
-
-    #
-    # Constructs and writes the init reports function
-    #
-    # c_file is an open file descriptor to write to
-    # name is the name returned by the call to get_adm_names()
-    # retriever is the Retriever class instance for this ADM
-    #
-    def write_init_reports_function(self, outfile):
-        campch.write_parameterized_init_reports_function(outfile, self.adm, self._g_var_idx, False)
-
-    #
-    # Constructs and writes the init tables function
-    #
-    # c_file is an open file descriptor to write to
-    # name is the name returned by the call to get_adm_names()
-    # retriever is the Retriever class instance for this ADM
-    #
-    def write_init_tables_function(self, outfile):
-        campch.write_init_tables_function(outfile, self.adm, self._g_var_idx, False)
 

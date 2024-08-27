@@ -421,9 +421,6 @@ def write_init_function(c_file, adm: ace.models.AdmModule, g_var_idx: str, mgr: 
         cs.OP: 'oper',
         cs.VAR: 'var',
         cs.CTRL: 'ctrl',
-        # cs.MACRO: 'mac',
-        # cs.RPTT: 'rptt',
-        # cs.TBLT: 'tblt',
     }
 
     init_decls = ""

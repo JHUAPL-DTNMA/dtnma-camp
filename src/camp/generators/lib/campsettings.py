@@ -28,16 +28,13 @@ import camp.generators.lib.camputil as cu
 CONST  = 0
 CTRL   = 1
 EDD    = 2
-# MACRO  = 3
 OP     = 4
-# RPTT   = 5
 SBR    = 6
-# TBLT   = 7
 TBR    = 8
 VAR    = 9
 META   = 10
 
-# NOTE: sname and lname are often essentially the same, expect for CONST, OP, RPTT, and META
+# NOTE: sname and lname are often essentially the same, expect for CONST, OP, and META
 # NOTE: amp_type is often same as sname, except for OP and META
 # NOTE: adm_idx is often the same as lname, except for META
 # XXX: ensure these differences are necessary, or change if all could use same keyword.
@@ -45,11 +42,8 @@ collections = {}
 collections[CONST] = {"sname":"cnst",   "lname":"Const", "ari_type":"0", "amp_type":"cnst",   "adm_idx":"Const"} # CONST = 0
 collections[CTRL]  = {"sname":"ctrl",   "lname":"Ctrl",  "ari_type":"1", "amp_type":"ctrl",   "adm_idx":"Ctrl"}  # CTRL  = 1
 collections[EDD]   = {"sname":"edd",    "lname":"Edd",   "ari_type":"2", "amp_type":"edd",    "adm_idx":"Edd"}   # EDD   = 2
-# collections[MACRO] = {"sname":"mac",    "lname":"Mac",   "ari_type":"4", "amp_type":"mac",    "adm_idx":"Mac"}   # MACRO = 3
 collections[OP]    = {"sname":"op",     "lname":"Oper",  "ari_type":"5", "amp_type":"Oper",   "adm_idx":"Oper"}  # OP    = 4
-# collections[RPTT]  = {"sname":"rpttpl", "lname":"Rptt",  "ari_type":"7", "amp_type":"rpttpl", "adm_idx":"Rptt"}  # RPTT  = 5
 collections[SBR]   = {"sname":"sbr",    "lname":"Sbr",   "ari_type":"8", "amp_type":"sbr",    "adm_idx":"Sbr"}   # SBR   = 6
-# collections[TBLT]  = {"sname":"tblt",   "lname":"Tblt",  "ari_type":"a", "amp_type":"tblt",   "adm_idx":"Tblt"}  # TBLT  = 7
 collections[TBR]   = {"sname":"tbr",    "lname":"Tbr",   "ari_type":"b", "amp_type":"tbr",    "adm_idx":"Tbr"}   # TBR   = 8
 collections[VAR]   = {"sname":"var",    "lname":"Var",   "ari_type":"c", "amp_type":"var",    "adm_idx":"Var"}   # VAR   = 9
 collections[META]  = {"sname":"meta",   "lname":"Mdat",  "ari_type":"0", "amp_type":"cnst",   "adm_idx":"Meta"}  # META  = 10
