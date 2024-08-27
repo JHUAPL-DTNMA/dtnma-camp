@@ -45,3 +45,9 @@ def run_camp(filepath, outpath, only_sql, only_ch, scrape=False) -> int:
     args.only_ch = only_ch
     args.scrape = scrape
     return run(args)
+
+def normalize_filename(fname):
+    """
+    Normalizes filename according to how camp generates file names
+    """
+    return fname.replace('_','__').replace('-','_').replace('.','_p_')

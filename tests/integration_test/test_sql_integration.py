@@ -2,9 +2,9 @@ import psycopg2
 import os
 import ace
 import pytest
+import camp
 
-from .util import ADMS_DIR, adm_files, run_camp
-
+from .util import ADMS_DIR, adm_files, run_camp, normalize_filename
 
 @pytest.fixture(scope="session", autouse=True)
 def setup():
@@ -50,7 +50,7 @@ def test_adms(setup, adm):
 
     # execute sql
     adm_set = ace.AdmSet()
-    norm_name = adm_set.load_from_file(filepath).norm_name
+    norm_name = normalize_filename(adm_set.load_from_file(filepath).norm_name)
     sql_file = os.path.join(ADMS_DIR, "amp-sql", "Agent_Scripts", 'adm_{name}.sql'.format(name=norm_name))
     with open(sql_file, "r") as f:
         cursor.execute(f.read())
