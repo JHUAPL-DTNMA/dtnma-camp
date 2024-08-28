@@ -24,7 +24,7 @@ name: Build and run tests
 on: [push]
 
 env:
-  ACE_REPO: "git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@haining-ace-yang-updates"
+  ACE_REPO: "git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git"
   ADMS_REPO: "https://github.com/JHUAPL-DTNMA/dtnma-adms.git"
 
 jobs:
