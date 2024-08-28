@@ -261,7 +261,7 @@ class Writer(AbstractWriter):
     # Functions to format and write stored procedures to the SQL file based on the ADM
 
     def write_setup(self):
-        ''' Genreate lines for the introductory material for the sql file
+        ''' Generate lines for the introductory material for the sql file
         '''
         lines = [
             "-- -------------------------------------------------------------------",
@@ -288,7 +288,7 @@ class Writer(AbstractWriter):
         return lines
 
     def body_pre(self):
-        ''' Genreate lines before the SQL body.
+        ''' Generate lines before the SQL body.
         '''
         undef = self._vars_use - self._vars_def
         
@@ -319,7 +319,7 @@ class Writer(AbstractWriter):
         return lines
 
     def body_post(self):
-        ''' Generate liens after the SQL body.
+        ''' Generate lines after the SQL body.
         '''
         lines = []
         if self.dialect == 'pgsql':
@@ -357,7 +357,7 @@ class Writer(AbstractWriter):
         ]
 
     def write_edd_functions(self):
-        ''' Genreate lines for all of the EDDs in the ADM
+        ''' Generate lines for all of the EDDs in the ADM
         '''
         lines = [
             "",
@@ -408,7 +408,7 @@ class Writer(AbstractWriter):
         return lines
 
     def write_oper_functions(self):
-        ''' Genreate lines for all of the OPERs in the ADM
+        ''' Generate lines for all of the OPERs in the ADM
         '''
         lines = [
             "",
@@ -583,7 +583,7 @@ class Writer(AbstractWriter):
         return result
 
     def write_ctrl_functions(self):
-        ''' Genreate lines for all of the CTRLs in the ADM
+        ''' Generate lines for all of the CTRLs in the ADM
         '''
         lines = [
             "",
@@ -623,7 +623,7 @@ class Writer(AbstractWriter):
         ''' Helper function for the META and CONST objects to allow
         code reuse since they use the same stored procedures.
 
-            Genreate lines for all of the passed objects.
+            Generate lines for all of the passed objects.
 
         :param objects: list of objects (CONSTs or METAs) to write the stored procedures for
         :param coll: type of collection (cs.CONST or cs.META)
@@ -648,7 +648,7 @@ class Writer(AbstractWriter):
         return lines
 
     def write_const_functions(self):
-        ''' Genreate lines for all of the CONSTs in the ADM
+        ''' Generate lines for all of the CONSTs in the ADM
         '''
         lines = [
             "",
@@ -658,7 +658,7 @@ class Writer(AbstractWriter):
         return lines + self.write_gen_const_functions(self.adm.const, cs.CONST)
 
     def write_mdat_functions(self):
-        ''' Genreate lines for all of the MDATs in the ADM
+        ''' Generate lines for all of the MDATs in the ADM
         '''
         coll = cs.META
         objects = self.adm.metadata_list.items
