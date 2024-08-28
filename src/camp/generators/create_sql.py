@@ -79,9 +79,8 @@ class Writer(AbstractWriter):
         self.sql_name = cu.yang_to_sql(self.adm.norm_name)
 
         # The first half of the namespace
-        """ns = self.adm.norm_namespace
-        hl_ns = ns.split('/')[0].lower()
-        self._sql_ns = self._var_name(f"{hl_ns}_namespace_id")"""
+        ns = self.sql_name.lower()
+        self._sql_ns = self._var_name(f"{ns}_namespace_id")
 
     def file_path(self) -> str:
         # Interface for AbstractWriter
@@ -97,7 +96,7 @@ class Writer(AbstractWriter):
         body += self.write_mdat_functions()
         body += self.write_edd_functions()
         body += self.write_oper_functions()
-        body += self.write_var_functions()
+        # body += self.write_var_functions()
         body += self.write_ctrl_functions()
         body += self.write_const_functions()
 
@@ -178,7 +177,7 @@ class Writer(AbstractWriter):
 
         # convert to object type enumeration to decimal for function
         obj_type_enum = str(int(cs.ari_type_enum(obj_type), 16))
-        formatted = general_template.format(obj_type_enum, "{}", self.sql_name, "{}")#self._sql_ns, "{}")
+        formatted = general_template.format(obj_type_enum, "{}", self._sql_ns, "{}")
         return formatted
 
 
@@ -302,13 +301,13 @@ class Writer(AbstractWriter):
                 "",
                 "use amp_core;",
                 "",
-                "SET @adm_enum = {};".format(self.sql_name)
+                "SET @adm_enum = {};".format(self.adm.enum)
             ]
         elif self.dialect == 'pgsql':
             lines += [
                 "DO",
                 "$do$",
-                "DECLARE adm_enum INTEGER := {};".format(self.sql_name),
+                "DECLARE adm_enum INTEGER := {};".format(self.adm.enum),
             ]
             for name in sorted(self._vars_def):
                 lines.append(f"DECLARE {name} INTEGER;")
@@ -344,15 +343,14 @@ class Writer(AbstractWriter):
             return getattr(obj, attr)
 
         name = val_or_none(self.admset.get_child(self.adm, 'name'))
-        #ns = val_or_none(self.admset.get_child(self.adm, 'namespace'))
         ns = self.sql_name.upper()
         version = val_or_none(self.admset.get_child(self.adm, 'version'))
         org = val_or_none(self.admset.get_child(self.adm, 'organization'))
-        desc = escape_description_sql(self.admset.get_child(self.adm, "description").arg)#val_or_none(self.admset.get_child(self.adm, models.Mdat, 'namespace'), 'description'))
+        desc = escape_description_sql(self.admset.get_child(self.adm, "description").arg)
 
         adm_enum = self._var_name("adm_enum", None)
 
-        formatted_template = meta_template.format(org, ns, version, name, adm_enum, desc, self.sql_name)#self._sql_ns)
+        formatted_template = meta_template.format(org, ns, version, name, adm_enum, desc, self._sql_ns)
         return [
             "",
             formatted_template
@@ -381,15 +379,7 @@ class Writer(AbstractWriter):
             edd_fp_id = self.make_fp_id(edd_obj_id)
 
             name = edd.name
-            if hasattr(edd.typeobj, 'type_text'):
-                etype = edd.typeobj.type_text
-            else:
-                etype = []
-                for col in edd.typeobj.columns:
-                    if hasattr(col.base, 'type_text'):
-                        etype.append(col.base.type_text)
-                    else:
-                         etype.append(col.base.base.type_text)
+            etype = "UINT" # TODO type fixes
             desc = escape_description_sql(edd.description)
             parmspec = edd.parameters.items if edd.parameters else []
             num_parmspec = len(parmspec)
@@ -403,17 +393,17 @@ class Writer(AbstractWriter):
                 lines += [insert_formal_parmspec_template.format(num_parmspec, name, edd_fp_id, edd_obj_id)]
 
                 for parm in parmspec:
-                    lines += [insert_entry_template.format(edd_fp_id, parm.position + 1, parm.name, parm.name)]
+                    lines += [insert_entry_template.format(edd_fp_id, parm.position + 1, parm.name, "UINT")] # TODO type fixes
+                
+                lines += [edd_formal_def_template.format(edd_obj_id, desc, edd_fp_id, etype, edd_def_id)]
 
             # Only put actual definition here if no parmspec
-            if not parmspec:
+            else:
                 self._var_name(edd_act_id)
                 lines += [
                     edd_formal_def_template.format(edd_obj_id, desc, "NULL", etype, edd_def_id),
                     edd_actual_def_template.format(edd_obj_id, name, edd_act_id),
                 ]
-            else:
-                lines += [edd_formal_def_template.format(edd_obj_id, desc, edd_fp_id, etype, edd_def_id)]
 
         return lines
 
@@ -434,7 +424,8 @@ class Writer(AbstractWriter):
         for oper in self.adm.oper:
             oper_name = oper.name
             oper_desc = escape_description_sql(oper.description)
-            result_type = oper.result.name
+            # result_type = oper.result.name
+            result_type = "UNK" # TODO type fixes
 
             oper_obj_id, oper_def_id, oper_act_id = self.make_sql_ids(self._make_ari(cs.OP, oper))
             tnvc_collection_template,tnvc_entry_template,tnvc_unk_entry_template = self.create_insert_tnvc_templates(cs.OP, len(oper.operands.items))
@@ -446,7 +437,9 @@ class Writer(AbstractWriter):
             ]
 
             for in_type in oper.operands.items:
-                t = in_type.name.lower()
+                # t = in_type.name.lower()
+                t = "unk"
+                # TODO type fixes
 
                 # UNK has one fewer parameter
                 if t == "unk":
@@ -456,7 +449,8 @@ class Writer(AbstractWriter):
 
             # TODO: UNK is not a valid type, comment the actual_def for this out for now until ADM resolved
             if result_type.upper() == 'UNK':
-                lines += ["-- " + actual_def_template.format(oper_obj_id, oper_desc, result_type, len(oper.operands.items), oper_act_id)]
+                pass  # TODO commenting out like below doesn't work well with multi-line descriptions!
+                # lines += ["-- " + actual_def_template.format(oper_obj_id, oper_desc, result_type, len(oper.operands.items), oper_act_id)]
             else:
                 lines += [actual_def_template.format(oper_obj_id, oper_desc, result_type, len(oper.operands.items), oper_act_id)]
 
@@ -617,7 +611,7 @@ class Writer(AbstractWriter):
                 fp_spec_id = self._var_name("fp_spec_id")
                 lines += [insert_formal_parmspec_template.format(len(parmspec), ctrl_name, fp_spec_id, ctrl_id)]
                 for parm in parmspec:
-                    lines += [insert_entry_template.format(fp_spec_id, parm.position + 1, parm.name, parm.name)]
+                    lines += [insert_entry_template.format(fp_spec_id, parm.position + 1, parm.name, "UINT")] # TODO type fixes
             else:
                 fp_spec_id = "null"
 
@@ -648,7 +642,7 @@ class Writer(AbstractWriter):
             lines += [
                 "",
                 insert_obj_template.format(c_name, const_id),
-                insert_const_actual_def_template.format(const_id, c_desc, obj.typeobj, obj.init_value, const_act_id),
+                insert_const_actual_def_template.format(const_id, c_desc, "UINT", obj.init_value, const_act_id), # TODO type fixes
             ]
 
         return lines
@@ -688,10 +682,12 @@ class Writer(AbstractWriter):
                 "",
                 insert_obj_template.format(c_name, const_id),
                 #using metadata keyword for type
-                insert_const_actual_def_template.format(const_id, c_desc, obj.name, obj.arg, const_act_id),
+                insert_const_actual_def_template.format(const_id, c_desc, "STR", c_desc, const_act_id), # TODO type fixes
             ]
 
         return lines
+
+
 
     # If the setup.mysql file exists in the output dir, and this
     # file is not already sourced in the setup script, add it to
