@@ -39,6 +39,10 @@ def test_adms(setup, adm):
     Integration test for an ADM found in the ADMS_DIR folder
     Resulting sql files will be placed in ADMS_DIR/amp-sql/Agent_Scripts and executed in the anms library.
     """
+
+    if adm == 'ietf-amm.yang':  # doesn't have unique enum 
+        pytest.xfail("ADM with known issue")
+
     cursor = setup[0]
 
     # input file full filepath
