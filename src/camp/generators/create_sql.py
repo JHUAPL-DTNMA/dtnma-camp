@@ -96,7 +96,7 @@ class Writer(AbstractWriter):
         body += self.write_mdat_functions()
         body += self.write_edd_functions()
         body += self.write_oper_functions()
-        # body += self.write_var_functions()
+        body += self.write_var_functions()
         body += self.write_ctrl_functions()
         body += self.write_const_functions()
 
