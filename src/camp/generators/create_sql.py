@@ -466,7 +466,6 @@ class Writer(AbstractWriter):
         ]
 
         var_template = self.create_insert_obj_metadata_template(cs.VAR)
-        lines += [var_template]
 
         # format with var id, description, var def id
         # TODO: should be encoding the out type of the variable instead of passing hardcoded '20' for all
@@ -474,12 +473,13 @@ class Writer(AbstractWriter):
         for var in self.adm.var:
             var_name = var.name
             var_desc = escape_description_sql(var.description)
-            # var_value = var.init_value
 
-            var_id, _, var_act_id = self.make_sql_ids(self._make_ari(cs.VAR, var))
-
+            var_id, var_def_id, var_act_id = self.make_sql_ids(self._make_ari(cs.VAR, var))
             lines += [
-                var_def_template.format(self.sql_name, var_desc, var_act_id),
+                "",
+                "CALL SP__insert_ac_id(1, 'dummy AC', var_ac_id);", # TODO type fixes (TBD how does var params work?)
+                var_template.format(var_name, var_id),
+                var_def_template.format(var_id, var_desc, var_act_id),
             ]
         
         return lines
