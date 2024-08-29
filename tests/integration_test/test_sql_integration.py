@@ -11,8 +11,8 @@ def setup():
     """
     Connects to the ADMS library session. Cleans up connections once done.
     @pre: IP Address of the library session should be stored in env var $PGHOST,
-          username and password should be stored in env vars $PGSQL_USERNAME and
-          $PGSQL_PASSWORD, respectively
+          username and password should be stored in env vars $PGUSER and
+          $PGPASSWORD, respectively
     @yields tuple of (connection object, AdmSet())
     """
 
