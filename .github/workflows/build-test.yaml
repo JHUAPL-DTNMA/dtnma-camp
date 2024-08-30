@@ -118,13 +118,10 @@ jobs:
           psql -f Database_Scripts/Views/ari_view.sql
           psql -f Database_Scripts/Views/ctrl_view.sql
           psql -f Database_Scripts/Views/edd_view.sql
-          psql -f Database_Scripts/Views/mac_view.sql
           psql -f Database_Scripts/Views/oper_view.sql
           psql -f Database_Scripts/Views/message_view.sql
-          psql -f Database_Scripts/Views/rpt_view.sql
           psql -f Database_Scripts/Views/sbr_view.sql
           psql -f Database_Scripts/Views/tbr_view.sql
-          psql -f Database_Scripts/Views/tblt_view.sql
           psql -f Database_Scripts/Views/tnvc_view.sql
           psql -f Database_Scripts/Views/parm_view.sql
           psql -f Database_Scripts/Views/var_view.sql
