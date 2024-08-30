@@ -138,9 +138,7 @@ jobs:
           pip install -e '.[test]'
           git clone ${ADMS_REPO} tests/integration_test/anms-adms
       - name: Test
-        run: |
-          rm -f /github/home/.cache/ace/adms.sqlite
-          python3 -m pytest -v --cov=camp tests/integration_test/test_sql_integration.py
+        run: python3 -m pytest -v --cov=camp tests/integration_test/test_sql_integration.py
 
   test-integration-c:
     needs: [build]
