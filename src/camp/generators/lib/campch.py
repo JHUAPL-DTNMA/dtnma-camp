@@ -186,13 +186,16 @@ def make_formatted_comment_header(name, c_open, c_close):
 
 ############################# FUNCTIONS SHARED BY IMPL_C and IMPL_H ###############################
 
+def _make_fullname(adm, basename):
+    return "{0}_{1}".format(cu.yang_to_c(adm.norm_name).lower(), basename)
+
 #
 # Makes and returns the basename, fullname, and signature tuple for the edd
 # collect functions; where basename = edd_<edd-name> and fullname = <name>_<basename>
 #
 def make_collect_function(adm, edd):
-    basename = "get_{}".format(edd.name.lower())
-    fullname = "{0}_{1}".format(adm.norm_namespace.lower(), basename)
+    basename = "get_{}".format(cu.yang_to_c(edd.name).lower())
+    fullname = _make_fullname(adm, basename)
     signature = "tnv_t *{}(tnvc_t *parms)".format(fullname)
     return basename, fullname, signature
 
@@ -202,8 +205,8 @@ def make_collect_function(adm, edd):
 #
 def make_meta_function(adm, meta):
     keyword = cs.get_sname(cs.META)
-    basename = "{0}_{1}".format(keyword, meta.name.lower())
-    fullname = "{0}_{1}".format(adm.norm_namespace.lower(), basename)
+    basename = "{0}_{1}".format(keyword, cu.yang_to_c(meta.name).lower())
+    fullname = _make_fullname(adm, basename)
     signature = "tnv_t *{}(tnvc_t *parms)".format(fullname)
     return basename, fullname, signature
 
@@ -213,8 +216,8 @@ def make_meta_function(adm, meta):
 #
 def make_constant_function(adm, const):
     keyword = "get"
-    basename = "{0}_{1}".format(keyword, const.name.lower())
-    fullname = "{0}_{1}".format(adm.norm_namespace.lower(), basename)
+    basename = "{0}_{1}".format(keyword, cu.yang_to_c(const.name).lower())
+    fullname = _make_fullname(adm, basename)
     signature = "tnv_t *{}(tnvc_t *parms)".format(fullname)
     return basename, fullname, signature
 
@@ -224,8 +227,8 @@ def make_constant_function(adm, const):
 #
 def make_control_function(adm, control):
     keyword = cs.get_sname(cs.CTRL)
-    basename = "{0}_{1}".format(keyword, control.name.lower())
-    fullname = "{0}_{1}".format(adm.norm_namespace.lower(), basename)
+    basename = "{0}_{1}".format(keyword, cu.yang_to_c(control.name).lower())
+    fullname = _make_fullname(adm, basename)
     signature = "tnv_t *{}(eid_t *def_mgr, tnvc_t *parms, int8_t *status)".format(fullname)
     return basename, fullname, signature
 
@@ -235,22 +238,10 @@ def make_control_function(adm, control):
 #
 def make_operator_function(adm, op):
     keyword = cs.get_sname(cs.OP)
-    basename = "{0}_{1}".format(keyword, op.name.lower())
-    fullname = "{0}_{1}".format(adm.norm_namespace.lower(), basename)
+    basename = "{0}_{1}".format(keyword, cu.yang_to_c(op.name).lower())
+    fullname = _make_fullname(adm, basename)
     signature = "tnv_t *{}(vector_t *stack)".format(fullname)
     return basename, fullname, signature
-
-#
-# Makes and returns the basename, fullname, and signature tuple for the table
-# functions; where basename = tbl_<tbl-name> and fullname = <name>_<basename>
-#
-def make_table_function(adm, tbl):
-    keyword = cs.get_sname(cs.TBLT)
-    basename = "{0}_{1}".format(keyword, tbl.name.lower())
-    fullname = "{0}_{1}".format(adm.norm_namespace.lower(), basename)
-    signature = "tbl_t *{}(ari_t *id)".format(fullname)
-    return basename, fullname, signature
-
 
 
 ##################### FUNCTIONS SHARED BY CREATE_MGR.PY AND CREATE_AGENT.PY ###################
@@ -338,80 +329,6 @@ def _make_adm_build_ari_parm(adm, item, params):
     else:
         return make_adm_build_ari_template(item_coll, item_g_var_idx, False).format("0", item_ari)
 
-#
-# constructs and writes the init_macros function
-#
-# c_file is an open file descriptor to write to,
-# name is the name of the adm from the caller; g_var_idx is the
-# g_var_idx value in the calling function.
-#
-def write_init_macro_function(c_file, adm, g_var_idx, mgr):
-    body = ""
-    meta_decl_str   = "\n\tmetadata_t *meta = NULL;\n"
-    macdef_decl_str = "\n\tmacdef_t *def = NULL;\n"
-    added_meta   = False
-    added_macdef = False
-
-    macdef_create_template = "macdef_create({0}, {1});"
-    add_macdef_ctrl_str    = "\n\tadm_add_macdef_ctrl(def, {});"
-    adm_add_macdef_str     = "\n\tadm_add_macdef(def);"
-    meta_add_parm_template = "\n\tmeta_add_parm(meta, \"{0}\", {1});"
-
-    enum_name = cu.make_enum_name_from_str(adm.norm_namespace)
-    meta_add_macro_template = "\n\tmeta = meta_add_macro" + "(def->ari, " + enum_name + ", \"{0}\", \"{1}\");"
-    build_ari_str_template  = make_adm_build_ari_template(cs.MACRO, g_var_idx, False)
-
-    for obj in adm.mac:
-        # Preliminaries
-        ari = cu.make_ari_name(adm.norm_namespace, cs.MACRO, obj)
-        mac_name    = obj.name
-        description = obj.description or ''
-
-        acts  = obj.action.items if obj.action else []
-        parms = obj.parmspec.items if obj.parmspec else []
-
-        defs_str = ""
-        parms_tf = "0"
-        if parms:
-            parms_tf = "1"
-
-        # Use templates to make calls specific to this macro
-        build_ari_str     = build_ari_str_template.format(parms_tf, ari)
-        macdef_create_str = macdef_create_template.format(len(defs), build_ari_str)
-        if defs:
-            macdef_create_str = "\n\tdef = " + macdef_create_str
-            added_macdef = True
-        else:
-            macdef_create_str = "\n\t" + macdef_create_str
-
-
-        # Create necessary strings for each definition
-        for item in acts:
-            def_build_ari_parm_str = _make_adm_build_ari_parm(adm, item, parms);
-            defs_str += add_macdef_ctrl_str.format(def_build_ari_parm_str)
-
-        # Add all the formatted strings to the body
-        body += "\n\n\t/* {} */".format(mac_name.upper())
-        body += macdef_create_str
-        body += defs_str
-        body += adm_add_macdef_str
-
-        # Additional strings to be added if this the the manager code
-        if mgr:
-            body += meta_add_macro_template.format(mac_name, description)
-            added_meta = True
-            for parm in parms:
-                amp_type = cu.make_amp_type_name_from_str(parm.type)
-                body += meta_add_parm_template.format(parm.name, amp_type)
-
-    # only add these declarations if the variables will be used; to avoid compiler warnings in C code
-    if added_macdef:
-        body = macdef_decl_str + body
-    if added_meta:
-        body = meta_decl_str + body
-
-    write_formatted_init_function(c_file, adm.norm_namespace, cs.MACRO, body)
-
 # Builds a template for the
 # ```
 # meta_add_...
@@ -437,59 +354,40 @@ def make_std_meta_add_coll_template(coll, name):
 # TODO: cur_ari in generated function is unused
 #
 def write_init_var_function(c_file, adm, g_var_idx, mgr):
+    norm_name = cu.yang_to_c(adm.norm_name)
+
     body = ""
     coll_decl_str = "\n\tari_t *id = NULL;\n"
-    expr_decl_str = "\n\texpr_t *expr = NULL;\n"
 
-    expr_create_str   = "\n\texpr = expr_create({});"
-    expr_add_str      = "\n\texpr_add_item(expr, {});"
-    add_var_from_expr = "\n\tadm_add_var_from_expr(id, {}, expr);"
+    # TODO fix typing
+    tnv_decl_str = "\n\ttnv_t *tnv = tnv_from_int({});\n"
+    add_var_from_tnv = "\n\tadm_add_var_from_tnv(id, *tnv);"
 
     # gives you the adm_build_ari(...)
     build_str_template = "\n" + make_adm_build_ari_template(cs.VAR, g_var_idx, True)
     # gives you the meta_add_var(... )
-    meta_add_template = make_std_meta_add_coll_template(cs.VAR, adm.norm_namespace)
+    meta_add_template = make_std_meta_add_coll_template(cs.VAR, norm_name)
 
-    added_coll = False
-    added_expr = False
 
     for obj in adm.var:
         # Preliminaries
-        ari      = cu.make_ari_name(adm.norm_namespace, cs.VAR, obj)
-        amp_type = cu.make_amp_type_name_from_str(obj.type)
+        ari      = cu.make_ari_name(norm_name, cs.VAR, obj)
+        amp_type = cu.make_amp_type_name_from_str(obj.typeobj.type_text)
 
-        var_name    = obj.name
+        var_name    = cu.yang_to_c(obj.name)
         description = obj.description or ''
 
-        expr_str = ""
+        added_coll = False
 
-        # Add to the expr str for each postfix
-        pfxs = obj.initializer.postfix.items if obj.initializer else []
-        for pfx in pfxs:
-            pfx_ns,pfx_coll,pfx_name = cu.ari_get_names(pfx)
-            pfx_ari = cu.make_ari_name_from_str(pfx_ns, pfx_coll, pfx_name)
-            pfx_g_var_idx = cu.get_g_var_idx(pfx_ns)
-            #FIXME: _,param_flag  = retriever.postfix_has_params(pfx)
-            param_flag = "0"
+        if obj.init_ari:
+            val = obj.init_ari.value
 
-            pfx_build_ari = make_adm_build_ari_template(pfx_coll, pfx_g_var_idx, False).format(param_flag, pfx_ari)
+            # Add formatted strings to body
+            body += "\n\n\t/* {} */".format(var_name.upper())
+            body +=  build_str_template.format("0", ari)
 
-            expr_str += expr_add_str.format(pfx_build_ari)
-
-        # If postfixs are present, append the expr_create string, and prepend
-        # the adm_add_var_from_expr stringq
-        if pfxs:
-            init_type = cu.make_amp_type_name_from_str(obj.initializer.type)
-
-            expr_str = expr_create_str.format(init_type) + expr_str
-            expr_str += add_var_from_expr.format(init_type)
-
-            added_expr = True
-
-        # Add formatted strings to body
-        body += "\n\n\t/* {} */".format(var_name.upper())
-        body +=  build_str_template.format("0", ari)
-        body += expr_str
+            body += tnv_decl_str.format(val)
+            body += add_var_from_tnv
 
         # Additional meta_add function needs to be called if this is the mgr code generation
         if mgr:
@@ -497,187 +395,38 @@ def write_init_var_function(c_file, adm, g_var_idx, mgr):
 
         added_coll = True
 
-    # only add these declarations if the variables will be used; to avoid compiler warnings
-    if added_expr:
-        body = expr_decl_str + body
-    if added_coll:
-        body = coll_decl_str + body
+        # only add these declarations if the variables will be used; to avoid compiler warnings
+        if added_coll:
+            body = coll_decl_str + body
 
-    write_formatted_init_function(c_file, adm.norm_namespace, cs.VAR, body)
-
-
-#
-# writes the init_reports() function to the open file descriptor passed as c_file
-# name is the value returned from get_adm_names()
-# g_var_idx is the g_var_idx variable for the caller. Retriever is the retriever
-# class instance to be used to populate the reports.
-# mgr is a boolean value which will result in the addition of the meta_add_*()
-# function for every report if == True
-#
-def write_parameterized_init_reports_function(c_file, adm, g_var_idx, mgr):
-    body = ""
-    rpt_decl_str  = "\n\trpttpl_t *def = NULL;\n"
-    meta_decl_str =	"\n\tmetadata_t *meta = NULL;\n"
-    added_rpt  = False
-    added_meta = False
-
-    rpt_create_template = "rpttpl_create_id({});"
-    build_ari_str_template = make_adm_build_ari_template(cs.RPTT, g_var_idx, False)
-
-    add_item_template = "\n\trpttpl_add_item(def, {});"
-    adm_add_str       = "\n\tadm_add_rpttpl(def);"
-
-    enum_name = cu.make_enum_name_from_str(adm.norm_namespace)
-    meta_add_rpt_template  = "meta_add_rpttpl(def->id, " + enum_name + ", \"{0}\", \"{1}\");"
-    meta_add_parm_template = "\n\tmeta_add_parm(meta, \"{0}\", {1});"
-
-    for obj in adm.rptt:
-        # Preliminaries
-        rpt_name    = obj.name
-        description = obj.description or ''
-
-        ari    = cu.make_ari_name(adm.norm_namespace, cs.RPTT, obj)
-        params = obj.parmspec.items if obj.parmspec else []
-        defs   = obj.definition.items if obj.definition else []
-
-        defs_str  = ""
-        params_tf = "0"
-        if params:
-            params_tf = "1"
-
-        # The rpt_create template is slightly different depending on presence of defs
-        rpt_create_str = rpt_create_template.format(build_ari_str_template.format(params_tf, ari))
-        if defs:
-            rpt_create_str = "\n\tdef = " + rpt_create_str
-            added_rpt = True
-        else:
-            rpt_create_str = "\n\t" + rpt_create_str
-
-        # Add to the defs string for each definition found
-        for item in defs:
-            def_build_ari_str = _make_adm_build_ari_parm(adm, item, params)
-            defs_str += add_item_template.format(def_build_ari_str)
-
-        # Add all formatted strings to the body
-        body += "\n\t/* {} */".format(obj.name.upper())
-        body += rpt_create_str
-        body += defs_str
-        body += adm_add_str
-
-        added_rpt = True
-
-        # If this is the mgr code generation, need meta_add_rpt strings also
-        if mgr:
-            meta_add_rpt_str = meta_add_rpt_template.format(rpt_name, description)
-
-            meta_add_parm_str = ""
-            if params:
-                meta_add_rpt_str = "meta = " + meta_add_rpt_str
-                added_meta = True
-
-            # Create meta_add_parm string for each parameter found
-            for parm in params:
-                amp_type = cu.make_amp_type_name_from_str(parm.type)
-                meta_add_parm_str += meta_add_parm_template.format(parm.name, amp_type)
-
-            # Add to body string
-            body += "\n\t" + meta_add_rpt_str + meta_add_parm_str
-
-    # only declare variables if they're going to be used
-    if added_rpt:
-        body = rpt_decl_str + body
-    if added_meta:
-        body = meta_decl_str + body
-
-    write_formatted_init_function(c_file, adm.norm_namespace, cs.RPTT, body)
-
-#
-# Writes the init_tables funtion for the passed adm name and
-# retriever class instance.
-#
-def write_init_tables_function(c_file, adm, g_var_idx, mgr):
-    body = ""
-    tbl_decl_str        = "\n\ttblt_t *def = NULL;"
-    tbl_create_template = "\n\tdef = tblt_create({0}, {1});"
-
-    build_ari_template = make_adm_build_ari_template(cs.TBLT, g_var_idx, False)
-    enum_name = cu.make_enum_name_from_str(adm.norm_namespace)
-
-    add_tblt_str      = "\n\tadm_add_tblt(def);"
-    meta_add_template = "\n\tmeta_add_tblt(def->id, " + enum_name + ", \"{0}\", \"{1}\");"
-    add_col_template  = "\n\ttblt_add_col(def, {0}, \"{1}\");"
-
-    added_table = False
-
-    for obj in adm.tblt:
-        # Preliminaries
-        ari = cu.make_ari_name(adm.norm_namespace, cs.TBLT, obj)
-        tbl_name    = obj.name
-        description = obj.description or ''
-
-        cols = obj.columns.items if obj.columns else []
-        cols_str = ""
-
-        # Format the templates needed for the tables function
-        tbl_build_ari_str = build_ari_template.format("0", ari)
-
-        # The appearance of this template depends on whether this is the mgr code or not
-        if mgr:
-            tbl_create_str = tbl_create_template.format(tbl_build_ari_str, "NULL")
-        else:
-            tbl_create_str = tbl_create_template.format(tbl_build_ari_str, ari.lower())
-
-        # Add to the cols string for each column present
-        for col in cols:
-            c_amp_type = cu.make_amp_type_name_from_str(col.type)
-            cols_str += add_col_template.format(c_amp_type, col.name)
-
-        # Add formatted strings to the body
-        body += "\n\n\t/* {} */\n".format(tbl_name.upper())
-        body += tbl_create_str
-        body += cols_str
-        body += add_tblt_str
-
-        added_table = True
-
-        # If this the the mgr code generation, also need to call meta_add function
-        if mgr:
-            body += meta_add_template.format(tbl_name, description)
-
-    # tbl variable is only declared if needed; in order to avoid C compiler warnings for unused variable
-    if added_table:
-        body = tbl_decl_str + body
-
-    write_formatted_init_function(c_file, adm.norm_namespace, cs.TBLT, body)
+    write_formatted_init_function(c_file, norm_name, cs.VAR, body)
 
 #
 # Writes the init function to c_file
 #
-def write_init_function(c_file, adm: ace.models.AdmFile, g_var_idx: str, mgr: bool):
-    enum_name = cu.make_enum_name_from_str(adm.norm_namespace)
+def write_init_function(c_file, adm: ace.models.AdmModule, g_var_idx: str, mgr: bool):
+    norm_name = cu.yang_to_c(adm.norm_name)
+    enum_name = cu.make_enum_name_from_str(norm_name)
 
-    vdb_adds            = "\tadm_add_adm_info(\"" + adm.norm_namespace + "\", " + enum_name + ");\n"
+    vdb_adds            = "\tadm_add_adm_info(\"" + norm_name + "\", " + enum_name + ");\n"
     vdb_add_template    = "\n\tVDB_ADD_NN(((" + enum_name + " * 20) + {0}), &({1}[{0}]));"
-    init_decl_template = "static void " + adm.norm_namespace + "_init_{0}(void);\n"
-    init_call_template = "\n\t" + adm.norm_namespace + "_init_{0}();"
+    init_decl_template = "static void " + norm_name + "_init_{0}(void);\n"
+    init_call_template = "\n\t" + norm_name + "_init_{0}();"
 
     # order of init functions matters
     obj_types = {
-        cs.META: 'mdat',
+        # cs.META: 'mdat',
         cs.CONST: 'const',
         cs.EDD: 'edd',
         cs.OP: 'oper',
         cs.VAR: 'var',
         cs.CTRL: 'ctrl',
-        cs.MACRO: 'mac',
-        cs.RPTT: 'rptt',
-        cs.TBLT: 'tblt',
     }
 
     init_decls = ""
     init_calls = ""
     if not mgr:
-        init_calls = "\n\t" + adm.norm_namespace + "_setup();"
+        init_calls = "\n\t" + norm_name + "_setup();"
 
     for coll, attrname in obj_types.items():
         init_decls += init_decl_template.format(cs.get_sname(coll).lower())
@@ -691,7 +440,7 @@ def write_init_function(c_file, adm: ace.models.AdmFile, g_var_idx: str, mgr: bo
     body = vdb_adds + "\n\n" + init_calls
 
     c_file.write(init_decls + "\n")
-    write_formatted_init_function(c_file, adm.norm_namespace, None, body)
+    write_formatted_init_function(c_file, norm_name, None, body)
 
 def make_cplusplus_open():
     ''' Open an "extern C" block for C++ inclusion. '''

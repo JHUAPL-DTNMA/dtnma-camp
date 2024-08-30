@@ -22,7 +22,7 @@ def _good_file(name: str) -> bool:
         return False
 
     _, ext = os.path.splitext(name)
-    return ext == ".json" and not name == "index.json"
+    return ext == ".yang"
 
 def adm_files() -> Tuple[str]:
     ''' Get a list of available ADMs from the test directory.

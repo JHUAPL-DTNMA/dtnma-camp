@@ -23,8 +23,7 @@ def test_adms(adm):
     Compiles each adm in ADMS_DIR against the dtnma-tools repo
     @pre: DTNMA_TOOLS_DIR is a git working copy, tests should be run from home directory of camp repo
     """
-    if adm == 'amp_agent.json' or adm == 'ion_bpsec_admin.json':
-        pytest.xfail("ADM with known issue")
+
     # input file full filepath
     filepath = os.path.join(ADMS_DIR, adm)
 

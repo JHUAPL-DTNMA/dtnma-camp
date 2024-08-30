@@ -36,15 +36,16 @@ class Writer(AbstractWriter, CHelperMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._g_var_idx = "g_" + self.adm.norm_namespace.lower() + "_idx"
+        self.c_norm_name = cu.yang_to_c(self.adm.norm_name)
+        self._g_var_idx = "g_" + self.c_norm_name.lower() + "_idx"
 
     def file_path(self) -> str:
         # Interface for AbstractWriter
-        return os.path.join(self.out_path, "agent", f"adm_{self.adm.norm_name}_agent.c")
+        return os.path.join(self.out_path, "agent", f"adm_{self.c_norm_name}_agent.c")
 
     def write(self, outfile: TextIO):
         # Interface for AbstractWriter
-        campch.write_c_file_header(outfile, f"adm_{self.adm.norm_name}_agent.c")
+        campch.write_c_file_header(outfile, f"adm_{self.c_norm_name}_agent.c")
         self.write_includes(outfile)
 
         outfile.write("vec_idx_t {}[11];\n\n".format(self._g_var_idx))
@@ -57,9 +58,6 @@ class Writer(AbstractWriter, CHelperMixin):
         self.write_init_op_function(outfile)
         self.write_init_var_function(outfile)
         self.write_init_control_function(outfile)
-        self.write_init_macro_function(outfile)
-        self.write_init_reports_function(outfile)
-        self.write_init_tables_function(outfile)
 
     #
     # Writes all of the #includes for this c file
@@ -72,11 +70,11 @@ class Writer(AbstractWriter, CHelperMixin):
         files = [
             "ion.h",
             "platform.h",
-            f"adm_{self.adm.norm_name}.h",
+            f"adm_{self.c_norm_name}.h",
             "shared/utils/utils.h",
             "shared/primitives/report.h",
             "shared/primitives/blob.h",
-            f"adm_{self.adm.norm_name}_impl.h",
+            f"adm_{self.c_norm_name}_impl.h",
             "agent/rda.h",
         ]
         outfile.write(campch.make_includes(files))
@@ -127,13 +125,13 @@ class Writer(AbstractWriter, CHelperMixin):
         body = ""
         add_str_template = self.make_std_meta_adm_build_template(cs.META)
 
-        for obj in self.adm.mdat:
+        for obj in self.adm.metadata_list.items:
             _,fname,_ = campch.make_meta_function(self.adm, obj)
-            ari       = cu.make_ari_name(self.adm.norm_namespace, cs.META, obj)
+            ari       = cu.make_ari_name(self.c_norm_name, cs.META, obj)
 
             body += add_str_template.format("0", ari, fname)
 
-        campch.write_formatted_init_function(outfile, self.adm.norm_namespace, cs.META, body)
+        campch.write_formatted_init_function(outfile, self.c_norm_name, cs.META, body)
 
     #
     # Constructs and writes the init_constants function
@@ -148,15 +146,15 @@ class Writer(AbstractWriter, CHelperMixin):
         for obj in self.adm.const:
             parms_tf = "0"
             _,fname,_ = campch.make_constant_function(self.adm, obj)
-            ari       = cu.make_ari_name(self.adm.norm_namespace, cs.CONST, obj)
+            ari       = cu.make_ari_name(self.c_norm_name, cs.CONST, obj)
 
             #FIXME: can const have parameters?
-#            if obj.parmspec:
+#            if obj.paramspec:
 #                parms_tf = "1"
 
             body += add_str.format(parms_tf, ari, fname)
 
-        campch.write_formatted_init_function(outfile, self.adm.norm_namespace, cs.CONST, body)
+        campch.write_formatted_init_function(outfile, self.c_norm_name, cs.CONST, body)
 
     #
     # Constructs and writes the init_edd function
@@ -171,14 +169,14 @@ class Writer(AbstractWriter, CHelperMixin):
         for obj in self.adm.edd:
             parms_tf = "0"
             _,fname,_ = campch.make_collect_function(self.adm, obj)
-            ari       = cu.make_ari_name(self.adm.norm_namespace, cs.EDD, obj)
+            ari       = cu.make_ari_name(self.c_norm_name, cs.EDD, obj)
 
-            if obj.parmspec and obj.parmspec.items:
+            if hasattr(obj, 'parameters') and obj.parameters.items:
                 parms_tf = "1"
 
             body += add_str.format(parms_tf, ari, fname)
 
-        campch.write_formatted_init_function(outfile, self.adm.norm_namespace, cs.EDD, body)
+        campch.write_formatted_init_function(outfile, self.c_norm_name, cs.EDD, body)
 
 
     #
@@ -193,12 +191,12 @@ class Writer(AbstractWriter, CHelperMixin):
         adm_add_op_template = "\n\tadm_add_"+cs.get_sname(cs.OP)+"(" + self._g_var_idx + "["+cs.get_adm_idx(cs.OP)+"], {0}, {1}, {2});"
 
         for obj in self.adm.oper:
-            ari      = cu.make_ari_name(self.adm.norm_namespace, cs.OP, obj)
-            in_types = obj.in_type if obj.in_type else []
+            ari      = cu.make_ari_name(self.c_norm_name, cs.OP, obj)
+            in_types = obj.operands.items if obj.operands.items else []
 
             body += adm_add_op_template.format(ari, len(in_types), ari.lower())
 
-        campch.write_formatted_init_function(outfile, self.adm.norm_namespace, cs.OP, body)
+        campch.write_formatted_init_function(outfile, self.c_norm_name, cs.OP, body)
 
     #
     # Writes the init_variables body
@@ -220,39 +218,9 @@ class Writer(AbstractWriter, CHelperMixin):
         adm_add_template = "\n\tadm_add_ctrldef(" + self._g_var_idx + "["+cs.get_adm_idx(cs.CTRL)+"], {0}, {1}, {2});"
 
         for obj in self.adm.ctrl:
-            ari = cu.make_ari_name(self.adm.norm_namespace, cs.CTRL, obj)
-            parms = obj.parmspec.items if obj.parmspec else []
+            ari = cu.make_ari_name(self.c_norm_name, cs.CTRL, obj)
+            parms = obj.parameters.items if hasattr(obj, 'parameters') else []
             body += adm_add_template.format(ari, len(parms), ari.lower())
 
-        campch.write_formatted_init_function(outfile, self.adm.norm_namespace, cs.CTRL, body)
-
-    #
-    # Constructs and writes the init_macros function
-    #
-    # c_file is an open file descriptor to write to,
-    # name is the value returned from get_adm_names()
-    # macros is a list of macros to add
-    #
-    def write_init_macro_function(self, outfile):
-        campch.write_init_macro_function(outfile, self.adm, self._g_var_idx, False)
-
-    #
-    # Constructs and writes the init reports function
-    #
-    # c_file is an open file descriptor to write to
-    # name is the name returned by the call to get_adm_names()
-    # retriever is the Retriever class instance for this ADM
-    #
-    def write_init_reports_function(self, outfile):
-        campch.write_parameterized_init_reports_function(outfile, self.adm, self._g_var_idx, False)
-
-    #
-    # Constructs and writes the init tables function
-    #
-    # c_file is an open file descriptor to write to
-    # name is the name returned by the call to get_adm_names()
-    # retriever is the Retriever class instance for this ADM
-    #
-    def write_init_tables_function(self, outfile):
-        campch.write_init_tables_function(outfile, self.adm, self._g_var_idx, False)
+        campch.write_formatted_init_function(outfile, self.c_norm_name, cs.CTRL, body)
 
