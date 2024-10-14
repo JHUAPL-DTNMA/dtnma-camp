@@ -285,12 +285,20 @@ def write_formatted_init_function(c_file, name, coll, body):
     else:
         ttype = ""
 
-    init_funct_string = (
-        "void {0}_init{1}()"
-        "\n{{"
-        "\n{2}"
-        "\n}}"
-        "\n\n")
+    if coll != None:
+        init_funct_string = (
+            "void {0}_init{1}(cace_amm_obj_ns_t *adm)"
+            "\n{{"
+            "\n{2}"
+            "\n}}"
+            "\n\n")
+    else:
+        init_funct_string = (
+            "int {0}_init{1}(refda_agent_t *agent)"
+            "\n{{"
+            "\n{2}"
+            "\n}}"
+            "\n\n")
 
     c_file.write(init_funct_string.format(name, ttype, body))
 
@@ -337,80 +345,6 @@ def _make_adm_build_ari_parm(adm, item, params):
     # no params
     else:
         return make_adm_build_ari_template(item_coll, item_g_var_idx, False).format("0", item_ari)
-
-#
-# constructs and writes the init_macros function
-#
-# c_file is an open file descriptor to write to,
-# name is the name of the adm from the caller; g_var_idx is the
-# g_var_idx value in the calling function.
-#
-def write_init_macro_function(c_file, adm, g_var_idx, mgr):
-    body = ""
-    meta_decl_str   = "\n\tmetadata_t *meta = NULL;\n"
-    macdef_decl_str = "\n\tmacdef_t *def = NULL;\n"
-    added_meta   = False
-    added_macdef = False
-
-    macdef_create_template = "macdef_create({0}, {1});"
-    add_macdef_ctrl_str    = "\n\tadm_add_macdef_ctrl(def, {});"
-    adm_add_macdef_str     = "\n\tadm_add_macdef(def);"
-    meta_add_parm_template = "\n\tmeta_add_parm(meta, \"{0}\", {1});"
-
-    enum_name = cu.make_enum_name_from_str(adm.norm_namespace)
-    meta_add_macro_template = "\n\tmeta = meta_add_macro" + "(def->ari, " + enum_name + ", \"{0}\", \"{1}\");"
-    build_ari_str_template  = make_adm_build_ari_template(cs.MACRO, g_var_idx, False)
-
-    for obj in adm.mac:
-        # Preliminaries
-        ari = cu.make_ari_name(adm.norm_namespace, cs.MACRO, obj)
-        mac_name    = obj.name
-        description = obj.description or ''
-
-        acts  = obj.action.items if obj.action else []
-        parms = obj.parmspec.items if obj.parmspec else []
-
-        defs_str = ""
-        parms_tf = "0"
-        if parms:
-            parms_tf = "1"
-
-        # Use templates to make calls specific to this macro
-        build_ari_str     = build_ari_str_template.format(parms_tf, ari)
-        macdef_create_str = macdef_create_template.format(len(defs), build_ari_str)
-        if defs:
-            macdef_create_str = "\n\tdef = " + macdef_create_str
-            added_macdef = True
-        else:
-            macdef_create_str = "\n\t" + macdef_create_str
-
-
-        # Create necessary strings for each definition
-        for item in acts:
-            def_build_ari_parm_str = _make_adm_build_ari_parm(adm, item, parms);
-            defs_str += add_macdef_ctrl_str.format(def_build_ari_parm_str)
-
-        # Add all the formatted strings to the body
-        body += "\n\n\t/* {} */".format(mac_name.upper())
-        body += macdef_create_str
-        body += defs_str
-        body += adm_add_macdef_str
-
-        # Additional strings to be added if this the the manager code
-        if mgr:
-            body += meta_add_macro_template.format(mac_name, description)
-            added_meta = True
-            for parm in parms:
-                amp_type = cu.make_amp_type_name_from_str(parm.type)
-                body += meta_add_parm_template.format(parm.name, amp_type)
-
-    # only add these declarations if the variables will be used; to avoid compiler warnings in C code
-    if added_macdef:
-        body = macdef_decl_str + body
-    if added_meta:
-        body = meta_decl_str + body
-
-    write_formatted_init_function(c_file, adm.norm_namespace, cs.MACRO, body)
 
 # Builds a template for the
 # ```
@@ -655,11 +589,14 @@ def write_init_tables_function(c_file, adm, g_var_idx, mgr):
 #
 def write_init_function(c_file, adm: ace.models.AdmFile, g_var_idx: str, mgr: bool):
     enum_name = cu.make_enum_name_from_str(adm.norm_namespace)
-
-    vdb_adds            = "\tadm_add_adm_info(\"" + adm.norm_namespace + "\", " + enum_name + ");\n"
-    vdb_add_template    = "\n\tVDB_ADD_NN(((" + enum_name + " * 20) + {0}), &({1}[{0}]));"
-    init_decl_template = "static void " + adm.norm_namespace + "_init_{0}(void);\n"
-    init_call_template = "\n\t" + adm.norm_namespace + "_init_{0}();"
+    
+    adm_register        = f'\tCHKERR1(agent);\n\
+                            \n\tcace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(&(agent->objs), "{adm.norm_namespace}", true, {enum_name});\n'
+    adm_obj_lock        = "\n\tif (pthread_mutex_lock(&(agent->objs_mutex))){\n\t\treturn 2;\n\t}\n"
+    #vdb_add_template    = "\n\tVDB_ADD_NN(((" + enum_name + " * 20) + {0}), &({1}[{0}]));"
+    init_decl_template = "static void " + adm.norm_namespace + "_init_{0}(cace_amm_obj_ns_t *adm);\n"
+    init_call_template = "\n\t\t" + adm.norm_namespace + "_init_{0}(adm);"
+    adm_obj_unlock      = "\n\tif (pthread_mutex_unlock(&(agent->objs_mutex))){\n\t\treturn 2;\n\t}\n"
 
     # order of init functions matters
     obj_types = {
@@ -669,26 +606,24 @@ def write_init_function(c_file, adm: ace.models.AdmFile, g_var_idx: str, mgr: bo
         cs.OP: 'oper',
         cs.VAR: 'var',
         cs.CTRL: 'ctrl',
-        cs.MACRO: 'mac',
-        cs.RPTT: 'rptt',
+        #cs.RPTT: 'rptt',
         cs.TBLT: 'tblt',
     }
 
     init_decls = ""
     init_calls = ""
     if not mgr:
-        init_calls = "\n\t" + adm.norm_namespace + "_setup();"
+        init_calls = "\n\t\t" + adm.norm_namespace + "_setup();"
 
     for coll, attrname in obj_types.items():
         init_decls += init_decl_template.format(cs.get_sname(coll).lower())
 
         # only generate NN's for elements that appear in the ADM
-        if getattr(adm, attrname):
-            vdb_adds += vdb_add_template.format(cs.get_adm_idx(coll), g_var_idx)
+        #if getattr(adm, attrname):  adm_register += vdb_add_template.format(cs.get_adm_idx(coll), g_var_idx)
 
         init_calls += init_call_template.format(cs.get_sname(coll).lower())
 
-    body = vdb_adds + "\n\n" + init_calls
+    body = adm_register + adm_obj_lock + "\n\tif (adm)\n\t{" + init_calls + "\n\t}\n" + adm_obj_unlock
 
     c_file.write(init_decls + "\n")
     write_formatted_init_function(c_file, adm.norm_namespace, None, body)

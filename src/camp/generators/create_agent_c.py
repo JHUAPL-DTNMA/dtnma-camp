@@ -57,8 +57,7 @@ class Writer(AbstractWriter, CHelperMixin):
         self.write_init_op_function(outfile)
         self.write_init_var_function(outfile)
         self.write_init_control_function(outfile)
-        self.write_init_macro_function(outfile)
-        self.write_init_reports_function(outfile)
+        #self.write_init_reports_function(outfile)
         self.write_init_tables_function(outfile)
 
     #
@@ -70,14 +69,21 @@ class Writer(AbstractWriter, CHelperMixin):
     #
     def write_includes(self, outfile):
         files = [
-            "ion.h",
-            "platform.h",
+            #"ion.h",
+            #"platform.h",
             f"adm_{self.adm.norm_name}.h",
-            "shared/utils/utils.h",
-            "shared/primitives/report.h",
-            "shared/primitives/blob.h",
+            #"shared/utils/utils.h",
+            #"shared/primitives/report.h",
+            #"shared/primitives/blob.h",
             f"adm_{self.adm.norm_name}_impl.h",
-            "agent/rda.h",
+            #"agent/rda.h",
+            "refda/agent.h",
+            "refda/register.h",
+            "refda/valprod.h",
+            "refda/reporting.h",
+            "cace/ari/text.h",
+            "cace/util/logging.h",
+            "cace/util/defs.h"
         ]
         outfile.write(campch.make_includes(files))
 
@@ -225,16 +231,6 @@ class Writer(AbstractWriter, CHelperMixin):
             body += adm_add_template.format(ari, len(parms), ari.lower())
 
         campch.write_formatted_init_function(outfile, self.adm.norm_namespace, cs.CTRL, body)
-
-    #
-    # Constructs and writes the init_macros function
-    #
-    # c_file is an open file descriptor to write to,
-    # name is the value returned from get_adm_names()
-    # macros is a list of macros to add
-    #
-    def write_init_macro_function(self, outfile):
-        campch.write_init_macro_function(outfile, self.adm, self._g_var_idx, False)
 
     #
     # Constructs and writes the init reports function

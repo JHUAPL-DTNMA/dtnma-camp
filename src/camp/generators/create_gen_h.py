@@ -59,7 +59,6 @@ class Writer(AbstractWriter, CHelperMixin):
         self.write_tblt_definitions(outfile)
         self.write_ctrl_definitions(outfile)
         self.write_const_definitions(outfile)
-        self.write_macro_definitions(outfile)
         self.write_op_definitions(outfile)
 
         self.write_initialization_functions(outfile)
@@ -460,29 +459,6 @@ class Writer(AbstractWriter, CHelperMixin):
 
         # write everything to file
         self.write_definition_table_header(outfile, self.adm.norm_namespace.upper()+" OPERATOR DEFINITIONS", False)
-        outfile.write(table   + " */\n")
-        outfile.write(defines + "\n")
-
-    #
-    # Writes the macro definitions and #defines to the file
-    # h_file is an open file descriptor to write to
-    # name and ns are the values returned by get_adm_names()
-    # macros is a list of macros to include
-    #
-    def write_macro_definitions(self, outfile):
-        table   = ""  # the commented table of all macros (string)
-        defines = ""  # the #defines and for all macros (string)
-
-        # Create the strings for the #defines and preceeding commented table
-        for obj in self.adm.mac:
-            hex_str = format(obj.enum, '#04x')
-            ari_str = cu.make_ari_name(self.adm.norm_namespace, cs.MACRO, obj)
-
-            table   = table   + self.format_table_entry(False, obj.name, obj.description, "mc", "")
-            defines = defines + "#define {0} {1}\n".format(ari_str, hex_str)
-
-        # write everything to file
-        self.write_definition_table_header(outfile, self.adm.norm_namespace.upper()+" MACRO DEFINITIONS", False)
         outfile.write(table   + " */\n")
         outfile.write(defines + "\n")
 
