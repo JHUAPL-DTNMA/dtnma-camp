@@ -54,8 +54,13 @@ class Writer(AbstractWriter, CHelperMixin):
         # Custom includes tag
         self._scraper.write_custom_includes(outfile)
         outfile.write(campch.make_includes([
-            "shared/adm/adm.h",
-            "adm_{}_impl.h".format(self.adm.norm_name.lower())
+            #"shared/adm/adm.h",
+            #"adm_{}_impl.h".format(self.adm.norm_name.lower()),
+            "refda/register.h",
+            "refda/valprod.h",
+            "cace/ari.h",
+            "cace/util/defs.h",
+            "cace/util/logging.h"
         ]))
 
         # Add any custom functions scraped
@@ -64,9 +69,8 @@ class Writer(AbstractWriter, CHelperMixin):
         self.write_setup(outfile)
         self.write_cleanup(outfile)
 
-        self.write_metadata_functions(outfile)
-        self.write_constant_functions(outfile)
-        self.write_table_functions(outfile)
+        #self.write_constant_functions(outfile)
+        #self.write_table_functions(outfile)
         self.write_edd_functions(outfile)
         self.write_control_functions(outfile)
         self.write_operator_functions(outfile)
@@ -78,7 +82,7 @@ class Writer(AbstractWriter, CHelperMixin):
     # scraper is the Scraper class object for this ADM
     #
     def write_setup(self, outfile):
-        outfile.write("void {}_setup()\n{{\n\n".format(self.adm.norm_namespace.lower()))
+        outfile.write("void {}_setup()\n{{\n\n".format(self.adm.norm_name.replace('-', '_').lower()))
 
         self._scraper.write_custom_body(outfile, "setup")
 
@@ -91,31 +95,11 @@ class Writer(AbstractWriter, CHelperMixin):
     # scraper is the Scraper class object for this ADM
     #
     def write_cleanup(self, outfile):
-        outfile.write("void {}_cleanup()\n{{\n\n".format(self.adm.norm_namespace.lower()))
+        outfile.write("void {}_cleanup()\n{{\n\n".format(self.adm.norm_name.replace('-', '_').lower()))
 
         self._scraper.write_custom_body(outfile, "cleanup")
 
         outfile.write("}\n\n")
-
-    #
-    # Writes the metadata functions to the file passed
-    # outfile is an open file descriptor to write to
-    # name is the value returned from get_adm_names()
-    # metadata is a list of metadata to include
-    #
-    def write_metadata_functions(self, outfile):
-        outfile.write("\n/* Metadata Functions */\n\n")
-
-        metadata_funct_str = (
-            "\n{0}"
-            "\n{{"
-            "\n\treturn tnv_from_str(\"{1}\");"
-            "\n}}"
-            "\n\n")
-
-        for obj in self.adm.mdat:
-            _,_,signature = campch.make_meta_function(self.adm, obj)
-            outfile.write(metadata_funct_str.format(signature, obj.value))
 
     #
     # Writes the constant functions to the file passed
@@ -129,7 +113,7 @@ class Writer(AbstractWriter, CHelperMixin):
         const_function_str = (
             "\n{0}"
             "\n{{"
-            "\n\treturn tnv_from_uvast({1});"
+            "\n\t{1}"
             "\n}}"
             "\n")
 
@@ -191,9 +175,9 @@ class Writer(AbstractWriter, CHelperMixin):
             "\n{0}"
             "\n{1}"
             "\n{{"
-            "\n\ttnv_t *result = NULL;"
+            "\n\tchar *edd_val_ari;"
             "\n")
-        edd_function_end_str = "\treturn result;\n}\n\n"
+        edd_function_end_str = "\tari_set_tstr(&(ctx->value), edd_val_ari, false);\n}\n\n"
 
         for obj in self.adm.edd:
             basename,_,signature = campch.make_collect_function(self.adm, obj)
@@ -222,10 +206,9 @@ class Writer(AbstractWriter, CHelperMixin):
             "\n{0}"
             "\n{1}"
             "\n{{"
-            "\n\ttnv_t *result = NULL;"
-            "\n\t*status = CTRL_FAILURE;"
+            "\n\tint status;"
             "\n")
-        ctrl_function_end_str = "\treturn result;\n}\n\n"
+        ctrl_function_end_str = "\treturn status;\n}\n\n"
 
         for obj in self.adm.ctrl:
             basename,_,signature = campch.make_control_function(self.adm, obj)

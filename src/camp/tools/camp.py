@@ -122,10 +122,14 @@ def run(args: argparse.Namespace):
         LOGGER.error("Loading error: %s", e)
         return 2
 
-    for mdat in ('name', 'namespace', 'enum'):
-        if admset.get_child(adm, ace.models.Mdat, mdat) is None:
-            LOGGER.error('The ADM is missing an "%s" metadata item', mdat)
-            return 2
+    req_mdat = ['name', 'namespace', 'enum']
+    for mdat in adm.metadata_list.items:
+        if mdat in req_mdat:
+            req_mdat.remove(mdat)
+
+    if not req_mdat:
+        LOGGER.error(f'The ADM is missing the following metadata item(s): {req_mdat}')
+        return 2
 
     # Call each generator to generate files for the JSON ADM
     LOGGER.info("Generating files under %s", args.out)
@@ -134,8 +138,7 @@ def run(args: argparse.Namespace):
         generators += [
             create_impl_h.Writer(admset, adm, args.out, args.scrape),
             create_impl_c.Writer(admset, adm, args.out, args.scrape),
-            create_gen_h.Writer(admset, adm, args.out),
-            create_mgr_c.Writer(admset, adm, args.out),
+            #create_gen_h.Writer(admset, adm, args.out),
             create_agent_c.Writer(admset, adm, args.out),
         ]
 

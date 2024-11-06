@@ -78,7 +78,7 @@ class Writer(AbstractWriter):
         self._vars_use = set()
 
         # The first half of the namespace
-        ns = self.adm.norm_namespace
+        ns = self.adm.norm_name
         hl_ns = ns.split('/')[0].lower()
         self._sql_ns = self._var_name(f"{hl_ns}_namespace_id")
 
@@ -138,7 +138,7 @@ class Writer(AbstractWriter):
         :param item: object to make the IDs for.
         :return: the augmented ARI text.
         '''
-        ns = self.adm.norm_namespace
+        ns = self.adm.norm_name
         ari = cu.make_ari_name(ns, coll, item).lower()
         return ari
 
@@ -284,7 +284,7 @@ class Writer(AbstractWriter):
             "--",
             "-- -------------------------------------------------------------------",
             "",
-            "-- ADM: '{}'".format(self.adm.norm_namespace),
+            "-- ADM: '{}'".format(self.adm.norm_name),
             "",
         ]
 
@@ -345,11 +345,11 @@ class Writer(AbstractWriter):
                 return ''
             return getattr(obj, attr)
 
-        name = val_or_none(self.admset.get_child(self.adm, models.Mdat, 'name'))
-        ns = val_or_none(self.admset.get_child(self.adm, models.Mdat, 'namespace'))
-        version = val_or_none(self.admset.get_child(self.adm, models.Mdat, 'version'))
-        org = val_or_none(self.admset.get_child(self.adm, models.Mdat, 'organization'))
-        desc = escape_description_sql(val_or_none(self.admset.get_child(self.adm, models.Mdat, 'namespace'), 'description'))
+        name = val_or_none(self.admset.get_child(self.adm, models.MetadataItem, 'name'))
+        ns = val_or_none(self.admset.get_child(self.adm, models.MetadataItem, 'namespace'))
+        version = val_or_none(self.admset.get_child(self.adm, models.MetadataItem, 'version'))
+        org = val_or_none(self.admset.get_child(self.adm, models.MetadataItem, 'organization'))
+        desc = escape_description_sql(val_or_none(self.admset.get_child(self.adm, models.MetadataItem, 'namespace'), 'description'))
 
         adm_enum = self._var_name("adm_enum", None)
 

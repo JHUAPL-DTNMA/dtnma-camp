@@ -67,15 +67,14 @@ class Writer(AbstractWriter, CHelperMixin):
         self._scraper.write_custom_functions(outfile)
 
         # The setup and clean up functions
-        outfile.write("void "+self.adm.norm_namespace+"_setup();\n")
-        outfile.write("void "+self.adm.norm_namespace+"_cleanup();\n\n")
+        outfile.write("void "+self.adm.norm_name.replace('-', '_')+"_setup();\n")
+        outfile.write("void "+self.adm.norm_name.replace('-', '_')+"_cleanup();\n\n")
 
-        self.write_metadata_functions(outfile)
-        self.write_constant_functions(outfile)
+        #self.write_constant_functions(outfile)
         self.write_collect_functions(outfile)
         self.write_control_functions(outfile)
         self.write_operator_functions(outfile)
-        self.write_table_functions(outfile)
+        #self.write_table_functions(outfile)
 
         outfile.write(campch.make_cplusplus_close())
         self.write_endifs(outfile)
@@ -98,7 +97,7 @@ class Writer(AbstractWriter, CHelperMixin):
         name_upper = self.adm.norm_name.upper()
         endifs_str = """\
 
-#endif /* ADM_{0}_IMPL_H_ */
+#endif ADM_{0}_IMPL_H_
 """
         outfile.write(endifs_str.format(name_upper))
 
@@ -108,22 +107,12 @@ class Writer(AbstractWriter, CHelperMixin):
     #
     def write_includes(self, outfile):
         files = [
-            "shared/utils/utils.h",
-            "shared/primitives/ctrl.h",
-            "shared/primitives/table.h",
-            "shared/primitives/tnv.h"
+            #"shared/utils/utils.h",
+            "cace/ari.h",
+            "cace/util/defs.h",
+            "cace/util/logging.h"
         ]
         outfile.write(campch.make_includes(files))
-
-    #
-    # Writes the metadata functions to the passed new_h file
-    # name is the name returned from get_adm_names()
-    #
-    def write_metadata_functions(self, outfile):
-        outfile.write("\n/* Metadata Functions */\n")
-        for obj in self.adm.mdat:
-            _,_,signature = campch.make_meta_function(self.adm, obj)
-            outfile.write(signature + ";\n")
 
     #
     # Writes the constant functions to the passed new_h file
