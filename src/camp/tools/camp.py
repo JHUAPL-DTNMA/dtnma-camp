@@ -122,15 +122,6 @@ def run(args: argparse.Namespace):
         LOGGER.error("Loading error: %s", e)
         return 2
 
-    req_mdat = ['name', 'namespace', 'enum']
-    for mdat in adm.metadata_list.items:
-        if mdat in req_mdat:
-            req_mdat.remove(mdat)
-
-    if not req_mdat:
-        LOGGER.error(f'The ADM is missing the following metadata item(s): {req_mdat}')
-        return 2
-
     # Call each generator to generate files for the JSON ADM
     LOGGER.info("Generating files under %s", args.out)
     generators = []

@@ -53,7 +53,7 @@ def ari_get_names(jari):
 # make the ari for i_name is the name of the item
 #
 def make_ari_name_from_str(name, coll, i_name):
-    name = name.replace("/", "_")
+    i_name = yang_to_c(i_name)
     template = "{0}_{1}_{2}"
     return template.format(name.upper(), cs.get_sname(coll).upper(), i_name.upper())
 
@@ -72,7 +72,8 @@ def make_ari_name(name, coll, item):
 # t_name is the name of the type
 #
 def make_amp_type_name_from_str(t_name):
-    return "AMP_TYPE_{}".format(t_name.upper())
+    # return "AMP_TYPE_{}".format(t_name.upper())
+    return "AMP_TYPE_UNK"           # TODO type fixes
 
 #
 # Makes and returns the adm enum type string for the passed
@@ -80,3 +81,25 @@ def make_amp_type_name_from_str(t_name):
 #
 def make_enum_name_from_str(name):
     return "ADM_ENUM_{}".format(name.upper())
+
+#
+# Translates a valid YANG identifier to a valid C99 fragment
+# identifier is a valid YANG identifier
+#
+def yang_to_c(identifier):
+    return identifier.replace('_','__').replace('-','_').replace('.','_p_')
+
+#
+# Translates a valid YANG identifier to a valid SQL identifier
+# identifier is a valid YANG identifier
+#
+def yang_to_sql(identifier):
+    return identifier.replace('_','__').replace('-','_').replace('.','_p_')
+
+
+#
+# Adds \ to the end of a new line of string
+# str is the string to be modified
+#
+def sanitize_newlines(str):
+    return str.replace("\n", "\\\n")

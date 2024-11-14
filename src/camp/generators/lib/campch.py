@@ -186,13 +186,16 @@ def make_formatted_comment_header(name, c_open, c_close):
 
 ############################# FUNCTIONS SHARED BY IMPL_C and IMPL_H ###############################
 
+def _make_fullname(adm, basename):
+    return "{0}_{1}".format(cu.yang_to_c(adm.norm_name).lower(), basename)
+
 #
 # Makes and returns the basename, fullname, and signature tuple for the edd
 # collect functions; where basename = edd_<edd-name> and fullname = <name>_<basename>
 #
 def make_collect_function(adm, edd):
-    basename = "get_{}".format(edd.name.lower().replace('-', '_'))
-    fullname = "{0}_{1}".format(adm.norm_name.lower().replace('-', '_'), basename.replace('-', '_'))
+    basename = "get_{}".format(cu.yang_to_c(edd.name).lower())
+    fullname = _make_fullname(adm, basename)
     signature = "void {}(const refda_amm_edd_desc_t *obj _U_, refda_valprod_ctx_t *ctx)".format(fullname)
     return basename, fullname, signature
 
@@ -202,8 +205,8 @@ def make_collect_function(adm, edd):
 #
 def make_constant_function(adm, const):
     keyword = "get"
-    basename = "{0}_{1}".format(keyword, const.name.lower())
-    fullname = "{0}_{1}".format(adm.norm_name.lower().replace('-', '_'), basename.replace('-', '_'))
+    basename = "{0}_{1}".format(keyword, cu.yang_to_c(const.name).lower())
+    fullname = _make_fullname(adm, basename)
     signature = "void {}(const refda_amm_const_desc_t *obj _U_, refda_valprod_ctx_t *ctx)".format(fullname)
     return basename, fullname, signature
 
@@ -213,8 +216,8 @@ def make_constant_function(adm, const):
 #
 def make_control_function(adm, control):
     keyword = cs.get_sname(cs.CTRL)
-    basename = "{0}_{1}".format(keyword, control.name.lower())
-    fullname = "{0}_{1}".format(adm.norm_name.lower().replace('-', '_'), basename.replace('-', '_'))
+    basename = "{0}_{1}".format(keyword, cu.yang_to_c(control.name).lower())
+    fullname = _make_fullname(adm, basename)
     signature = "int {}(const refda_amm_ctrl_desc_t *obj _U_, refda_exec_ctx_t *ctx)".format(fullname)
     return basename, fullname, signature
 
@@ -224,22 +227,10 @@ def make_control_function(adm, control):
 #
 def make_operator_function(adm, op):
     keyword = cs.get_sname(cs.OP)
-    basename = "{0}_{1}".format(keyword, op.name.lower())
-    fullname = "{0}_{1}".format(adm.norm_name.lower().replace('-', '_'), basename.replace('-', '_'))
+    basename = "{0}_{1}".format(keyword, cu.yang_to_c(op.name).lower())
+    fullname = _make_fullname(adm, basename)
     signature = "void {}()".format(fullname)
     return basename, fullname, signature
-
-#
-# Makes and returns the basename, fullname, and signature tuple for the table
-# functions; where basename = tbl_<tbl-name> and fullname = <name>_<basename>
-#
-def make_table_function(adm, tbl):
-    keyword = cs.get_sname(cs.TBLT)
-    basename = "{0}_{1}".format(keyword, tbl.name.lower())
-    fullname = "{0}_{1}".format(adm.norm_name.lower().replace('-', '_'), basename.replace('-', '_'))
-    signature = "void {}()".format(fullname)
-    return basename, fullname, signature
-
 
 
 ##################### FUNCTIONS SHARED BY CREATE_MGR.PY AND CREATE_AGENT.PY ###################
@@ -310,69 +301,11 @@ def make_std_meta_add_coll_template(coll, name):
     return "meta_add_" + coll_name + "({0}, id, " + enum_name + ", \"{1}\", \"{2}\");\n"
 
 #
-# Writes the init_tables funtion for the passed adm name and
-# retriever class instance.
-#
-def write_init_tables_function(c_file, adm, g_var_idx, mgr):
-    body = ""
-    tbl_decl_str        = "\n\ttblt_t *def = NULL;"
-    tbl_create_template = "\n\tdef = tblt_create({0}, {1});"
-
-    build_ari_template = make_adm_build_ari_template(cs.TBLT, g_var_idx, False)
-    enum_name = cu.make_enum_name_from_str(adm.norm_name)
-
-    add_tblt_str      = "\n\tadm_add_tblt(def);"
-    meta_add_template = "\n\tmeta_add_tblt(def->id, " + enum_name + ", \"{0}\", \"{1}\");"
-    add_col_template  = "\n\ttblt_add_col(def, {0}, \"{1}\");"
-
-    added_table = False
-
-    for obj in adm.tblt:
-        # Preliminaries
-        ari = cu.make_ari_name(adm.norm_name, cs.TBLT, obj)
-        tbl_name    = obj.name
-        description = obj.description or ''
-
-        cols = obj.columns.items if obj.columns else []
-        cols_str = ""
-
-        # Format the templates needed for the tables function
-        tbl_build_ari_str = build_ari_template.format("0", ari)
-
-        # The appearance of this template depends on whether this is the mgr code or not
-        if mgr:
-            tbl_create_str = tbl_create_template.format(tbl_build_ari_str, "NULL")
-        else:
-            tbl_create_str = tbl_create_template.format(tbl_build_ari_str, ari.lower())
-
-        # Add to the cols string for each column present
-        for col in cols:
-            c_amp_type = cu.make_amp_type_name_from_str(col.type)
-            cols_str += add_col_template.format(c_amp_type, col.name)
-
-        # Add formatted strings to the body
-        body += "\n\n\t/* {} */\n".format(tbl_name.upper())
-        body += tbl_create_str
-        body += cols_str
-        body += add_tblt_str
-
-        added_table = True
-
-        # If this the the mgr code generation, also need to call meta_add function
-        if mgr:
-            body += meta_add_template.format(tbl_name, description)
-
-    # tbl variable is only declared if needed; in order to avoid C compiler warnings for unused variable
-    if added_table:
-        body = tbl_decl_str + body
-
-    write_formatted_init_function(c_file, adm.norm_name.replace('-', '_'), cs.TBLT, body)
-
-#
 # Writes the init function to c_file
 #
 def write_init_function(c_file, adm: ace.models.AdmModule, g_var_idx: str, mgr: bool):
-    enum_name = cu.make_enum_name_from_str(adm.norm_name).replace('-', '_')
+    norm_name = cu.yang_to_c(adm.norm_name)
+    enum_name = cu.make_enum_name_from_str(norm_name)
     
     adm_register        = f'\tCHKERR1(agent);\n\
                             \n\tcace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(&(agent->objs), "{adm.norm_name}", true, {enum_name});\n'
@@ -384,19 +317,17 @@ def write_init_function(c_file, adm: ace.models.AdmModule, g_var_idx: str, mgr: 
 
     # order of init functions matters
     obj_types = {
-        #cs.META: 'mdat',
         cs.CONST: 'const',
         cs.EDD: 'edd',
         cs.OP: 'oper',
         cs.VAR: 'var',
-        cs.CTRL: 'ctrl',
-        #cs.TBLT: 'tblt', TODO: Add back once implemented
+        cs.CTRL: 'ctrl'
     }
 
     init_decls = ""
     init_calls = ""
     if not mgr:
-        init_calls = "\n\t\t" + adm.norm_name.replace('-', '_') + "_setup();"
+        init_calls = "\n\t" + norm_name + "_setup();"
 
     for coll, attrname in obj_types.items():
         init_decls += init_decl_template.format(cs.get_sname(coll).lower())
@@ -409,7 +340,7 @@ def write_init_function(c_file, adm: ace.models.AdmModule, g_var_idx: str, mgr: 
     body = adm_register + adm_obj_lock + "\n\tif (adm)\n\t{" + init_obj_pointer + init_calls + "\n\t}\n" + adm_obj_unlock
 
     c_file.write(init_decls + "\n")
-    write_formatted_init_function(c_file, adm.norm_name.replace('-', '_'), None, body)
+    write_formatted_init_function(c_file, norm_name, None, body)
 
 def make_cplusplus_open():
     ''' Open an "extern C" block for C++ inclusion. '''

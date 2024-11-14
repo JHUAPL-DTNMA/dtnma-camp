@@ -36,16 +36,16 @@ class Writer(AbstractWriter, CHelperMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.adm_name = self.adm.norm_name.lower().replace('-', '_')
-        self._g_var_idx = "g_" + self.adm.norm_name.lower() + "_idx"
+        self.adm_name = cu.yang_to_c(self.adm.norm_name).lower()
+        self._g_var_idx = "g_" + self.adm_name + "_idx"
 
     def file_path(self) -> str:
         # Interface for AbstractWriter
-        return os.path.join(self.out_path, "agent", f"adm_{self.adm.norm_name}_agent.c")
+        return os.path.join(self.out_path, "agent", f"adm_{self.adm_name}_agent.c")
 
     def write(self, outfile: TextIO):
         # Interface for AbstractWriter
-        campch.write_c_file_header(outfile, f"adm_{self.adm.norm_name}_agent.c")
+        campch.write_c_file_header(outfile, f"adm_{self.adm_name}_agent.c")
         self.write_includes(outfile)
 
         #outfile.write("vec_idx_t {}[11];\n\n".format(self._g_var_idx))
@@ -55,10 +55,6 @@ class Writer(AbstractWriter, CHelperMixin):
         #write helpers
         self.write_set_type_function(outfile)
         self.write_add_param_function(outfile)
-        self.write_init_constant_helper_function(outfile)
-        self.write_init_edd_helper_function(outfile)
-        self.write_init_var_helper_function(outfile)
-        self.write_init_control_helper_function(outfile)
 
         #write init for objects
         self.write_init_constant_function(outfile)
@@ -111,8 +107,6 @@ class Writer(AbstractWriter, CHelperMixin):
         campch.write_init_function(outfile, self.adm, self._g_var_idx, False)
         
 
-    #FIXME: when obj is custom type, sets obj to type typedef - how to get custom typedef obj id as int?
-    #whether ari is reference vs literal may become more important depending on context
     def get_type_enum(self, obj):
         enum_template = 'ARI_TYPE_{0}'
         if hasattr(obj, 'init_ari'): #const, var
@@ -240,6 +234,8 @@ class Writer(AbstractWriter, CHelperMixin):
     # name is the value returned from get_adm_names()
     #
     def write_init_constant_function(self, outfile):
+        self.write_init_constant_helper_function(outfile)
+
         body = ""
         add_str_template = self.make_std_meta_adm_build_template(cs.CONST)
         for obj in self.adm.const:
@@ -294,6 +290,8 @@ class Writer(AbstractWriter, CHelperMixin):
     # name is the value returned from get_adm_names()
     #
     def write_init_edd_function(self, outfile):
+        self.write_init_edd_helper_function(outfile)
+
         body = ""
         add_str_template = self.make_std_meta_adm_build_template(cs.EDD, has_func=True)
 
@@ -322,10 +320,20 @@ class Writer(AbstractWriter, CHelperMixin):
     #
     def write_init_op_function(self, outfile):
         body = ""
-        adm_add_op_template = "\n\t"
+        add_str_template = self.make_std_meta_adm_build_template(cs.OP, has_func=True)
 
         for obj in self.adm.oper:
-            body += adm_add_op_template.format()
+            _,fname,_ = campch.make_collect_function(self.adm, obj)
+            type_enum = self.get_type_enum(obj)
+            body += add_str_template.format(obj.name.lower(), type_enum, obj.enum, fname)
+
+            if obj.parameters and obj.parameters.items:
+                body += "\n\t{"
+                p_str_template = self.make_add_param_template()
+                for p in obj.parameters.items:
+                    type_enum = self.get_type_enum(p)
+                    body += p_str_template.format(p.name.lower(), type_enum)
+                body += "\n\t}"
 
         campch.write_formatted_init_function(outfile, self.adm_name, cs.OP, body)
 
@@ -350,8 +358,12 @@ class Writer(AbstractWriter, CHelperMixin):
         outfile.write(init_funct_string.format(self.adm_name, ttype, body))
     #
     # Writes the init_variables body
+    # for each variable creates a lyst for its postfix-expr and writes
+    # its appropriate adm_add_var function
     #
     def write_init_var_function(self, outfile):
+        self.write_init_var_helper_function(outfile)
+
         body = ""
         add_str_template = self.make_std_meta_adm_build_template(cs.VAR)
         for obj in self.adm.var:
@@ -401,6 +413,8 @@ class Writer(AbstractWriter, CHelperMixin):
     # controls is a list of controls to add
     #
     def write_init_control_function(self, outfile):
+        self.write_init_control_helper_function(outfile)
+
         body = ""
         add_str_template = self.make_std_meta_adm_build_template(cs.CTRL, True)
 

@@ -39,23 +39,25 @@ class Writer(AbstractWriter, CHelperMixin):
     def __init__(self, admset, adm, out_path, scrape: bool):
         super().__init__(admset, adm, out_path)
 
+        self.c_norm_name = cu.yang_to_c(self.adm.norm_name)
+
         full_path = self.file_path()
         scrape_src = full_path if scrape and os.path.exists(full_path) else None
         self._scraper = C_Scraper(scrape_src)
 
     def file_path(self) -> str:
         # Interface for AbstractWriter
-        return os.path.join(self.out_path, "agent", f"adm_{self.adm.norm_name}_impl.c")
+        return os.path.join(self.out_path, "agent", f"adm_{self.c_norm_name}_impl.c")
 
     def write(self, outfile: TextIO):
         # Interface for AbstractWriter
-        campch.write_c_file_header(outfile, f"adm_{self.adm.norm_name}_impl.c")
+        campch.write_c_file_header(outfile, f"adm_{self.c_norm_name}_impl.c")
 
         # Custom includes tag
         self._scraper.write_custom_includes(outfile)
         outfile.write(campch.make_includes([
             #"shared/adm/adm.h",
-            #"adm_{}_impl.h".format(self.adm.norm_name.lower()),
+            #"adm_{}_impl.h".format(self.c_norm_name.lower()),
             "refda/register.h",
             "refda/valprod.h",
             "cace/ari.h",
@@ -69,8 +71,6 @@ class Writer(AbstractWriter, CHelperMixin):
         self.write_setup(outfile)
         self.write_cleanup(outfile)
 
-        #self.write_constant_functions(outfile)
-        #self.write_table_functions(outfile)
         self.write_edd_functions(outfile)
         self.write_control_functions(outfile)
         self.write_operator_functions(outfile)
@@ -82,7 +82,7 @@ class Writer(AbstractWriter, CHelperMixin):
     # scraper is the Scraper class object for this ADM
     #
     def write_setup(self, outfile):
-        outfile.write("void {}_setup()\n{{\n\n".format(self.adm.norm_name.replace('-', '_').lower()))
+        outfile.write("void {}_setup()\n{{\n\n".format(self.c_norm_name))
 
         self._scraper.write_custom_body(outfile, "setup")
 
@@ -95,69 +95,11 @@ class Writer(AbstractWriter, CHelperMixin):
     # scraper is the Scraper class object for this ADM
     #
     def write_cleanup(self, outfile):
-        outfile.write("void {}_cleanup()\n{{\n\n".format(self.adm.norm_name.replace('-', '_').lower()))
+        outfile.write("void {}_cleanup()\n{{\n\n".format(self.c_norm_name))
 
         self._scraper.write_custom_body(outfile, "cleanup")
 
         outfile.write("}\n\n")
-
-    #
-    # Writes the constant functions to the file passed
-    # outfile is an open file descriptor to write to
-    # name is the value returned from get_adm_names()
-    # constants is a list of constants to include
-    #
-    def write_constant_functions(self, outfile):
-        outfile.write("\n/* Constant Functions */")
-
-        const_function_str = (
-            "\n{0}"
-            "\n{{"
-            "\n\t{1}"
-            "\n}}"
-            "\n")
-
-        for obj in self.adm.const:
-            _,_,signature = campch.make_constant_function(self.adm, obj)
-            outfile.write(const_function_str.format(signature, getattr(obj, 'value', '')))
-
-    #
-    # writes the table functions to the file passed
-    # outfile is an open file descriptor to write to
-    # name is the value returned from get_adm_names()
-    # table is a list of tables to include
-    # scraper is the Scraper object associated with this ADM
-    #
-    def write_table_functions(self, outfile):
-        outfile.write("\n/* Table Functions */\n\n")
-        table_function_begin_str = (
-            "\n{0}"
-            "\n{1}"
-            "\n{{"
-            "\n\ttbl_t *table = NULL;"
-            "\n\tif((table = tbl_create(id)) == NULL)"
-            "\n\t{{"
-            "\n\t\treturn NULL;"
-            "\n\t}}"
-            "\n\n")
-        conditional_body_str = (
-            "\n\t{"
-            "\n\t\treturn NULL;"
-            "\n\t}"
-            "\n\n")
-        table_function_end_str = "\treturn table;\n}\n\n"
-
-        for obj in self.adm.tblt:
-            basename,_,signature = campch.make_table_function(self.adm, obj)
-            description          = campch.multiline_comment_format(obj.description or '')
-
-            outfile.write(table_function_begin_str.format(description, signature))
-
-            # Add custom body tags and any scrapped lines found
-            self._scraper.write_custom_body(outfile, basename)
-
-            # Close out the function
-            outfile.write(table_function_end_str)
 
     #
     # Writes the edd functions to the file passed
@@ -235,7 +177,7 @@ class Writer(AbstractWriter, CHelperMixin):
             "\n{0}"
             "\n{1}"
             "\n{{"
-            "\n\ttnv_t *result = NULL;"
+            "\n\tint *result = NULL;"
             "\n")
         op_function_end_str = "\treturn result;\n}\n\n"
 

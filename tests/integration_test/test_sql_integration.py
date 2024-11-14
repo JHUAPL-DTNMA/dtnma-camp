@@ -4,15 +4,15 @@ import ace
 import pytest
 
 from .util import ADMS_DIR, adm_files, run_camp
-
+from camp.generators.lib.camputil import yang_to_sql
 
 @pytest.fixture(scope="session", autouse=True)
 def setup():
     """
     Connects to the ADMS library session. Cleans up connections once done.
     @pre: IP Address of the library session should be stored in env var $PGHOST,
-          username and password should be stored in env vars $PGSQL_USERNAME and
-          $PGSQL_PASSWORD, respectively
+          username and password should be stored in env vars $PGUSER and
+          $PGPASSWORD, respectively
     @yields tuple of (connection object, AdmSet())
     """
 
@@ -39,10 +39,12 @@ def test_adms(setup, adm):
     Integration test for an ADM found in the ADMS_DIR folder
     Resulting sql files will be placed in ADMS_DIR/amp-sql/Agent_Scripts and executed in the anms library.
     """
+
+    if adm == 'ietf-amm.yang':  # doesn't have unique enum 
+        pytest.xfail("ADM with known issue")
+
     cursor = setup[0]
 
-    if adm == 'ion_bpsec_admin.json':
-        pytest.xfail("ADM with known issue")
     # input file full filepath
     filepath = os.path.join(ADMS_DIR, adm)
 
@@ -52,7 +54,7 @@ def test_adms(setup, adm):
 
     # execute sql
     adm_set = ace.AdmSet()
-    norm_name = adm_set.load_from_file(filepath).norm_name
+    norm_name = yang_to_sql(adm_set.load_from_file(filepath).norm_name)
     sql_file = os.path.join(ADMS_DIR, "amp-sql", "Agent_Scripts", 'adm_{name}.sql'.format(name=norm_name))
     with open(sql_file, "r") as f:
         cursor.execute(f.read())
