@@ -60,6 +60,7 @@ jobs:
     steps:
       - name: Prep
         run: |
+          pip3 install --upgrade pip
           pip3 install ${ACE_REPO}
           pip3 install -e '.[test]'
       - name: Checkout repository
