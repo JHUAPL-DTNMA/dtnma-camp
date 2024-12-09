@@ -24,12 +24,14 @@
 '''
 
 import os
-from typing import TextIO
+import io
+import jinja2
+from typing import Optional, TextIO, Union
 from camp.generators.lib import campch
 from camp.generators.lib.campch_roundtrip import C_Scraper
 from camp.generators.lib import camputil as cu
 from camp.generators.base import AbstractWriter, CHelperMixin
-from ace import models
+from ace import models, ari, typing
 
 
 class Writer(AbstractWriter, CHelperMixin):
@@ -47,145 +49,21 @@ class Writer(AbstractWriter, CHelperMixin):
 
     def file_path(self) -> str:
         # Interface for AbstractWriter
-        return os.path.join(self.out_path, "agent", f"adm_{self.c_norm_name}_impl.c")
+        return os.path.join(self.out_path, f"{self.c_norm_name}.c")
 
     def write(self, outfile: TextIO):
         # Interface for AbstractWriter
-        campch.write_c_file_header(outfile, f"adm_{self.c_norm_name}_impl.c")
+        SELFDIR = os.path.dirname(__file__)
 
-        # Custom includes tag
-        self._scraper.write_custom_includes(outfile)
-        outfile.write(campch.make_includes([
-            #"shared/adm/adm.h",
-            #"adm_{}_impl.h".format(self.c_norm_name.lower()),
-            "refda/register.h",
-            "refda/valprod.h",
-            "cace/ari.h",
-            "cace/util/defs.h",
-            "cace/util/logging.h"
-        ]))
+        self._tmpl_env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(os.path.join(SELFDIR, 'data')),
+            keep_trailing_newline=True
+        )
+        campch.update_jinja_env(self._tmpl_env, self.admset, sym_prefix='refda_adm')
 
-        # Add any custom functions scraped
-        self._scraper.write_custom_functions(outfile)
-
-        self.write_setup(outfile)
-        self.write_cleanup(outfile)
-
-        self.write_edd_functions(outfile)
-        self.write_control_functions(outfile)
-        self.write_operator_functions(outfile)
-
-    #
-    # function for writing the setup function and
-    # custom body if present
-    #
-    # scraper is the Scraper class object for this ADM
-    #
-    def write_setup(self, outfile):
-        outfile.write("void {}_setup()\n{{\n\n".format(self.c_norm_name))
-
-        self._scraper.write_custom_body(outfile, "setup")
-
-        outfile.write("}\n\n")
-
-    #
-    # function for writing the cleanup function and
-    # custom body if present
-    #
-    # scraper is the Scraper class object for this ADM
-    #
-    def write_cleanup(self, outfile):
-        outfile.write("void {}_cleanup()\n{{\n\n".format(self.c_norm_name))
-
-        self._scraper.write_custom_body(outfile, "cleanup")
-
-        outfile.write("}\n\n")
-
-    #
-    # Writes the edd functions to the file passed
-    # outfile is an open file descriptor to write to
-    # name is the value returned from get_adm_names()
-    # edds is a list of edds to include
-    # custom is a dictionary of custom function bodies to include, in the
-    # form {"function_name":["line1", "line2",...], ...}
-    # scraper is the Scraper object for the current ADM
-    #
-    def write_edd_functions(self, outfile):
-        outfile.write("\n/* Collect Functions */")
-
-        edd_function_begin_str = (
-            "\n{0}"
-            "\n{1}"
-            "\n{{"
-            "\n\tchar *edd_val_ari;"
-            "\n")
-        edd_function_end_str = "\tari_set_tstr(&(ctx->value), edd_val_ari, false);\n}\n\n"
-
-        for obj in self.adm.edd:
-            basename,_,signature = campch.make_collect_function(self.adm, obj)
-            description          = campch.multiline_comment_format(obj.description or '')
-            outfile.write(edd_function_begin_str.format(description, signature))
-
-            # Add custom body tags and any scrapped lines found
-            self._scraper.write_custom_body(outfile, basename)
-
-            # Close out the function
-            outfile.write(edd_function_end_str)
-
-    #
-    # Writes the control functions to the file passed
-    # outfile is an open file descriptor to write to
-    # name is the value returned from get_adm_names
-    # controls is a list of controls to include
-    # custom is a dictionary of custom function bodies to include, in the
-    # form {"function_name":["line1", "line2",...], ...}
-    # scraper is the Scraper class object for this ADM
-    #
-    def write_control_functions(self, outfile):
-        outfile.write("\n\n/* Control Functions */\n")
-
-        ctrl_function_begin_str = (
-            "\n{0}"
-            "\n{1}"
-            "\n{{"
-            "\n\tint status;"
-            "\n")
-        ctrl_function_end_str = "\treturn status;\n}\n\n"
-
-        for obj in self.adm.ctrl:
-            basename,_,signature = campch.make_control_function(self.adm, obj)
-            description          = campch.multiline_comment_format(obj.description or '')
-            outfile.write(ctrl_function_begin_str.format(description, signature))
-
-            self._scraper.write_custom_body(outfile, basename)
-
-            outfile.write(ctrl_function_end_str)
-
-    #
-    # Writes the operator functions to the file passed
-    # outfile is an open file descriptor to write to
-    # name is the value returned from get_adm_names
-    # operators is a list of operators to include
-    # custom is a dictionary of custom function bodies to include, in the
-    # form {"function_name":["line1", "line2",...], ...}
-    # scraper is the Scraper class object for this ADM
-    #
-    def write_operator_functions(self, outfile):
-        outfile.write("\n\n/* OP Functions */\n")
-
-        op_function_begin_str = (
-            "\n{0}"
-            "\n{1}"
-            "\n{{"
-            "\n\tint *result = NULL;"
-            "\n")
-        op_function_end_str = "\treturn result;\n}\n\n"
-
-        for obj in self.adm.oper:
-            basename,_,signature = campch.make_operator_function(self.adm, obj)
-            description          = campch.multiline_comment_format(obj.description or '')
-            outfile.write(op_function_begin_str.format(description, signature))
-
-            self._scraper.write_custom_body(outfile, basename)
-
-            outfile.write(op_function_end_str)
+        keys = dict(
+            adm=self.adm,
+            scraper=self._scraper,
+        )
+        tmpl = self._tmpl_env.get_template('agent.c.jinja')
+        tmpl.stream(**keys).dump(outfile)

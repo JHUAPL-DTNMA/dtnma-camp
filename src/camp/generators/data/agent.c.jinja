@@ -1,0 +1,265 @@
+{% macro callback_summary(obj) %}
+Name: {{obj.name}}
+Description:
+  {{obj.description or '' | rewrap(prefix='\n  ')}}
+{%- if obj.parameters is defined -%}
+{%- if obj.parameters.items %}
+Parameters::
+{%- for param in obj.parameters.items %}
+{{param.name}}
+{%- endfor %}
+{%- else %}
+Parameters: none
+{%- endif %}
+{%- endif %}
+{% endmacro -%}
+
+{% macro reg_params(obj) %}
+{%- if obj.parameters.items %}
+// parameters:
+{%- for param in obj.parameters.items %}
+{
+    cace_amm_formal_param_t *fparam = refda_register_add_param(obj, {{param.name | c_str}});
+    {{amm_type_set('&(fparam->typeobj)', param.typeobj) | indent(4)}}
+    {%- if param.default_value %}
+    {{ari_set_value('&(fparam->defval)', param.default_ari) | indent(4)}}
+    {%- endif %}
+}
+{%- endfor %}
+{%- else %}
+// no parameters
+{%- endif %}
+{% endmacro -%}
+
+{% macro ari_set_value(ptrname, value) -%}
+{%- if value is instance(ari.LiteralARI) -%}
+{%- if value.type_id == ari.StructType.ARITYPE -%}
+ari_set_aritype({{ptrname}}, {{value.value | cpp_enum}});
+{%- elif value.type_id == ari.StructType.AC -%}
+{
+    ari_ac_t acinit;
+    ari_ac_init(&acinit);
+{%- for item in value.value %}
+    {
+        ari_t *item = ari_list_push_back_new(acinit.items);
+        {{ ari_set_value('item', item) | indent(8) }}
+    }
+{%- endfor %}
+    ari_set_ac({{ptrname}}, &acinit);
+}
+{%- else %}
+// FIXME unhandled value {{value}}
+{% endif %}
+{%- elif value is instance(ari.ReferenceARI) -%}
+// {{value | as_text}}
+{% set refdobj = value | deref -%}
+ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.enum}}, {{value.ident.type_id | cpp_enum}}, {{refdobj.enum}});
+{#- ari_set_objref_path_intid({{ptrname}}, {{refdobj.module | cpp_enum}}, {{value.ident.type_id | cpp_enum}}, {{refdobj | cpp_enum}}); -#}
+{%- endif %}
+{%- endmacro -%}
+
+{% macro amm_type_set(ptrname, typeobj) %}
+{%- if typeobj is instance(typing.TypeUse) -%}
+{
+    ari_t name = ARI_INIT_UNDEFINED;
+    {{ ari_set_value('&name', typeobj.type_ari) | indent(4)}}
+    amm_type_set_use_ref_move({{ptrname}}, &name);
+}
+{%- elif typeobj is instance(typing.UniformList) -%}
+{
+    amm_semtype_ulist_t *semtype = amm_type_set_ulist({{ptrname}});
+    {{amm_type_set('&(semtype->item_type)', typeobj.base) | indent(4)}}
+    {%- if typeobj.min_elements %}
+    cace_amm_range_intvl_size_set_min(&(semtype->size), {{typeobj.min_elements | c_int}});
+    {%- endif %}
+    {%- if typeobj.max_elements %}
+    cace_amm_range_intvl_size_set_max(&(semtype->size), {{typeobj.max_elements | c_int}});
+    {%- endif %}
+}
+{%- elif typeobj is instance(typing.TableTemplate) -%}
+{
+    // table template
+    amm_semtype_tblt_t *semtype = amm_type_set_tblt_size({{ptrname}}, {{typeobj.columns | count}});
+    {%- for col in typeobj.columns %}
+    {
+        amm_semtype_tblt_col_t *col = amm_semtype_tblt_col_array_get(semtype->columns, {{loop.index0}});
+        m_string_set_cstr(col->name, {{col.name | c_str}});
+        {{amm_type_set('&(col->typeobj)', col.base) | indent(8) }}
+    }
+    {%- endfor %}
+}
+{%- elif typeobj is instance(typing.TypeUnion) -%}
+{
+    // union
+    amm_semtype_union_t *semtype = amm_type_set_union_size({{ptrname}}, {{typeobj.types | count}});
+    {%- for choice in typeobj.types %}
+    {
+        amm_type_t *choice = amm_type_array_get(semtype->choices, {{loop.index0}});
+        {{amm_type_set('choice', choice) | indent(8) }}
+    }
+    {%- endfor %}
+}
+{%- else %}
+// FIXME unhandled type {{typeobj}}
+{%- endif %}
+{%- endmacro -%}
+
+#include "{{adm | cpp_header}}"
+#include "refda/agent.h"
+#include "refda/register.h"
+#include "refda/valprod.h"
+#include "refda/reporting.h"
+#include <cace/amm/semtype.h>
+#include <cace/ari/text.h>
+#include <cace/util/logging.h>
+#include <cace/util/defs.h>
+
+{{scraper.write_custom_includes()}}
+
+{{scraper.write_custom_functions()}}
+
+{%- if adm.edd %}
+{%- for obj in adm.edd %}
+{% set func_sym = obj | c_func %}
+
+{{ callback_summary(obj) | c_comment }}
+static void {{func_sym}}(const refda_amm_edd_desc_t *obj _U_, refda_valprod_ctx_t *ctx _U_)
+{
+{{scraper.write_custom_body(func_sym)}}
+}
+{%- endfor %}
+{%- endif %}
+
+{%- if adm.ctrl %}
+{%- for obj in adm.ctrl %}
+{% set func_sym = obj | c_func %}
+
+{{ callback_summary(obj) | c_comment }}
+static int {{func_sym}}(const refda_amm_ctrl_desc_t *obj _U_, refda_exec_ctx_t *ctx _U_)
+{
+{{scraper.write_custom_body(func_sym)}}
+    return 0; //FIXME
+}
+{%- endfor %}
+{%- endif %}
+
+{%- if adm.oper %}
+{%- for obj in adm.oper %}
+{% set func_sym = obj | c_func %}
+
+{{ callback_summary(obj) | c_comment }}
+static int {{func_sym}}(const refda_amm_oper_desc_t *obj _U_, refda_eval_ctx_t *ctx _U_)
+{
+{{scraper.write_custom_body(func_sym)}}
+    return 0; //FIXME
+}
+{%- endfor %}
+{%- endif %}
+
+int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
+{
+    CHKERR1(agent);
+    CACE_LOG_DEBUG("Registering ADM: ietf-dtnma-agent");
+    REFDA_AGENT_LOCK(agent);
+
+    cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(&(agent->objs), {{adm.name | c_str}}, true, {{adm | cpp_enum}});
+    if (adm)
+    {
+        cace_amm_obj_desc_t *obj;
+{% if adm.const %}
+        /**
+         * Register CONST objects
+         */
+{%- for obj in adm.const %}
+        { // For {{obj | ref_text}}
+            refda_amm_const_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_const_desc_t));
+            refda_amm_const_desc_init(objdata);
+            // constant value
+            {{ ari_set_value('&(objdata->value)', obj.init_ari) | indent(12) }}
+            obj = refda_register_const(adm, cace_amm_obj_id_withenum({{obj.name | c_str}}, {{obj | cpp_enum}}), objdata);
+            {{- reg_params(obj) | indent(12) }}
+        }
+{%- endfor %}
+{%- endif %}
+{% if adm.var %}
+        /**
+         * Register VAR objects
+         */
+{%- for obj in adm.var %}
+        { // For {{obj | ref_text}}
+            refda_amm_var_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_var_desc_t));
+            refda_amm_var_desc_init(objdata);
+            // stored value type
+            {{ amm_type_set('&(objdata->val_type)', obj.typeobj) | indent(12) }}
+            // initial value
+            {{ ari_set_value('&(objdata->value)', obj.init_ari) | indent(12) }}
+            obj = refda_register_var(adm, cace_amm_obj_id_withenum({{obj.name | c_str}}, {{obj | cpp_enum}}), objdata);
+            {{- reg_params(obj) | indent(12) }}
+        }
+{%- endfor %}
+{%- endif %}
+{% if adm.edd %}
+        /**
+         * Register EDD objects
+         */
+{%- for obj in adm.edd %}
+        { // For {{obj | ref_text}}
+            refda_amm_edd_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_edd_desc_t));
+            refda_amm_edd_desc_init(objdata);
+            // produced type
+            {{ amm_type_set('&(objdata->prod_type)', obj.typeobj) | indent(12) }}
+            // callback:
+            objdata->produce = {{obj | c_func}};
+
+            obj = refda_register_edd(adm, cace_amm_obj_id_withenum({{obj.name | c_str}}, {{obj | cpp_enum}}), objdata);
+            {{- reg_params(obj) | indent(12) }}
+        }
+{%- endfor %}
+{%- endif %}
+
+{% if adm.ctrl %}
+        /**
+         * Register CTRL objects
+         */
+{%- for obj in adm.ctrl %}
+        { // For {{obj | ref_text}}
+            refda_amm_ctrl_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_ctrl_desc_t));
+            refda_amm_ctrl_desc_init(objdata);
+{%- if obj.result.typeobj is defined %}
+            // result type
+            {{ amm_type_set('&(objdata->res_type)', obj.result.typeobj) | indent(12) }}
+{%- else %}
+            // no result type
+{%- endif %}
+            // callback:
+            objdata->execute = {{obj | c_func}};
+
+            obj = refda_register_ctrl(adm, cace_amm_obj_id_withenum({{obj.name | c_str}}, {{obj | cpp_enum}}), objdata);
+            {{- reg_params(obj) | indent(12) }}
+        }
+{%- endfor %}
+{%- endif %}
+
+{% if adm.oper %}
+        /**
+         * Register OPER objects
+         */
+{%- for obj in adm.oper %}
+        { // For {{obj | ref_text}}
+            refda_amm_oper_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_oper_desc_t));
+            refda_amm_oper_desc_init(objdata);
+            // result type
+            {{ amm_type_set('&(objdata->res_type)', obj.result.typeobj) | indent(12) }}
+            // callback:
+            objdata->evaluate = {{obj | c_func}};
+
+            obj = refda_register_oper(adm, cace_amm_obj_id_withenum({{obj.name | c_str}}, {{obj | cpp_enum}}), objdata);
+            {{- reg_params(obj) | indent(12) }}
+        }
+{%- endfor %}
+{%- endif %}
+{# FIXME add SBR and TBRs #}
+    }
+    REFDA_AGENT_UNLOCK(agent);
+    return 0;
+}

@@ -32,16 +32,13 @@ import fileinput
 from typing import TextIO
 
 from camp.generators.lib import camputil as cu
-from camp.generators.lib import campsettings as cs
 from camp.generators.base import AbstractWriter
 from ace import models
 
-
 LOGGER = logging.getLogger(__name__)
 
-#:FIXME temporary removal until SQL procedures are updated
-#USE_UPDATE_RECORD = True
-
+# :FIXME temporary removal until SQL procedures are updated
+# USE_UPDATE_RECORD = True
 
 ######################################################################
 # Helper Functions for the main write_*_functions() method
@@ -54,7 +51,7 @@ LOGGER = logging.getLogger(__name__)
 def escape_description_sql(val):
     if val is None:
         return None
-    return val.replace("'","''")
+    return val.replace("'", "''")
 
 
 class Writer(AbstractWriter):
@@ -162,7 +159,7 @@ class Writer(AbstractWriter):
 
         for name in (obj_id, def_id, act_id):
             if len(name) > 64:
-                LOGGER.error("[ ERROR ] Auto-generated SQL variable is longer than 64 characters ("+str(len(name))+"): "+ name)
+                LOGGER.error("[ ERROR ] Auto-generated SQL variable is longer than 64 characters (" + str(len(name)) + "): " + name)
 
         return obj_id, def_id, act_id
 
@@ -179,7 +176,6 @@ class Writer(AbstractWriter):
         obj_type_enum = str(int(cs.ari_type_enum(obj_type), 16))
         formatted = general_template.format(obj_type_enum, "{}", self._sql_ns, "{}")
         return formatted
-
 
     # Helper function for the parmspec entry template
     # description is description format for the entries (default is '{}')
@@ -225,15 +221,13 @@ class Writer(AbstractWriter):
         obj_id = self._var_name(obj_id_template.format(obj_type_str))
         return function_template.format("{}", description_format, obj_id)
 
-
     # Returns a tuple of the (definition id,object id) of the passed definition object
     # retriever: a Retriever object loaded with the ADM
     # d: the definition list entry from the ADM
     def make_definition_ids(self, item):
         lines = ""
-        #FIXME: this needs to be made consistent with earlier behavior
+        # FIXME: this needs to be made consistent with earlier behavior
         # if the object is rom a differnt namesapce need to create select smnt
-
 
         name = item.nm
         if name.casefold().startswith('metadata_list.'):
@@ -244,7 +238,7 @@ class Writer(AbstractWriter):
 
         ari_str = '_'.join([item.ns, name]).replace("/", "_")
         fx_obj_id, pfx_def_id, pfx_act_id = self.make_sql_ids(ari_str)
-        
+
         if item.ns != self.adm.adm_ns:
             stmnt = f"{pfx_act_id} = (select obj_id FROM public.vw_ari_union WHERE obj_name = \'{name.split('_',1)[1]}\' and adm_name = (select adm_name from public.vw_namespace where name_string = \'{item.ns}\')  and actual = true);"
             lines = stmnt
@@ -291,13 +285,13 @@ class Writer(AbstractWriter):
         ''' Generate lines before the SQL body.
         '''
         undef = self._vars_use - self._vars_def
-        
+
         if undef:
             raise RuntimeError(f"There are {len(undef)} undefined variables in this ADM SQL: {undef}")
 
         lines = []
         if self.dialect == 'mysql':
-            lines +=  [
+            lines += [
                 "",
                 "use amp_core;",
                 "",
@@ -379,7 +373,7 @@ class Writer(AbstractWriter):
             edd_fp_id = self.make_fp_id(edd_obj_id)
 
             name = edd.name
-            etype = "UINT" # TODO type fixes
+            etype = "UINT"  # TODO type fixes
             desc = escape_description_sql(edd.description)
             parmspec = edd.parameters.items if edd.parameters else []
             num_parmspec = len(parmspec)
@@ -393,8 +387,8 @@ class Writer(AbstractWriter):
                 lines += [insert_formal_parmspec_template.format(num_parmspec, name, edd_fp_id, edd_obj_id)]
 
                 for parm in parmspec:
-                    lines += [insert_entry_template.format(edd_fp_id, parm.position + 1, parm.name, "UINT")] # TODO type fixes
-                
+                    lines += [insert_entry_template.format(edd_fp_id, parm.position + 1, parm.name, "UINT")]  # TODO type fixes
+
                 lines += [edd_formal_def_template.format(edd_obj_id, desc, edd_fp_id, etype, edd_def_id)]
 
             # Only put actual definition here if no parmspec
@@ -425,15 +419,15 @@ class Writer(AbstractWriter):
             oper_name = oper.name
             oper_desc = escape_description_sql(oper.description)
             # result_type = oper.result.name
-            result_type = "UNK" # TODO type fixes
+            result_type = "UNK"  # TODO type fixes
 
             oper_obj_id, oper_def_id, oper_act_id = self.make_sql_ids(self._make_ari(cs.OP, oper))
-            tnvc_collection_template,tnvc_entry_template,tnvc_unk_entry_template = self.create_insert_tnvc_templates(cs.OP, len(oper.operands.items))
+            tnvc_collection_template, tnvc_entry_template, tnvc_unk_entry_template = self.create_insert_tnvc_templates(cs.OP, len(oper.operands.items))
 
             lines += [
                 "",
                 oper_template.format(oper_name, oper_obj_id),
-                tnvc_collection_template.format("operands for "+ oper_name),
+                tnvc_collection_template.format("operands for " + oper_name),
             ]
 
             for in_type in oper.operands.items:
@@ -477,11 +471,11 @@ class Writer(AbstractWriter):
             var_id, var_def_id, var_act_id = self.make_sql_ids(self._make_ari(cs.VAR, var))
             lines += [
                 "",
-                "CALL SP__insert_ac_id(1, 'dummy AC', var_ac_id);", # TODO type fixes (TBD how does var params work?)
+                "CALL SP__insert_ac_id(1, 'dummy AC', var_ac_id);",  # TODO type fixes (TBD how does var params work?)
                 var_template.format(var_name, var_id),
                 var_def_template.format(var_id, var_desc, var_act_id),
             ]
-        
+
         return lines
 
     def handle_report_fp_ap(self, item, lines, report_id):
@@ -503,7 +497,7 @@ class Writer(AbstractWriter):
         insert_obj_metadata_template = self.create_insert_obj_metadata_template(cs.LIT).format("Literal value {}", '{}')
 
         # Format with meta_id, value, type, actual id
-        insert_actual_def_template = "CALL SP__insert_literal_actual_definition({}, '{}', '{}', '{}', {});".format("{0}", "literal value {1}", '{2}', '{1}','{3}')
+        insert_actual_def_template = "CALL SP__insert_literal_actual_definition({}, '{}', '{}', '{}', {});".format("{0}", "literal value {1}", '{2}', '{1}', '{3}')
         # Format with enumeration, type, actual_id
         insert_actual_parms_obj_template = "CALL SP__insert_actual_parms_object(" + self._var_name("ap_spec_id") + ", {}, '{}', {});"
 
@@ -514,9 +508,9 @@ class Writer(AbstractWriter):
         # Formal with enumeration, type, fp_spec_id
         insert_actual_name_template = "CALL SP__insert_actual_parms_names(" + self._var_name("ap_spec_id") + ", {}, '{}', {});"
 
-        def_id,obj_id,act_id,_ = self.make_definition_ids(item)
+        def_id, obj_id, act_id, _ = self.make_definition_ids(item)
         fp_id = self.make_fp_id(def_id)
-        def_ns,def_coll,def_name = cu.ari_get_names(item)
+        def_ns, def_coll, def_name = cu.ari_get_names(item)
 
         import ace.ari
         from ace.util import get_ident, find_ident
@@ -564,14 +558,14 @@ class Writer(AbstractWriter):
             for i, p in enumerate(fp):
                 lit_meta_id = self._var_name(meta_id_template.format(p))
                 lit_actual_id = self._var_name(actual_id_template.format(p))
-                enum = i+1
+                enum = i + 1
                 p_type = types[i]
                 aid = f"{act_id}_{enum}_{p}"
                 self._var_name(aid)
 
                 lines += [
                     "",
-                    insert_actual_parmspec_template.format(fp_id, enum, "actual parms for "+def_name+" passed "+p),
+                    insert_actual_parmspec_template.format(fp_id, enum, "actual parms for " + def_name + " passed " + p),
 
                     insert_obj_metadata_template.format(p, lit_meta_id),
                     insert_actual_def_template.format(lit_meta_id, p, p_type, lit_actual_id),
@@ -592,7 +586,7 @@ class Writer(AbstractWriter):
         ]
 
         insert_obj_template = self.create_insert_obj_metadata_template(cs.CTRL)
-        insert_formal_parmspec_template,insert_entry_template = self.create_insert_formal_parmspec_templates("parms for the {} control")
+        insert_formal_parmspec_template, insert_entry_template = self.create_insert_formal_parmspec_templates("parms for the {} control")
 
         # Format with ctrl id, ctrl description, fp_spec_id or null, ctrl definition id
         insert_ctrl_formal_def_template = "CALL SP__insert_control_formal_definition({} , '{}', {}, {});"
@@ -611,7 +605,7 @@ class Writer(AbstractWriter):
                 fp_spec_id = self._var_name("fp_spec_id")
                 lines += [insert_formal_parmspec_template.format(len(parmspec), ctrl_name, fp_spec_id, ctrl_id)]
                 for parm in parmspec:
-                    lines += [insert_entry_template.format(fp_spec_id, parm.position + 1, parm.name, "UINT")] # TODO type fixes
+                    lines += [insert_entry_template.format(fp_spec_id, parm.position + 1, parm.name, "UINT")]  # TODO type fixes
             else:
                 fp_spec_id = "null"
 
@@ -642,7 +636,7 @@ class Writer(AbstractWriter):
             lines += [
                 "",
                 insert_obj_template.format(c_name, const_id),
-                insert_const_actual_def_template.format(const_id, c_desc, "UINT", obj.init_value, const_act_id), # TODO type fixes
+                insert_const_actual_def_template.format(const_id, c_desc, "UINT", obj.init_value, const_act_id),  # TODO type fixes
             ]
 
         return lines
@@ -681,13 +675,11 @@ class Writer(AbstractWriter):
             lines += [
                 "",
                 insert_obj_template.format(c_name, const_id),
-                #using metadata keyword for type
-                insert_const_actual_def_template.format(const_id, c_desc, "STR", c_desc, const_act_id), # TODO type fixes
+                # using metadata keyword for type
+                insert_const_actual_def_template.format(const_id, c_desc, "STR", c_desc, const_act_id),  # TODO type fixes
             ]
 
         return lines
-
-
 
     # If the setup.mysql file exists in the output dir, and this
     # file is not already sourced in the setup script, add it to
@@ -695,7 +687,7 @@ class Writer(AbstractWriter):
     # setup_path: full expected path to the setup script
     # rel_path: relative path of the new sql file to add (path from setup script)
     def add_to_setup_mysql(setup_path, rel_path_sql):
-        line_to_add = "source " + rel_path_sql +"\n"
+        line_to_add = "source " + rel_path_sql + "\n"
 
         # method will use this keyword to figure out where to append the line_to_add
         end_agent_comment = "End Insert Agent Scripts"
@@ -717,7 +709,7 @@ class Writer(AbstractWriter):
                 print(line,)
 
             if already_present:
-                LOGGER.info("\n\t\t"+rel_path_sql + " already present in setup.mysql, skipping.")
+                LOGGER.info("\n\t\t" + rel_path_sql + " already present in setup.mysql, skipping.")
             LOGGER.info("[ DONE ]")
 
         except Exception as e:
@@ -730,7 +722,7 @@ class Writer(AbstractWriter):
     # rel_path_sql: relative path of the new sql file to add (path from the dockerfile)
     def add_to_dockerfile(dockerfile_path, rel_path_sql):
         sqlfile_name = os.path.basename(rel_path_sql)
-        line_to_add = "      - ${PWD}/"+rel_path_sql+":/docker-entrypoint-initdb.d/30-"+sqlfile_name+"\n"
+        line_to_add = "      - ${PWD}/" + rel_path_sql + ":/docker-entrypoint-initdb.d/30-" + sqlfile_name + "\n"
 
         # method will use this keyword to figure out where to append the line_to_add
         end_agent_comment = "End Insert Agent Scripts"
@@ -748,11 +740,11 @@ class Writer(AbstractWriter):
                 if line_to_add in line:
                     already_present = True
                 if end_agent_comment in line and not already_present:
-                    print(line_to_add, )
+                    print(line_to_add,)
                 print(line,)
 
             if already_present:
-                LOGGER.info("\n\t\t"+rel_path_sql+" already present in dockerfile, skipping.")
+                LOGGER.info("\n\t\t" + rel_path_sql + " already present in dockerfile, skipping.")
             LOGGER.info("[ DONE ]")
 
         except Exception as e:

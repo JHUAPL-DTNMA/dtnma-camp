@@ -24,6 +24,7 @@ dependencies = [
   "cbor2",
   "configobj",
   "xdg",
+  "jinja2",
 ]
 
 [project.optional-dependencies]

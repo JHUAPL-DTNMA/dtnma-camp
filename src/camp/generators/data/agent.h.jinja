@@ -1,0 +1,102 @@
+#include "refda/agent.h"
+#include <cace/util/defs.h>
+
+{{scraper.write_custom_includes()}}
+
+{%- set guard_sym = adm | cpp_guard %}
+#ifndef {{guard_sym}}
+#define {{guard_sym}}
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/// Enumeration of the ADM itself
+#define {{adm | cpp_enum}} {{adm.enum | c_int}}
+
+{%- if adm.const %}
+
+/*
+ * Enumerations for CONST objects
+ */
+{%- for obj in adm.const %}
+/// For {{obj | ref_text}}
+{%- if obj.enum is defined %}
+#define {{obj | cpp_enum}} {{obj.enum | c_int}}
+{%- else %}
+//#define {{obj | cpp_enum}} FIXME-NOT-AVAILABLE
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if adm.var %}
+
+/*
+ * Enumerations for VAR objects
+ */
+{%- for obj in adm.var %}
+/// For {{obj | ref_text}}
+{%- if obj.enum is defined %}
+#define {{obj | cpp_enum}} {{obj.enum | c_int}}
+{%- else %}
+//#define {{obj | cpp_enum}} FIXME-NOT-AVAILABLE
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+{%- if adm.edd %}
+
+/*
+ * Enumerations for EDD objects
+ */
+{%- for obj in adm.edd %}
+/// For {{obj | ref_text}}
+{%- if obj.enum is defined %}
+#define {{obj | cpp_enum}} {{obj.enum | c_int}}
+{%- else %}
+//#define {{obj | cpp_enum}} FIXME-NOT-AVAILABLE
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+{%- if adm.ctrl %}
+
+/*
+ * Enumerations for CTRL objects
+ */
+{%- for obj in adm.ctrl %}
+/// For {{obj | ref_text}}
+{%- if obj.enum is defined %}
+#define {{obj | cpp_enum}} {{obj.enum | c_int}}
+{%- else %}
+//#define {{obj | cpp_enum}} FIXME-NOT-AVAILABLE
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+{%- if adm.oper %}
+
+/*
+ * Enumerations for OPER objects
+ */
+{%- for obj in adm.oper %}
+/// For {{obj | ref_text}}
+{%- if obj.enum is defined %}
+#define {{obj | cpp_enum}} {{obj.enum | c_int}}
+{%- else %}
+//#define {{obj | cpp_enum}} FIXME-NOT-AVAILABLE
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+/** Initializer for the ADM {{adm.name}}.
+ * @param[in,out] agent The agent to register this namespace and its
+ * objects within.
+ * @return Zero upon success.
+ */
+int {{adm | c_func(suffix='init')}}(refda_agent_t *agent);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* {{guard_sym}} */

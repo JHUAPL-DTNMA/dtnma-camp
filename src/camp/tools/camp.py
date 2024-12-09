@@ -44,13 +44,10 @@ import sys
 import ace
 # Import all generators
 from camp.generators import (
-    create_agent_c,
     create_impl_h,
     create_impl_c,
     create_sql,
 )
-from camp.generators.lib import campsettings
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -61,8 +58,8 @@ def get_parser() -> argparse.ArgumentParser:
     p.add_argument('--log-level', choices=('debug', 'info', 'warning', 'error'),
                    default='info',
                    help='The minimum log severity.')
-    p.add_argument('-o', '--out',        
-                   help="The output directory",                         
+    p.add_argument('-o', '--out',
+                   help="The output directory",
                    default="./")
     p.add_argument('-s', '--scrape',
                    help="Previously generated H and C file to be scraped",
@@ -76,6 +73,7 @@ def get_parser() -> argparse.ArgumentParser:
                    help="Set this flag to only produce the .c and .h files",
                    action='store_true', default=False)
     return p
+
 
 #
 # Makes the output directory if it doesn't already exist
@@ -127,7 +125,6 @@ def run(args: argparse.Namespace):
         generators += [
             create_impl_h.Writer(admset, adm, args.out, args.scrape),
             create_impl_c.Writer(admset, adm, args.out, args.scrape),
-            create_agent_c.Writer(admset, adm, args.out),
         ]
 
     if not args.only_ch:
