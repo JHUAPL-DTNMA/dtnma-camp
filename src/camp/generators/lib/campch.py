@@ -229,28 +229,24 @@ def make_operator_function(adm, op):
     keyword = cs.get_sname(cs.OP)
     basename = "{0}_{1}".format(keyword, cu.yang_to_c(op.name).lower())
     fullname = _make_fullname(adm, basename)
-    signature = "void {}()".format(fullname)
+    signature = "int {}(const refda_amm_oper_desc_t *obj, refda_eval_ctx_t *ctx)".format(fullname)
     return basename, fullname, signature
 
 
 ##################### FUNCTIONS SHARED BY CREATE_MGR.PY AND CREATE_AGENT.PY ###################
 
-#
-# Makes the adm_build_ari(..) template for the passed collection type and
-# g_*_idx
-# Caller should format the template with returned_str.format([0|1](whether params are present), ari_name)
-#
-# standalone is a boolean whether or not the call needs to stand alone. If False, the call should be used
-# as an argument to another function.
-#
-def make_adm_build_ari_template(coll, g_var_idx, standalone):
-    amp_type = cs.get_amp_type(coll)
-    idx_type = cs.get_adm_idx(coll)
+cace_names = {
+    'textstr': 'tstr',
+    'bytestr': 'bstr',
+}
 
-    template = "adm_build_ari("+amp_type+", {0}, " + g_var_idx + "["+idx_type+"], {1})"
-    if standalone:
-        template = "\n\tid = " + template + ";"
-    return template
+def get_cace_func_name(type_name):
+    type_name = type_name.lower()
+    return f"ari_set_{cace_names.get(type_name, type_name)}"
+
+
+def write_adm_init_function_template():
+    return "int {0}_init(refda_agent_t *agent)"
 
 #
 # Writes an init function to the passed c_file.
@@ -273,33 +269,13 @@ def write_formatted_init_function(c_file, name, coll, body):
             "\n}}"
             "\n\n")
     else:
-        init_funct_string = (
-            "int {0}_init{1}(refda_agent_t *agent)"
+        init_funct_string = write_adm_init_function_template()+(
             "\n{{"
             "\n{2}"
             "\n}}"
             "\n\n")
 
     c_file.write(init_funct_string.format(name, ttype, body))
-
-
-# Builds a template for the
-# ```
-# meta_add_...
-# ```
-# calls with passed collection type and adm name. Should be formatted in the calling
-# function with:
-# return_str.format(ari_amp_type, item[name], item[description])
-#
-# The intention behind this function is to only have to construct these parts once for each
-# collection. Only a subset of values that need to be substituted for_each_ item in the
-# collection, formatting ones related to coll and name here.
-#
-def make_std_meta_add_coll_template(coll, name):
-    enum_name = cu.make_enum_name_from_str(name)
-    coll_name = 'cnst' if coll == cs.META else cs.get_sname(coll).lower()
-    return "meta_add_" + coll_name + "({0}, id, " + enum_name + ", \"{1}\", \"{2}\");\n"
-
 #
 # Writes the init function to c_file
 #
@@ -327,7 +303,7 @@ def write_init_function(c_file, adm: ace.models.AdmModule, g_var_idx: str, mgr: 
     init_decls = ""
     init_calls = ""
     if not mgr:
-        init_calls = "\n\t" + norm_name + "_setup();"
+        init_calls = "\n\t\t" + norm_name + "_setup();"
 
     for coll, attrname in obj_types.items():
         init_decls += init_decl_template.format(cs.get_sname(coll).lower())

@@ -23,10 +23,11 @@
 /*   STOP CUSTOM INCLUDES HERE  */
 
 
-#include "shared/utils/utils.h"
-#include "shared/primitives/ctrl.h"
-#include "shared/primitives/table.h"
-#include "shared/primitives/tnv.h"
+#include "refda/register.h"
+#include "refda/valprod.h"
+#include "cace/ari.h"
+#include "cace/util/defs.h"
+#include "cace/util/logging.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,6 +40,26 @@ extern "C" {
 
 /*
  * +---------------------------------------------------------------------------------------------+
+ * |                               TEST_ADM META-DATA DEFINITIONS                                +
+ * +---------------------------------------------------------------------------------------------+
+ * |        NAME         |             DESCRIPTION              | TYPE  |         VALUE          |
+ * +---------------------+--------------------------------------+-------+------------------------+
+ * |name                 |The human-readable name of the ADM.   |TEXTSTR|test-adm                |
+ * +---------------------+--------------------------------------+-------+------------------------+
+ * |enum                 |                                      |INT    |9999                    |
+ * +---------------------+--------------------------------------+-------+------------------------+
+ * |contact              |                                      |TEXTSTR|WG Web: <http://tools.ie|
+ * +---------------------+--------------------------------------+-------+------------------------+
+ * |description          |                                      |TEXTSTR|Test module.            |
+ * +---------------------+--------------------------------------+-------+------------------------+
+ * |organization         |                                      |TEXTSTR|JHU APL                 |
+ * +---------------------+--------------------------------------+-------+------------------------+
+ * |prefix               |                                      |TEXTSTR|test                    |
+ * +---------------------+--------------------------------------+-------+------------------------+
+ */
+
+/*
+ * +---------------------------------------------------------------------------------------------+
  * |                                     Retrieval Functions                                     +
  * +---------------------------------------------------------------------------------------------+
  */
@@ -46,39 +67,98 @@ extern "C" {
 /*             TODO              */
 /*   STOP CUSTOM FUNCTIONS HERE  */
 
-void test_ns_setup();
-void test_ns_cleanup();
+void test_adm_setup();
+void test_adm_cleanup();
 
 
-/* Metadata Functions */
-tnv_t *test_ns_meta_name(tnvc_t *parms);
-tnv_t *test_ns_meta_namespace(tnvc_t *parms);
-tnv_t *test_ns_meta_version(tnvc_t *parms);
-tnv_t *test_ns_meta_organization(tnvc_t *parms);
-tnv_t *test_ns_meta_enum(tnvc_t *parms);
+/*
+ * +---------------------------------------------------------------------------------------------+
+ * |                                 AGENT NICKNAME DEFINITIONS                                  +
+ * +---------------------------------------------------------------------------------------------+
+ */
+#define ADM_ENUM_TEST_ADM 9999
 
-/* Constant Functions */
-tnv_t *test_ns_get_amp_epoch(tnvc_t *parms);
+/* Initialization functions. */
+int test_adm_init(refda_agent_t *agent);
+
+/*
+ * +---------------------------------------------------------------------------------------------+
+ * |                        TEST_ADM EXTERNALLY DEFINED DATA DEFINITIONS                         +
+ * +---------------------------------------------------------------------------------------------+
+ * |        NAME         |             DESCRIPTION              | TYPE  |
+ * +---------------------+--------------------------------------+-------+
+ * |edd_uvast            |Example UVAST EDD.                    |UVAST  |
+ * +---------------------+--------------------------------------+-------+
+ * |edd_uvast_param      |Example UVAST EDD with parameters.    |UVAST  |
+ * +---------------------+--------------------------------------+-------+
+ * |edd_tp               |Example TP EDD: current system time.  |TP     |
+ * +---------------------+--------------------------------------+-------+
+ * |endpoint_active      |Is the given endpoint active? (0=no)  |UVAST  |
+ * +---------------------+--------------------------------------+-------+
+ */
 
 /* Collect Functions */
-tnv_t *test_ns_get_edd_uint(tnvc_t *parms);
-tnv_t *test_ns_get_uint_with_param(tnvc_t *parms);
-tnv_t *test_ns_get_edd_tv(tnvc_t *parms);
-tnv_t *test_ns_get_endpoint_active(tnvc_t *parms);
+void test_adm_get_edd__uvast(const refda_amm_edd_desc_t *obj _U_, refda_valprod_ctx_t *ctx);
+void test_adm_get_edd__uvast__param(const refda_amm_edd_desc_t *obj _U_, refda_valprod_ctx_t *ctx);
+void test_adm_get_edd__tp(const refda_amm_edd_desc_t *obj _U_, refda_valprod_ctx_t *ctx);
+void test_adm_get_endpoint__active(const refda_amm_edd_desc_t *obj _U_, refda_valprod_ctx_t *ctx);
+
+/*
+ * +---------------------------------------------------------------------------------------------+
+ * |                                TEST_ADM CONTROL DEFINITIONS                                 +
+ * +---------------------------------------------------------------------------------------------+
+ * |        NAME         |             DESCRIPTION              | TYPE  |
+ * +---------------------+--------------------------------------+-------+
+ * |get                  |Get a single MIB value from the agent.|BYTESTR|
+ * +---------------------+--------------------------------------+-------+
+ * |set                  |Set a single MIB value in the agent.  |BYTE   |
+ * +---------------------+--------------------------------------+-------+
+ */
 
 
 /* Control Functions */
-tnv_t *test_ns_ctrl_add_var(eid_t *def_mgr, tnvc_t *parms, int8_t *status);
+int test_adm_ctrl_get(const refda_amm_ctrl_desc_t *obj _U_, refda_exec_ctx_t *ctx);
+int test_adm_ctrl_set(const refda_amm_ctrl_desc_t *obj _U_, refda_exec_ctx_t *ctx);
+
+/*
+ * +---------------------------------------------------------------------------------------------+
+ * |                                TEST_ADM OPERATOR DEFINITIONS                                +
+ * +---------------------------------------------------------------------------------------------+
+ * |        NAME         |             DESCRIPTION              | TYPE  |
+ * +---------------------+--------------------------------------+-------+
+ * |add                  |Add two numeric values.               |       |
+ * |                     |The operands are cast to the least com|       |
+ * |                     |patible numeric type                  |       |
+ * |                     |before the arithmetic.                |NUMERIC|
+ * +---------------------+--------------------------------------+-------+
+ */
 
 
 /* OP Functions */
-tnv_t *test_ns_op_plusint(vector_t *stack);
-tnv_t *test_ns_op_plusreal64(vector_t *stack);
+void test_adm_op_add();
 
+/*
+ * +---------------------------------------------------------------------------------------------+
+ * |                                TEST_ADM VARIABLE DEFINITIONS                                +
+ * +---------------------------------------------------------------------------------------------+
+ * |        NAME         |             DESCRIPTION              | TYPE  |
+ * +---------------------+--------------------------------------+-------+
+ * |var_uvast_val        |Example UVAST VAR with initialized val|       |
+ * |                     |ue.                                   |Untyped|
+ * +---------------------+--------------------------------------+-------+
+ */
 
-/* Table Build Functions */
-tbl_t *test_ns_tblt_variables(ari_t *id);
-tbl_t *test_ns_tblt_rptts(ari_t *id);
+/*
+ * +---------------------------------------------------------------------------------------------+
+ * |                                TEST_ADM CONSTANT DEFINITIONS                                +
+ * +---------------------------------------------------------------------------------------------+
+ * |        NAME         |             DESCRIPTION              | TYPE  |         VALUE          |
+ * +---------------------+--------------------------------------+-------+------------------------+
+ * |const1               |Example value.                        |Untyped|31                      |
+ * +---------------------+--------------------------------------+-------+------------------------+
+ * |showall              |                                      |AC     |/AC/(./CONST/const1)    |
+ * +---------------------+--------------------------------------+-------+------------------------+
+ */
 
 #ifdef __cplusplus
 }

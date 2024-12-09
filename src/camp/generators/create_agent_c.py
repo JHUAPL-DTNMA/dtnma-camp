@@ -48,8 +48,6 @@ class Writer(AbstractWriter, CHelperMixin):
         campch.write_c_file_header(outfile, f"adm_{self.adm_name}_agent.c")
         self.write_includes(outfile)
 
-        #outfile.write("vec_idx_t {}[11];\n\n".format(self._g_var_idx))
-
         self.write_init_function(outfile)
 
         #write helpers
@@ -59,7 +57,7 @@ class Writer(AbstractWriter, CHelperMixin):
         #write init for objects
         self.write_init_constant_function(outfile)
         self.write_init_edd_function(outfile)
-        #self.write_init_op_function(outfile) TODO: relook at when oper implemented in refda amm
+        self.write_init_op_function(outfile) #TODO: relook at when oper implemented in refda amm
         self.write_init_var_function(outfile)
         self.write_init_control_function(outfile)
         #self.write_init_tables_function(outfile) TODO: relook at when tblt implemented in refda amm
@@ -75,11 +73,11 @@ class Writer(AbstractWriter, CHelperMixin):
         files = [
             #"ion.h",
             #"platform.h",
-            f"adm_{self.adm.norm_name}.h",
+            #f"adm_{self.adm.norm_name}.h",
             #"shared/utils/utils.h",
             #"shared/primitives/report.h",
             #"shared/primitives/blob.h",
-            f"adm_{self.adm.norm_name}_impl.h",
+            f"adm_{self.adm_name}_impl.h",
             #"agent/rda.h",
             "refda/agent.h",
             "refda/register.h",
@@ -105,28 +103,32 @@ class Writer(AbstractWriter, CHelperMixin):
     #
     def write_init_function(self, outfile):
         campch.write_init_function(outfile, self.adm, self._g_var_idx, False)
-        
+
+    def is_container(self, type_enum):
+        return type_enum == typing.StructType.AC or type_enum == typing.StructType.AM or type_enum == typing.StructType.AC
+
+    def get_ari_type(self, ari):
+        if hasattr(ari, 'type_id'):
+            if not ari.type_id:
+                return None
+            if self.is_container(ari.type_id): #container
+                return ari.type_id
+            else:
+                return ari.value.name
+        else: #reference
+            obj = lookup.dereference(ari, lookup.object_session(self.adm))
+            return obj
 
     def get_type_enum(self, obj):
         enum_template = 'ARI_TYPE_{0}'
-        if hasattr(obj, 'init_ari'): #const, var
-            ari = obj.init_ari
-        elif hasattr(obj.typeobj, 'type_ari'): #edd
+        if hasattr(obj.typeobj, 'type_ari'): #edd
             ari = obj.typeobj.type_ari
         else: #tblt, union
-            #print('Unhandled type for obj: ', obj, type(obj.typeobj))
             return enum_template.format('NULL')
         
-        if hasattr(ari, 'type_id'): #literal
-            if ari.type_id >= 17 and ari.type_id <=19: #container
-                type_enum = enum_template.format(ari.type_id.name)
-            else:
-                type_enum = enum_template.format(ari.value.name)
-        else: #reference
-            obj = lookup.dereference(ari, lookup.object_session(self.adm))
-            type_enum = obj.enum
-        #print(obj.name, ari)
-        #if hasattr(obj, 'enum'): print('\t', obj.enum)
+        ari_type = self.get_ari_type(ari)
+        ari_type = ari_type.name if isinstance(ari_type, typing.StructType) else ari_type
+        type_enum = enum_template.format(ari_type) if isinstance(ari_type, str) else ari_type.enum
         return type_enum
 
     #TODO: UPDATE DESCRIPTION
@@ -162,7 +164,7 @@ class Writer(AbstractWriter, CHelperMixin):
             "\n}}"
             "\n\n")
         body = "\n\tconst amm_type_t *amm_type = amm_type_get_builtin(type_enum);\
-                \n\tif (amm_type == NULL ){ //not found within builtin types"+\
+                \n\tif (amm_type == NULL){ //not found within builtin types"+\
                 f"\n\t\tamm_type = refda_agent_get_typedef(agent, {cu.make_enum_name_from_str(self.adm.norm_name).replace('-', '_')}, type_enum);"+\
                 "\n\t}\
                 \n\tamm_type_set_use_direct(type, amm_type);"
@@ -177,21 +179,8 @@ class Writer(AbstractWriter, CHelperMixin):
             f"\n\t\t\tari_t *item;"
             f"{body}"
             "\n\t\t}"
-            f"\n\t\tari_set_{ctype}(&(objdata->value), &{ctype}init)"
+            f"\n\t\t{campch.get_cace_func_name(ctype)}(&(objdata->value), &{ctype}init)"
             "\n\t}"
-        )
-    
-    #TODO: verify support for am and tbl
-    def write_container_body_template(self, ctype):
-        if ctype == 'ac':
-            c = 'list'
-        elif ctype == 'am':
-            c = 'tree'
-        else: #tbl?
-            c = None 
-        return (
-            f"\n\t\t\titem = ari_{c}_push_back_new({ctype}init.items);"
-            f"\n\t\t\tari_set_objref_path_intid(item, {cu.make_enum_name_from_str(self.adm.norm_name).replace('-', '_')}" + ", {0}, {1});"
         )
 
     def make_add_param_template(self):
@@ -207,6 +196,48 @@ class Writer(AbstractWriter, CHelperMixin):
         body = f"\n\tcace_amm_formal_param_t *fparam = refda_register_add_param(obj, name);"+\
                 self.make_set_type_call("&(fparam->typeobj)")
         outfile.write(init_funct_string.format(body))
+
+    #
+    def deal_with_parameters(self, obj):
+        body = ""
+        if obj.parameters and obj.parameters.items:
+                body += "\n\t{"
+                p_str_template = self.make_add_param_template()
+                for p in obj.parameters.items:
+                    type_enum = self.get_type_enum(p)
+                    body += p_str_template.format(p.name.lower(), type_enum)
+                body += "\n\t}"
+        return body
+
+    #TODO: params?
+    #recurse? AC of ACs
+    #need to check type of obj and separately type of init_ari for container
+        #this is because of typedefs like rptt
+        #or should I include rptt in is_container and for new typedefs they use union with AC
+    def deal_with_container(self, ctype, ari):
+        if ctype == typing.StructType.AC:
+            c = 'list'
+        elif ctype == typing.StructType.AM:
+            c = 'tree'
+        else: #tbl?
+            c = None 
+        body = ""
+        if ctype and self.is_container(ctype):
+                ctype = ctype.name.lower()
+                cbody = ""
+                for item in ari.value:
+                    cbody += f"\n\t\t\titem = ari_{c}_push_back_new({ctype}init.items);"
+                    item_type_enum = self.get_ari_type(item)
+                    if isinstance(item_type_enum, str): #non-container literal
+                        cbody += f"\n\t\t\t{campch.get_cace_func_name(item_type_enum.rsplit('_', 1)[1])}(item, {item.value});"
+                    elif isinstance(item_type_enum, typing.StructType): #container
+                        pass
+                    elif item_type_enum: #ref
+                        item_obj = lookup.dereference(item, lookup.object_session(self.adm))
+                        cbody += f"\n\t\t\tari_set_objref_path_intid(item, {cu.make_enum_name_from_str(self.adm.norm_name).replace('-', '_')}, ARI_TYPE_{type(item_type_enum).__name__.upper()}, {item_obj.enum});"
+
+                body += self.write_init_container_template(ctype, cbody)
+        return body
 
     def write_init_constant_helper_function(self, outfile):
         coll = cs.CONST
@@ -235,25 +266,21 @@ class Writer(AbstractWriter, CHelperMixin):
     #
     def write_init_constant_function(self, outfile):
         self.write_init_constant_helper_function(outfile)
-
+        
         body = ""
         add_str_template = self.make_std_meta_adm_build_template(cs.CONST)
         for obj in self.adm.const:
             type_enum = self.get_type_enum(obj)
-            ace_type = eval(f"typing.StructType.{type_enum.rsplit('_', 1)[1]}")
             body += "\n\trefda_amm_const_desc_t *objdata = " + add_str_template.format(obj.name.lower(), type_enum, obj.enum)[2:]
-            if  ace_type >= 17 or ace_type <= 19:
-                #print(obj.name, type_enum, ace_type, ace_type.name.lower())
-                ctype = ace_type.name.lower()
-                cbody_template = self.write_container_body_template(ctype)
-                cbody = ""
-                for item in obj.init_ari.value:
-                    #print('\t', item)
-                    item_obj = lookup.dereference(item, lookup.object_session(self.adm))
-                    item_type_enum = self.get_type_enum(item_obj)
-                    cbody += cbody_template.format(item_type_enum, item_obj.enum)
-                body += self.write_init_container_template(ctype, cbody)
-            #TODO: params?
+            val_type = self.get_ari_type(obj.init_ari)
+            if isinstance(val_type, models.Typedef): #value is typedef ari?
+                pass
+            elif self.is_container(val_type):
+                body += self.deal_with_container(val_type, obj.init_ari)
+            else:
+                obj_type = type_enum.rsplit('_', 1)[1] if isinstance(type_enum, str) else type_enum.name
+                body += "\n\t{\n\t\t"+f"{campch.get_cace_func_name(obj_type)}(&(objdata->value), {obj.init_value})"+"\n\t}"
+            body += self.deal_with_parameters(obj)
         campch.write_formatted_init_function(outfile, self.adm_name, cs.CONST, body)
 
     #
@@ -300,16 +327,30 @@ class Writer(AbstractWriter, CHelperMixin):
             type_enum = self.get_type_enum(obj)
             body += add_str_template.format(obj.name.lower(), type_enum, obj.enum, fname)
 
-            if obj.parameters and obj.parameters.items:
-                body += "\n\t{"
-                p_str_template = self.make_add_param_template()
-                for p in obj.parameters.items:
-                    type_enum = self.get_type_enum(p)
-                    body += p_str_template.format(p.name.lower(), type_enum)
-                body += "\n\t}"
+            body += self.deal_with_parameters(obj)
 
         campch.write_formatted_init_function(outfile, self.adm_name, cs.EDD, body)
 
+
+    #
+    def write_init_op_helper_function(self, outfile):
+        coll = cs.OP
+        add_type = cs.get_sname(coll).lower()
+        ttype = "_" + cs.get_sname(coll).replace("-","_")
+        init_funct_string = (
+            "void {0}_init{1}_helper(refda_agent_t *agent, cace_amm_obj_ns_t *adm, cace_amm_obj_desc_t *obj, const char *name, const ari_type_t type_enum, int64_t obj_enum, int (*evaluate)(const refda_amm_oper_desc_t *obj, refda_eval_ctx_t *ctx))"
+            "\n{{"
+            "\n{2}"
+            "\n}}"
+            "\n\n")
+        body = f"\n\trefda_amm_{add_type}_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_{add_type}_desc_t));\
+                \n\trefda_amm_{add_type}_desc_init(objdata);"+\
+                self.make_set_type_call("&(objdata->res_type)")+\
+                f"\n\tobjdata->evaluate = evaluate;\
+                \n\tobj = refda_register_{add_type}(adm, cace_amm_obj_id_withenum(name, obj_enum), objdata);\
+                \n"
+                
+        outfile.write(init_funct_string.format(self.adm_name, ttype, body))
 
     #
     # Constructs and writes the init_operators function
@@ -319,21 +360,29 @@ class Writer(AbstractWriter, CHelperMixin):
     # operators is a list of operators to add
     #
     def write_init_op_function(self, outfile):
+        self.write_init_op_helper_function(outfile)
+
         body = ""
         add_str_template = self.make_std_meta_adm_build_template(cs.OP, has_func=True)
 
         for obj in self.adm.oper:
-            _,fname,_ = campch.make_collect_function(self.adm, obj)
-            type_enum = self.get_type_enum(obj)
+            _,fname,_ = campch.make_operator_function(self.adm, obj)
+            type_enum = self.get_type_enum(obj.result)
             body += add_str_template.format(obj.name.lower(), type_enum, obj.enum, fname)
 
-            if obj.parameters and obj.parameters.items:
+            #TODO: relook at when operand types are handled
+            """
+            if obj.operands and obj.operands.items:
                 body += "\n\t{"
-                p_str_template = self.make_add_param_template()
-                for p in obj.parameters.items:
+                p_str_template = f"\n\t\t{self.adm_name}_add_operand();"
+                for p in obj.operands.items:
                     type_enum = self.get_type_enum(p)
                     body += p_str_template.format(p.name.lower(), type_enum)
                 body += "\n\t}"
+            """
+
+            body += self.deal_with_parameters(obj)
+
 
         campch.write_formatted_init_function(outfile, self.adm_name, cs.OP, body)
 
@@ -368,20 +417,16 @@ class Writer(AbstractWriter, CHelperMixin):
         add_str_template = self.make_std_meta_adm_build_template(cs.VAR)
         for obj in self.adm.var:
             type_enum = self.get_type_enum(obj)
-            ace_type = eval(f"typing.StructType.{type_enum.rsplit('_', 1)[1]}")
             body += "\n\trefda_amm_const_desc_t *objdata = " + add_str_template.format(obj.name.lower(), type_enum, obj.enum)[2:]
-            if  ace_type >= 17 or ace_type <= 19:
-                #print(obj.name, type_enum, ace_type, ace_type.name.lower())
-                ctype = ace_type.name.lower()
-                cbody_template = self.write_container_body_template(ctype)
-                cbody = ""
-                for item in obj.init_ari.value:
-                    #print('\t', item)
-                    item_obj = lookup.dereference(item, lookup.object_session(self.adm))
-                    item_type_enum = self.get_type_enum(item_obj)
-                    cbody += cbody_template.format(item_type_enum, item_obj.enum)
-                body += self.write_init_container_template(ctype, cbody)
-            #TODO: params?
+            if obj.init_ari:
+                val_type = self.get_ari_type(obj.init_ari)
+                if isinstance(val_type, models.Typedef): #value is typedef ari?
+                    pass
+                elif self.is_container(val_type):
+                    body += self.deal_with_container(val_type, obj.init_ari)
+                else:
+                    obj_type = type_enum.rsplit('_', 1)[1] if isinstance(type_enum, str) else type_enum.name
+                    body += "\n\t{\n\t\t"+f"{campch.get_cace_func_name(obj_type)}(&(objdata->value), {obj.init_value})"+"\n\t}"
         campch.write_formatted_init_function(outfile, self.adm_name, cs.VAR, body)
 
 
@@ -392,14 +437,15 @@ class Writer(AbstractWriter, CHelperMixin):
         add_type = cs.get_sname(coll).lower()
         ttype = "_" + cs.get_sname(coll).replace("-","_")
         init_funct_string = (
-            "void {0}_init{1}_helper(refda_agent_t *agent, cace_amm_obj_ns_t *adm, cace_amm_obj_desc_t *obj, const char *name, const ari_type_t type_enum, int64_t obj_enum, refda_amm_edd_produce_f prod_func)"
+            "void {0}_init{1}_helper(refda_agent_t *agent, cace_amm_obj_ns_t *adm, cace_amm_obj_desc_t *obj, const char *name, const ari_type_t type_enum, int64_t obj_enum, int (*execute)(const refda_amm_ctrl_desc_t *obj, refda_exec_ctx_t *ctx))"
             "\n{{"
             "\n{2}"
             "\n}}"
             "\n\n")
         body = f"\n\trefda_amm_{add_type}_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_{add_type}_desc_t));\
                 \n\trefda_amm_{add_type}_desc_init(objdata);"+\
-                f"\n\tobjdata->execute = prod_func;\
+                self.make_set_type_call("&(objdata->res_type)")+\
+                f"\n\tobjdata->execute = execute;\
                 \n\tobj = refda_register_{add_type}(adm, cace_amm_obj_id_withenum(name, obj_enum), objdata);\
                 \n"
                 
@@ -423,14 +469,7 @@ class Writer(AbstractWriter, CHelperMixin):
 
             type_enum = self.get_type_enum(obj.result) if obj.result else 'ARI_TYPE_NULL'
             body += add_str_template.format(obj.name.lower(), type_enum, obj.enum, fname)
-
-            if obj.parameters and obj.parameters.items:
-                body += "\n\t{"
-                p_str_template = self.make_add_param_template()
-                for p in obj.parameters.items:
-                    type_enum = self.get_type_enum(p)
-                    body += p_str_template.format(p.name.lower(), type_enum)
-                body += "\n\t}"
+            body += self.deal_with_parameters(obj)
 
         campch.write_formatted_init_function(outfile, self.adm_name, cs.CTRL, body)
 

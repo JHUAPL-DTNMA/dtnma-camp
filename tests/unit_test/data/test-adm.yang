@@ -1,0 +1,160 @@
+module test-adm {
+  yang-version 1.1;
+  namespace "ari://test-adm/";
+  prefix test;
+
+  import ietf-amm {
+    prefix amm;
+  }
+
+  organization
+    "JHU APL";
+  contact
+    "WG Web: <http://tools.ietf.org/wg/dtn/>
+     WG List: <mailto:dtn@ietf.org>
+
+     Author: Jenny Cao
+             <mailto:jenny.cao@jhuapl.edu>";
+  description
+    "Test module.";
+
+  revision 2024-11-21 {
+    description
+      "First YANG test ADM";
+    reference
+      "draft-ietf-dtn-adm-yang";
+  }
+  amm:enum 9999;
+  feature example {
+    description
+      "some feature";
+  }
+  amm:typedef counter32 {
+    amm:enum 26;
+    amm:type "/ARITYPE/UINT";
+  }
+  amm:typedef gauge32 {
+    amm:enum 27;
+    amm:type "/ARITYPE/INT";
+  }
+  amm:typedef counter64 {
+    amm:enum 28;
+    amm:type "/ARITYPE/UVAST";
+  }
+  amm:typedef gauge64 {
+    amm:enum 29;
+    amm:type "/ARITYPE/VAST";
+  }
+  amm:edd edd_uvast {
+    amm:enum 0;
+    amm:type "/ARITYPE/UVAST";
+    description
+      "Example UVAST EDD.";
+  }
+  amm:edd edd_uvast_param {
+    amm:enum 1;
+    amm:type "/ARITYPE/UVAST";
+    amm:parameter other {
+      amm:type "/ARITYPE/UVAST";
+      description
+        "Example parameter.";
+    }
+    description
+      "Example UVAST EDD with parameters.";
+  }
+  amm:edd edd_tp {
+    amm:enum 2;
+    amm:type "/ARITYPE/TP";
+    description
+      "Example TP EDD: current system time.";
+  }
+  amm:edd endpoint_active {
+    amm:enum 3;
+    amm:type "/ARITYPE/UVAST";
+    amm:parameter endpoint_name {
+      amm:type "/ARITYPE/TEXTSTR";
+      description
+        "Endpoint name.";
+    }
+    description
+      "Is the given endpoint active? (0=no)";
+  }
+  amm:var var_uvast_val {
+    amm:enum 0;
+    amm:type "/ARITYPE/UVAST";
+    amm:init-value "34";
+    description
+      "Example UVAST VAR with initialized value.";
+  }
+  amm:const const1 {
+    amm:enum 0;
+    if-feature "example";
+    amm:type "/ARITYPE/UVAST";
+    amm:init-value "31";
+    description
+      "Example value.";
+  }
+  amm:const showall {
+    amm:enum 1;
+    amm:type "/ARITYPE/AC";
+    amm:init-value "/AC/(./CONST/const1)";
+  }
+  amm:ctrl get {
+    amm:enum 2;
+    amm:parameter object {
+      amm:type "/ARITYPE/OBJECT";
+      amm:default "hello";
+      description
+        "Identity of the object to retrieve.";
+    }
+    amm:result data {
+      amm:type "/ARITYPE/BYTESTR";
+      description
+        "Encoded value of the object.";
+    }
+    description
+      "Get a single MIB value from the agent.";
+  }
+  amm:ctrl set {
+    amm:enum 3;
+    amm:parameter object {
+      amm:type "/ARITYPE/OBJECT";
+      description
+        "Identify the value to retrieve.";
+    }
+    amm:parameter data {
+      amm:type "/ARITYPE/BYTESTR";
+      description
+        "Endcoded value used to write the object";
+    }
+    amm:result errorcode {
+      amm:type "/ARITYPE/BYTE";
+      description
+        "If non-zero, an indicator of an error.";
+    }
+    description
+      "Set a single MIB value in the agent.";
+  }
+  amm:oper add {
+    amm:enum 0;
+    description
+      "Add two uvast values.
+       The operands are cast to the least compatible numeric type
+       before the arithmetic.";
+    amm:operand left {
+      description
+        "The left-side operand.";
+      amm:type "/ARITYPE/UVAST";
+    }
+    amm:operand right {
+      description
+        "The left-side operand.";
+      amm:type "/ARITYPE/UVAST";
+    }
+    amm:result result {
+      description
+        "The single value.";
+      amm:type "/ARITYPE/UVAST";
+    }
+  }
+}

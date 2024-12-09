@@ -30,7 +30,7 @@ from camp.generators.lib import campch
 from camp.generators.lib.campch_roundtrip import H_Scraper
 from camp.generators.lib import camputil as cu
 from camp.generators.base import AbstractWriter, CHelperMixin
-from ace import models
+from ace import lookup
 
 
 class Writer(AbstractWriter, CHelperMixin):
@@ -62,6 +62,8 @@ class Writer(AbstractWriter, CHelperMixin):
 
         self._scraper.write_custom_type_enums(outfile)
 
+        self.write_metadata_definitions(outfile)
+
         # Write this to divide up the file
         outfile.write(campch.make_formatted_comment_header("Retrieval Functions", True, True))
 
@@ -72,10 +74,17 @@ class Writer(AbstractWriter, CHelperMixin):
         outfile.write(f"void {self.c_norm_name}_setup();\n")
         outfile.write(f"void {self.c_norm_name}_cleanup();\n\n")
 
-        #self.write_constant_functions(outfile)
+        self.write_agent_nickname_definitions(outfile)
+        self.write_initialization_functions(outfile)
+
+        #write function stubs with object definitions
         self.write_collect_functions(outfile)
         self.write_control_functions(outfile)
         self.write_operator_functions(outfile)
+
+        #write definitions for objects without stubs
+        self.write_variable_definitions(outfile)
+        self.write_const_definitions(outfile)
 
         outfile.write(campch.make_cplusplus_close())
         self.write_endifs(outfile)
@@ -108,13 +117,34 @@ class Writer(AbstractWriter, CHelperMixin):
     #
     def write_includes(self, outfile):
         files = [
-            #"shared/utils/utils.h",
+            "refda/register.h",
+            "refda/valprod.h",
             "cace/ari.h",
             "cace/util/defs.h",
             "cace/util/logging.h"
         ]
         outfile.write(campch.make_includes(files))
 
+    def write_agent_nickname_definitions(self, outfile):
+        header_str = campch.make_formatted_comment_header("AGENT NICKNAME DEFINITIONS", True, True)
+        outfile.write(header_str)
+
+        enum_name = cu.make_enum_name_from_str(self.c_norm_name)
+        outfile.write("#define {0} {1}\n".format(enum_name, self.adm.enum))
+
+#
+    # Writes the initialization functions' forward declars to the file
+    # h_file is an open file descriptor to write to
+    # name is the name returned by get_adm_names()
+    #
+    def write_initialization_functions(self, outfile):
+        name = self.c_norm_name
+        body = 	(
+            "\n/* Initialization functions. */\n"
+            f"{campch.write_adm_init_function_template().format(name)};\n"
+        )
+
+        outfile.write(body.format(name))
 
     #
     # Writes the edd collect functions to the passed file, new_h
@@ -122,6 +152,7 @@ class Writer(AbstractWriter, CHelperMixin):
     # edds is a list of the edds to include
     #
     def write_collect_functions(self, outfile):
+        self.write_edd_definitions(outfile)
         outfile.write("\n/* Collect Functions */\n")
         for obj in self.adm.edd:
             _,_,signature = campch.make_collect_function(self.adm, obj)
@@ -133,6 +164,7 @@ class Writer(AbstractWriter, CHelperMixin):
     # controls is a list of the controls to include
     #
     def write_control_functions(self, outfile):
+        self.write_ctrl_definitions(outfile)
         outfile.write("\n\n/* Control Functions */\n")
         for obj in self.adm.ctrl:
             _,_,signature = campch.make_control_function(self.adm, obj)
@@ -144,7 +176,293 @@ class Writer(AbstractWriter, CHelperMixin):
     # ops is a list of operators to include
     #
     def write_operator_functions(self, outfile):
+        self.write_op_definitions(outfile)
         outfile.write("\n\n/* OP Functions */\n")
         for obj in self.adm.oper:
             _,_,signature = campch.make_operator_function(self.adm, obj)
             outfile.write(signature + ";\n")
+
+    #
+    # Function for formatting the description field in the tables.
+    # Wraps the description nicely and fills other cells in the
+    # row with empty spaces. Returns the string result
+    #
+    # descr is the string to format as a description.
+    # desc_col_sz is the size of the description column to fit to
+    # col_sizes_before is an array of the sizes for the columns to the left of the description column
+    # col_sizes_after is an array of the sizes for the columns to the right of the description column
+    #
+    def format_table_description(self, descr, desc_col_sz, col_sizes_before, col_sizes_after):
+        result = []
+        descr = descr.strip()
+
+        # make the format for the description based on the size of the description column
+        desc_fmt = '%-' + str(desc_col_sz) + '.' + str(desc_col_sz) + 's'
+
+        # create string that will fill columns to the left of the description column with white space
+        start_next_row = " * |"
+        for col_sz in col_sizes_before:
+            start_next_row = (start_next_row + (" " * col_sz) + "|")
+
+        # create string that will fill columns to the right of the description column with white space
+        fill_this_row = "|"
+        for col_sz in col_sizes_after:
+            fill_this_row = (fill_this_row + (" " * col_sz) + "|")
+        fill_this_row = fill_this_row + "\n"
+
+        # split the description because descriptions may contain new lines
+        lines = descr.splitlines()
+        num_lines = len(lines)
+
+        # For each line of the description, cut it to the right length,
+        # and fill the columns before and after with empty space
+        for line_idx in range(0, num_lines):
+
+            # This to wrap nicely inside the column
+            line = lines[line_idx].strip()
+
+            while len(line) > desc_col_sz:
+                left, right = line[:desc_col_sz], line[desc_col_sz:]
+
+                result.append(desc_fmt % (left))
+                result.append(fill_this_row)
+                result.append(start_next_row)
+                line = right
+
+            result.append(desc_fmt % (line))
+
+            # If there are still lines to write, fill the row and start a new one
+            if(line_idx < num_lines-1):
+                result.append(fill_this_row)
+                result.append(start_next_row)
+
+        return "".join(result)
+
+    #
+    # Formats and returns a table entry (with following divider line) with
+    # the passed name, ari, description, and type (ttype)
+    #
+    # XXX: ari isn't currently part of the table. Keeping as a parameter to this
+    # function because we might want to include it again in the future
+    #
+    # Centered is True if the entries should be centered in their columns, False
+    # if not.
+    #
+    # XXX: should update this function to be a general helper function that operates independent
+    # XXX- of the columns present (pass a list of values and sizes for columns, it creates the table)
+    # XXX- This would be straightforward, except the description column is treated differently for wrapping.
+    #
+    def format_table_entry(self, centered, name, desc, ttype, value):
+
+        columns = [name, desc, ttype]
+        col_sizes = [21, 38, 7]
+        if value:
+            columns.append(value)
+            col_sizes.append(24)
+
+        desc_idx = 1 # index of the description column, since it needs to be treated slightly differently
+
+        entry_row = " * |"
+        divider   = " * +"
+        for idx,item in enumerate(columns):
+            item = str(item) if item is not None else ''
+            col_sz = col_sizes[idx]
+            item_len = len(item)
+
+            # if it's bigger than the column, we need to truncate it
+            if(item_len > col_sz):
+                entry = item[:col_sz]
+
+                # Need to treat description differently unfortunately
+                if (idx == desc_idx):
+                    entry = self.format_table_description(item, col_sz, col_sizes[:desc_idx], col_sizes[desc_idx+1:])
+
+            # if the caller wanted it centered, calculate and add the whitespace for that
+            elif centered:
+                total_ws_sz = col_sz - item_len
+                half_ws = (" " * int(total_ws_sz / 2))
+
+                entry = half_ws + item + " " + half_ws
+
+            # smaller than column and not centered
+            else:
+                trailing_ws = (" " * (col_sz - item_len))
+                entry = item + trailing_ws
+
+            entry_row = entry_row + entry + "|"
+            divider = divider + ('-' * col_sz) + "+"
+
+        entry_row = entry_row + "\n"
+        divider   = divider   + "\n"
+
+        return entry_row + divider
+
+    #
+    # Calls helper functions to write the header for a definition table to the
+    # passed fd with the passed definitions string in the center area
+    # results in:
+    # ```
+    #  * +---------------------+
+    #  * |  definitions_str    +
+    #  * +---------------------+
+    #  * +----+-----------+----+
+    #  * |NAME|DESCRIPTION|TYPE|
+    #  * +----+-----------+----+
+    # ```
+    # but spaced to standard width for this file (defined in campch.py)
+    #
+    # If value_present is True, adds the VALUE column on the right of the TYPE column
+    #
+    def write_definition_table_header(self, fd, definitions_str, value_present):
+
+        fd.write(campch.make_formatted_comment_header(definitions_str, True, False))
+
+        if value_present:
+            fd.write(self.format_table_entry(True, "NAME", "DESCRIPTION", "TYPE", "VALUE"))
+        else:
+            fd.write(self.format_table_entry(True, "NAME", "DESCRIPTION", "TYPE", ""))
+
+    def get_type_enum(self, obj):
+        if not obj:
+            return None
+        if hasattr(obj, 'init_ari'): #const, var
+            ari = obj.init_ari
+        elif hasattr(obj.typeobj, 'type_ari'): #edd
+            ari = obj.typeobj.type_ari
+        else: #tblt, union
+            #print('Unhandled type for obj: ', obj, type(obj.typeobj))
+            return obj.typeobj
+        
+        if hasattr(ari, 'type_id'): #literal
+            if not ari.type_id:
+                type_enum = 'Untyped literal'
+            elif ari.type_id >= 17 and ari.type_id <=19: #container
+                type_enum = ari.type_id.name
+            else:
+                type_enum = ari.value.name
+        else: #reference
+            obj = lookup.dereference(ari, lookup.object_session(self.adm))
+            type_enum = obj.name
+
+        return type_enum
+    
+    #
+    # Writes the edd definitions to the file
+    # h_file is an open file descriptor to write to
+    # name and ns are the values returned by get_adm_names
+    # edds is a list of edds to include
+    #
+    def write_edd_definitions(self, outfile):
+        table   = ""  # the commented table of all edds (string)
+
+        # Create the strings for the preceeding commented table
+        for obj in self.adm.edd:
+            table   = table   + self.format_table_entry(False, obj.name, obj.description, self.get_type_enum(obj), "")
+
+        # Write everything to file
+        self.write_definition_table_header(outfile, f"{self.c_norm_name.upper()} EXTERNALLY DEFINED DATA DEFINITIONS", False)
+        outfile.write(table   + " */\n")
+
+    #
+    # Writes the variable definitions and to the file
+    # h_file is an open file descriptor to write to
+    # name and ns are the values returned by get_adm_names
+    # variables is a list of variables to include
+    #
+    def write_variable_definitions(self, outfile):
+        table   = ""  # the commented table of all variables (string)
+
+        # Create the strings for the preceeding commented table
+        for obj in self.adm.var:
+            table   = table   + self.format_table_entry(False, obj.name, obj.description, self.get_type_enum(obj), "")
+
+        # Write everything to file
+        self.write_definition_table_header(outfile, f"{self.c_norm_name.upper()} VARIABLE DEFINITIONS", False)
+        outfile.write(table + " */\n")
+    #
+    # Writes the control definitions and #defines to the file
+    # h_file is an open file descriptor to write to
+    # name and ns are the values returned by get_adm_names()
+    # controls is a list of controls to include
+    #
+    def write_ctrl_definitions(self, outfile):
+        table   = ""  # the commented table of all controls (string)
+
+        # Create the strings for the preceeding commented table
+        for obj in self.adm.ctrl:
+            table   = table   + self.format_table_entry(False, obj.name, obj.description, self.get_type_enum(obj.result), "")
+
+        # write everything to file
+        self.write_definition_table_header(outfile, f"{self.c_norm_name.upper()} CONTROL DEFINITIONS", False)
+        outfile.write(table + " */\n")
+
+    #
+    # Writes the operator definitions to the file
+    # h_file is an open file descriptor to write to
+    # name and ns are the values returned by get_adm_names()
+    # operators is a list of operators to include
+    #
+    def write_op_definitions(self, outfile):
+        table   = ""  # the commented table of all ops (string)
+
+        # Create the strings for the preceeding commented table
+        for obj in self.adm.oper:
+            table   = table   + self.format_table_entry(False, obj.name, obj.description, self.get_type_enum(obj.result), "")
+
+        # write everything to file
+        self.write_definition_table_header(outfile, self.c_norm_name.upper()+" OPERATOR DEFINITIONS", False)
+        outfile.write(table   + " */\n")
+
+    #
+    # Writes the metadata definitions to the file
+    # h_file is an open file descriptor to write to
+    # name and ns are the values returned by get_adm_names
+    # metadata is a list of the metadata to include
+    #
+    def write_metadata_definitions(self, outfile):
+        table   = ""  # the commented table of all metadata (string)
+        table   +=  self.format_table_entry(False, "name", "The human-readable name of the ADM.", "TEXTSTR", self.adm.name)
+        table   +=  self.format_table_entry(False, "enum", "", "INT", self.adm.enum)
+        
+        # Create the strings for the preceeding commented table
+        for mdat in self.adm.metadata_list.items:
+            table   +=  self.format_table_entry(False, mdat.name, "", "TEXTSTR", mdat.arg)
+
+        # Write everything to file
+        self.write_definition_table_header(outfile, f"{self.c_norm_name.upper()} META-DATA DEFINITIONS", True)
+        outfile.write(table   + " */\n")
+
+    #
+    # Writes the variable definitions and to the file
+    # h_file is an open file descriptor to write to
+    # name and ns are the values returned by get_adm_names
+    # variables is a list of variables to include
+    #
+    def write_variable_definitions(self, outfile):
+        table   = ""  # the commented table of all variables (string)
+
+        # Create the strings for the preceeding commented table
+        for obj in self.adm.var:
+            table   = table   + self.format_table_entry(False, obj.name, obj.description, self.get_type_enum(obj), "")
+
+        # Write everything to file
+        self.write_definition_table_header(outfile, f"{self.c_norm_name.upper()} VARIABLE DEFINITIONS", False)
+        outfile.write(table + " */\n")
+
+        #
+    # Writes the constants definitions to the file
+    # h_file is an open file descriptor to write to
+    # name and ns are the values returned by get_adm_names()
+    # constants is a list of constanadmts to include
+    #
+    def write_const_definitions(self, outfile):
+        table   = ""  # the commented table of all controls (string)
+
+        # Create the strings for the preceeding commented table
+        for obj in self.adm.const:
+            table   = table   + self.format_table_entry(False, obj.name, obj.description, self.get_type_enum(obj), obj.init_value)
+
+        # write everything to file
+        self.write_definition_table_header(outfile, f"{self.c_norm_name.upper()} CONSTANT DEFINITIONS", True)
+        outfile.write(table   + " */\n")
+

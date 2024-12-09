@@ -44,9 +44,7 @@ import sys
 import ace
 # Import all generators
 from camp.generators import (
-    create_gen_h,
     create_agent_c,
-    create_mgr_c,
     create_impl_h,
     create_impl_c,
     create_sql,
@@ -129,7 +127,6 @@ def run(args: argparse.Namespace):
         generators += [
             create_impl_h.Writer(admset, adm, args.out, args.scrape),
             create_impl_c.Writer(admset, adm, args.out, args.scrape),
-            #create_gen_h.Writer(admset, adm, args.out),
             create_agent_c.Writer(admset, adm, args.out),
         ]
 

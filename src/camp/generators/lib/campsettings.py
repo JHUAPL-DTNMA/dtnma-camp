@@ -32,7 +32,6 @@ OP     = 4
 SBR    = 6
 TBR    = 8
 VAR    = 9
-META   = 10
 
 # NOTE: sname and lname are often essentially the same, expect for CONST, OP, and META
 # NOTE: amp_type is often same as sname, except for OP and META
@@ -42,7 +41,7 @@ collections = {}
 collections[CONST] = {"sname":"const",   "lname":"Const", "ari_type":"0", "amp_type":"const",   "adm_idx":"Const"} # CONST = 0
 collections[CTRL]  = {"sname":"ctrl",   "lname":"Ctrl",  "ari_type":"1", "amp_type":"ctrl",   "adm_idx":"Ctrl"}  # CTRL  = 1
 collections[EDD]   = {"sname":"edd",    "lname":"Edd",   "ari_type":"2", "amp_type":"edd",    "adm_idx":"Edd"}   # EDD   = 2
-collections[OP]    = {"sname":"op",     "lname":"Oper",  "ari_type":"5", "amp_type":"Oper",   "adm_idx":"Oper"}  # OP    = 4
+collections[OP]    = {"sname":"oper",     "lname":"Oper",  "ari_type":"5", "amp_type":"Oper",   "adm_idx":"Oper"}  # OP    = 4
 collections[SBR]   = {"sname":"sbr",    "lname":"Sbr",   "ari_type":"8", "amp_type":"sbr",    "adm_idx":"Sbr"}   # SBR   = 6
 collections[TBR]   = {"sname":"tbr",    "lname":"Tbr",   "ari_type":"b", "amp_type":"tbr",    "adm_idx":"Tbr"}   # TBR   = 8
 collections[VAR]   = {"sname":"var",    "lname":"Var",   "ari_type":"c", "amp_type":"var",    "adm_idx":"Var"}   # VAR   = 9

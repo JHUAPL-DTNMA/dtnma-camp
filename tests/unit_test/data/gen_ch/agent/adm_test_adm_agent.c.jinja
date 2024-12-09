@@ -16,144 +16,163 @@
  ****************************************************************************/
 
 
-#include "ion.h"
-#include "platform.h"
-#include "adm_test_adm.h"
-#include "shared/utils/utils.h"
-#include "shared/primitives/report.h"
-#include "shared/primitives/blob.h"
 #include "adm_test_adm_impl.h"
-#include "agent/rda.h"
+#include "refda/agent.h"
+#include "refda/register.h"
+#include "refda/valprod.h"
+#include "refda/reporting.h"
+#include "cace/ari/text.h"
+#include "cace/util/logging.h"
+#include "cace/util/defs.h"
 
-vec_idx_t g_test_ns_idx[11];
+static void test_adm_init_const(refda_agent_t *agent, cace_amm_obj_ns_t *adm, cace_amm_obj_desc_t *obj);
+static void test_adm_init_edd(refda_agent_t *agent, cace_amm_obj_ns_t *adm, cace_amm_obj_desc_t *obj);
+static void test_adm_init_op(refda_agent_t *agent, cace_amm_obj_ns_t *adm, cace_amm_obj_desc_t *obj);
+static void test_adm_init_var(refda_agent_t *agent, cace_amm_obj_ns_t *adm, cace_amm_obj_desc_t *obj);
+static void test_adm_init_ctrl(refda_agent_t *agent, cace_amm_obj_ns_t *adm, cace_amm_obj_desc_t *obj);
 
-static void test_ns_init_meta(void);
-static void test_ns_init_cnst(void);
-static void test_ns_init_edd(void);
-static void test_ns_init_op(void);
-static void test_ns_init_var(void);
-static void test_ns_init_ctrl(void);
-static void test_ns_init_mac(void);
-static void test_ns_init_rpttpl(void);
-static void test_ns_init_tblt(void);
-
-void test_ns_init()
+int test_adm_init(refda_agent_t *agent)
 {
-	adm_add_adm_info("test_ns", ADM_ENUM_TEST_NS);
+	CHKERR1(agent);
+                            
+	cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(&(agent->objs), "test-adm", true, ADM_ENUM_TEST_ADM);
 
-	VDB_ADD_NN(((ADM_ENUM_TEST_NS * 20) + ADM_META_IDX), &(g_test_ns_idx[ADM_META_IDX]));
-	VDB_ADD_NN(((ADM_ENUM_TEST_NS * 20) + ADM_CONST_IDX), &(g_test_ns_idx[ADM_CONST_IDX]));
-	VDB_ADD_NN(((ADM_ENUM_TEST_NS * 20) + ADM_EDD_IDX), &(g_test_ns_idx[ADM_EDD_IDX]));
-	VDB_ADD_NN(((ADM_ENUM_TEST_NS * 20) + ADM_OPER_IDX), &(g_test_ns_idx[ADM_OPER_IDX]));
-	VDB_ADD_NN(((ADM_ENUM_TEST_NS * 20) + ADM_VAR_IDX), &(g_test_ns_idx[ADM_VAR_IDX]));
-	VDB_ADD_NN(((ADM_ENUM_TEST_NS * 20) + ADM_CTRL_IDX), &(g_test_ns_idx[ADM_CTRL_IDX]));
-	VDB_ADD_NN(((ADM_ENUM_TEST_NS * 20) + ADM_RPTT_IDX), &(g_test_ns_idx[ADM_RPTT_IDX]));
-	VDB_ADD_NN(((ADM_ENUM_TEST_NS * 20) + ADM_TBLT_IDX), &(g_test_ns_idx[ADM_TBLT_IDX]));
+	if (pthread_mutex_lock(&(agent->objs_mutex))){
+		return 2;
+	}
 
+	if (adm)
+	{
+		cace_amm_obj_desc_t *obj;
+		test_adm_setup();
+		test_adm_init_const(agent, adm, obj);
+		test_adm_init_edd(agent, adm, obj);
+		test_adm_init_op(agent, adm, obj);
+		test_adm_init_var(agent, adm, obj);
+		test_adm_init_ctrl(agent, adm, obj);
+	}
 
-	test_ns_setup();
-	test_ns_init_meta();
-	test_ns_init_cnst();
-	test_ns_init_edd();
-	test_ns_init_op();
-	test_ns_init_var();
-	test_ns_init_ctrl();
-	test_ns_init_mac();
-	test_ns_init_rpttpl();
-	test_ns_init_tblt();
-}
-
-void test_ns_init_meta()
-{
-
-	adm_add_cnst(adm_build_ari(AMP_TYPE_CNST, 0, g_test_ns_idx[ADM_META_IDX], TEST_NS_META_NAME), test_ns_meta_name);
-	adm_add_cnst(adm_build_ari(AMP_TYPE_CNST, 0, g_test_ns_idx[ADM_META_IDX], TEST_NS_META_NAMESPACE), test_ns_meta_namespace);
-	adm_add_cnst(adm_build_ari(AMP_TYPE_CNST, 0, g_test_ns_idx[ADM_META_IDX], TEST_NS_META_VERSION), test_ns_meta_version);
-	adm_add_cnst(adm_build_ari(AMP_TYPE_CNST, 0, g_test_ns_idx[ADM_META_IDX], TEST_NS_META_ORGANIZATION), test_ns_meta_organization);
-	adm_add_cnst(adm_build_ari(AMP_TYPE_CNST, 0, g_test_ns_idx[ADM_META_IDX], TEST_NS_META_ENUM), test_ns_meta_enum);
-}
-
-void test_ns_init_cnst()
-{
-
-	adm_add_cnst(adm_build_ari(AMP_TYPE_CNST, 0, g_test_ns_idx[ADM_CONST_IDX], TEST_NS_CNST_AMP_EPOCH), test_ns_get_amp_epoch);
-}
-
-void test_ns_init_edd()
-{
-
-	adm_add_edd(adm_build_ari(AMP_TYPE_EDD, 0, g_test_ns_idx[ADM_EDD_IDX], TEST_NS_EDD_EDD_UINT), test_ns_get_edd_uint);
-	adm_add_edd(adm_build_ari(AMP_TYPE_EDD, 1, g_test_ns_idx[ADM_EDD_IDX], TEST_NS_EDD_UINT_WITH_PARAM), test_ns_get_uint_with_param);
-	adm_add_edd(adm_build_ari(AMP_TYPE_EDD, 0, g_test_ns_idx[ADM_EDD_IDX], TEST_NS_EDD_EDD_TV), test_ns_get_edd_tv);
-	adm_add_edd(adm_build_ari(AMP_TYPE_EDD, 1, g_test_ns_idx[ADM_EDD_IDX], TEST_NS_EDD_ENDPOINT_ACTIVE), test_ns_get_endpoint_active);
-}
-
-void test_ns_init_op()
-{
-
-	adm_add_op(g_test_ns_idx[ADM_OPER_IDX], TEST_NS_OP_PLUSINT, 2, test_ns_op_plusint);
-	adm_add_op(g_test_ns_idx[ADM_OPER_IDX], TEST_NS_OP_PLUSREAL64, 2, test_ns_op_plusreal64);
-}
-
-void test_ns_init_var()
-{
-
-	ari_t *id = NULL;
-
-	expr_t *expr = NULL;
-
-
-	/* VAR_WITH_INIT */
-
-	id = adm_build_ari(AMP_TYPE_VAR, 0, g_test_ns_idx[ADM_VAR_IDX], TEST_NS_VAR_VAR_WITH_INIT);
-	expr = expr_create(AMP_TYPE_UINT);
-	expr_add_item(expr, adm_build_ari(AMP_TYPE_EDD, 0, g_test_ns_idx[ADM_EDD_IDX], TEST_NS_EDD_EDD_UINT));
-	adm_add_var_from_expr(id, AMP_TYPE_UINT, expr);
-}
-
-void test_ns_init_ctrl()
-{
-
-	adm_add_ctrldef(g_test_ns_idx[ADM_CTRL_IDX], TEST_NS_CTRL_ADD_VAR, 3, test_ns_ctrl_add_var);
-}
-
-void test_ns_init_mac()
-{
+	if (pthread_mutex_unlock(&(agent->objs_mutex))){
+		return 2;
+	}
 
 }
 
-void test_ns_init_rpttpl()
+void test_adm_set_type(refda_agent_t *agent, amm_type_t *type, const ari_type_t type_enum)
 {
 
-	rpttpl_t *def = NULL;
+	const amm_type_t *amm_type = amm_type_get_builtin(type_enum);                
+	if (amm_type == NULL){ //not found within builtin types
+		amm_type = refda_agent_get_typedef(agent, ADM_ENUM_TEST_ADM, type_enum);
+	}                
+	amm_type_set_use_direct(type, amm_type);
 
-	/* FULL_REPORT */
-	def = rpttpl_create_id(adm_build_ari(AMP_TYPE_RPTTPL, 0, g_test_ns_idx[ADM_RPTT_IDX], TEST_NS_RPTTPL_FULL_REPORT));
-	rpttpl_add_item(def, adm_build_ari(AMP_TYPE_CNST, 0, g_test_ns_idx[ADM_META_IDX], TEST_NS_META_NAME));
-	rpttpl_add_item(def, adm_build_ari(AMP_TYPE_VAR, 0, g_test_ns_idx[ADM_VAR_IDX], TEST_NS_VAR_VAR_WITH_INIT));
-	rpttpl_add_item(def, adm_build_ari(AMP_TYPE_EDD, 0, g_test_ns_idx[ADM_EDD_IDX], TEST_NS_EDD_UINT_WITH_PARAM));
-	adm_add_rpttpl(def);
-	/* ENDPOINT_REPORT */
-	def = rpttpl_create_id(adm_build_ari(AMP_TYPE_RPTTPL, 1, g_test_ns_idx[ADM_RPTT_IDX], TEST_NS_RPTTPL_ENDPOINT_REPORT));
-	rpttpl_add_item(def, adm_build_ari(AMP_TYPE_EDD, 0, g_test_ns_idx[ADM_EDD_IDX], TEST_NS_EDD_ENDPOINT_ACTIVE));
-	adm_add_rpttpl(def);
 }
 
-void test_ns_init_tblt()
+void test_adm_add_param(refda_agent_t *agent, cace_amm_obj_desc_t *obj, const char *name, const ari_type_t type_enum)
+{
+	cace_amm_formal_param_t *fparam = refda_register_add_param(obj, name);
+	test_adm_set_type(agent, &(fparam->typeobj), type_enum);
+}
+
+refda_amm_const_desc_t *test_adm_init_const_helper(refda_agent_t *agent, cace_amm_obj_ns_t *adm, cace_amm_obj_desc_t *obj, const char *name, const ari_type_t type_enum, const int64_t obj_enum)
 {
 
-	tblt_t *def = NULL;
+	refda_amm_const_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_const_desc_t));                
+	refda_amm_const_desc_init(objdata);                
+	amm_type_set_use_direct(&(objdata->value), amm_type_get_builtin(type_enum));                
+	obj = refda_register_const(adm, cace_amm_obj_id_withenum(name, obj_enum), objdata);                
+	return objdata;                
 
-	/* VARIABLES */
+}
 
-	def = tblt_create(adm_build_ari(AMP_TYPE_TBLT, 0, g_test_ns_idx[ADM_TBLT_IDX], TEST_NS_TBLT_VARIABLES), test_ns_tblt_variables);
-	tblt_add_col(def, AMP_TYPE_ARI, "ids");
-	adm_add_tblt(def);
+void test_adm_init_const(refda_agent_t *agent, cace_amm_obj_ns_t *adm, cace_amm_obj_desc_t *obj)
+{
 
-	/* RPTTS */
+	refda_amm_const_desc_t *objdata = test_adm_init_const_helper(agent, adm, obj, "const1", ARI_TYPE_UVAST, 0);
+	{
+		ari_set_uvast(&(objdata->value), 31)
+	}
+	refda_amm_const_desc_t *objdata = test_adm_init_const_helper(agent, adm, obj, "showall", ARI_TYPE_AC, 1);
+	{
+		ari_ac_t acinit;
+		ari_ac_init(&acinit);
+		{
+			ari_t *item;
+			item = ari_list_push_back_new(acinit.items);
+			ari_set_objref_path_intid(item, ADM_ENUM_TEST_ADM, ARI_TYPE_CONST, 0);
+		}
+		ari_set_ac(&(objdata->value), &acinit)
+	}
+}
 
-	def = tblt_create(adm_build_ari(AMP_TYPE_TBLT, 0, g_test_ns_idx[ADM_TBLT_IDX], TEST_NS_TBLT_RPTTS), test_ns_tblt_rptts);
-	tblt_add_col(def, AMP_TYPE_ARI, "ids");
-	adm_add_tblt(def);
+void test_adm_init_edd_helper(refda_agent_t *agent, cace_amm_obj_ns_t *adm, cace_amm_obj_desc_t *obj, const char *name, const ari_type_t type_enum, int64_t obj_enum, refda_amm_edd_produce_f prod_func)
+{
+
+	refda_amm_edd_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_edd_desc_t));                
+	refda_amm_edd_desc_init(objdata);
+	test_adm_set_type(agent, &(objdata->prod_type), type_enum);
+	objdata->produce = prod_func;                
+	obj = refda_register_edd(adm, cace_amm_obj_id_withenum(name, obj_enum), objdata);                
+
+}
+
+void test_adm_init_edd(refda_agent_t *agent, cace_amm_obj_ns_t *adm, cace_amm_obj_desc_t *obj)
+{
+
+	test_adm_init_edd_helper(agent, adm, obj, "edd_uvast", ARI_TYPE_UVAST, 0, test_adm_get_edd__uvast);
+	test_adm_init_edd_helper(agent, adm, obj, "edd_uvast_param", ARI_TYPE_UVAST, 1, test_adm_get_edd__uvast__param);
+	{
+		test_adm_add_param(agent, obj, "other", ARI_TYPE_UVAST);
+	}
+	test_adm_init_edd_helper(agent, adm, obj, "edd_tp", ARI_TYPE_TP, 2, test_adm_get_edd__tp);
+	test_adm_init_edd_helper(agent, adm, obj, "endpoint_active", ARI_TYPE_UVAST, 3, test_adm_get_endpoint__active);
+	{
+		test_adm_add_param(agent, obj, "endpoint_name", ARI_TYPE_TEXTSTR);
+	}
+}
+
+refda_amm_const_desc_t *test_adm_init_var_helper(refda_agent_t *agent, cace_amm_obj_ns_t *adm, cace_amm_obj_desc_t *obj, const char *name, const ari_type_t type_enum, const int64_t obj_enum)
+{
+
+	refda_amm_var_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_var_desc_t));                
+	refda_amm_var_desc_init(objdata);                
+	amm_type_set_use_direct(&(objdata->value), amm_type_get_builtin(type_enum));                
+	obj = refda_register_var(adm, cace_amm_obj_id_withenum(name, obj_enum), objdata);                
+	return objdata;                
+
+}
+
+void test_adm_init_var(refda_agent_t *agent, cace_amm_obj_ns_t *adm, cace_amm_obj_desc_t *obj)
+{
+
+	refda_amm_const_desc_t *objdata = test_adm_init_var_helper(agent, adm, obj, "var_uvast_val", ARI_TYPE_UVAST, 0);
+	{
+		ari_set_uvast(&(objdata->value), 34)
+	}
+}
+
+void test_adm_init_ctrl_helper(refda_agent_t *agent, cace_amm_obj_ns_t *adm, cace_amm_obj_desc_t *obj, const char *name, const ari_type_t type_enum, int64_t obj_enum, refda_amm_edd_produce_f prod_func)
+{
+
+	refda_amm_ctrl_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_ctrl_desc_t));                
+	refda_amm_ctrl_desc_init(objdata);
+	objdata->execute = prod_func;                
+	obj = refda_register_ctrl(adm, cace_amm_obj_id_withenum(name, obj_enum), objdata);                
+
+}
+
+void test_adm_init_ctrl(refda_agent_t *agent, cace_amm_obj_ns_t *adm, cace_amm_obj_desc_t *obj)
+{
+
+	test_adm_init_ctrl_helper(agent, adm, obj, "get", ARI_TYPE_BYTESTR, 2, test_adm_ctrl_get);
+	{
+		test_adm_add_param(agent, obj, "object", ARI_TYPE_OBJECT);
+	}
+	test_adm_init_ctrl_helper(agent, adm, obj, "set", ARI_TYPE_BYTE, 3, test_adm_ctrl_set);
+	{
+		test_adm_add_param(agent, obj, "object", ARI_TYPE_OBJECT);
+		test_adm_add_param(agent, obj, "data", ARI_TYPE_BYTESTR);
+	}
 }
 
