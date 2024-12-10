@@ -1,3 +1,12 @@
+{%- macro obj_enum(obj) -%}
+/// For {{obj | ref_text}}
+{%- if obj.enum is defined %}
+#define {{obj | cpp_enum}} {{obj.enum | c_int}}
+{%- else %}
+//#define {{obj | cpp_enum}} FIXME-NOT-AVAILABLE
+{%- endif %}
+{%- endmacro -%}
+
 #include "refda/agent.h"
 #include <cace/util/defs.h>
 
@@ -14,32 +23,43 @@ extern "C" {
 /// Enumeration of the ADM itself
 #define {{adm | cpp_enum}} {{adm.enum | c_int}}
 
+{%- if adm.ident %}
+
+/*
+ * Enumerations for IDENT objects
+ */
+{%- for obj in adm.ident %}
+{{obj_enum(obj)}}
+{%- endfor %}
+{%- endif %}
+
+{%- if adm.typedef %}
+
+/*
+ * Enumerations for TYPEDEF objects
+ */
+{%- for obj in adm.typedef %}
+{{obj_enum(obj)}}
+{%- endfor %}
+{%- endif %}
+
 {%- if adm.const %}
 
 /*
  * Enumerations for CONST objects
  */
 {%- for obj in adm.const %}
-/// For {{obj | ref_text}}
-{%- if obj.enum is defined %}
-#define {{obj | cpp_enum}} {{obj.enum | c_int}}
-{%- else %}
-//#define {{obj | cpp_enum}} FIXME-NOT-AVAILABLE
-{%- endif %}
+{{obj_enum(obj)}}
 {%- endfor %}
 {%- endif %}
+
 {%- if adm.var %}
 
 /*
  * Enumerations for VAR objects
  */
 {%- for obj in adm.var %}
-/// For {{obj | ref_text}}
-{%- if obj.enum is defined %}
-#define {{obj | cpp_enum}} {{obj.enum | c_int}}
-{%- else %}
-//#define {{obj | cpp_enum}} FIXME-NOT-AVAILABLE
-{%- endif %}
+{{obj_enum(obj)}}
 {%- endfor %}
 {%- endif %}
 
@@ -49,12 +69,7 @@ extern "C" {
  * Enumerations for EDD objects
  */
 {%- for obj in adm.edd %}
-/// For {{obj | ref_text}}
-{%- if obj.enum is defined %}
-#define {{obj | cpp_enum}} {{obj.enum | c_int}}
-{%- else %}
-//#define {{obj | cpp_enum}} FIXME-NOT-AVAILABLE
-{%- endif %}
+{{obj_enum(obj)}}
 {%- endfor %}
 {%- endif %}
 
@@ -64,12 +79,7 @@ extern "C" {
  * Enumerations for CTRL objects
  */
 {%- for obj in adm.ctrl %}
-/// For {{obj | ref_text}}
-{%- if obj.enum is defined %}
-#define {{obj | cpp_enum}} {{obj.enum | c_int}}
-{%- else %}
-//#define {{obj | cpp_enum}} FIXME-NOT-AVAILABLE
-{%- endif %}
+{{obj_enum(obj)}}
 {%- endfor %}
 {%- endif %}
 
@@ -79,12 +89,7 @@ extern "C" {
  * Enumerations for OPER objects
  */
 {%- for obj in adm.oper %}
-/// For {{obj | ref_text}}
-{%- if obj.enum is defined %}
-#define {{obj | cpp_enum}} {{obj.enum | c_int}}
-{%- else %}
-//#define {{obj | cpp_enum}} FIXME-NOT-AVAILABLE
-{%- endif %}
+{{obj_enum(obj)}}
 {%- endfor %}
 {%- endif %}
 

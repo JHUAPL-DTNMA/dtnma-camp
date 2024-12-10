@@ -1,18 +1,54 @@
-{% macro callback_summary(obj) %}
+{%- macro type_summary(typeobj) -%}
+{%- if typeobj is instance(typing.TypeUse) -%}
+use of {{typeobj.type_text}}
+{%- elif typeobj is instance(typing.UniformList) -%}
+ulist of {{type_summary(typeobj.base)}}
+{%- elif typeobj is instance(typing.TableTemplate) -%}
+TBLT with {{typeobj.columns | count}} columns (
+{%- for col in typeobj.columns -%}
+{{type_summary(col.typeobj)}}
+{%- endfor -%}
+)
+{%- elif typeobj is instance(typing.TypeUnion) -%}
+union of {{typeobj.types | count}} types (
+{%- for choice in typeobj.types -%}
+{{- ', ' if loop.index0 != 0 -}}
+{{- type_summary(choice) -}}
+{%- endfor -%}
+)
+{%- else -%}
+FIXME unhandled type {{typeobj}}
+{%- endif %}
+{%- endmacro %}
+
+{%- macro callback_summary(obj) %}
 Name: {{obj.name}}
+
+{%- if obj.description %}
 Description:
-  {{obj.description or '' | rewrap(prefix='\n  ')}}
-{%- if obj.parameters is defined -%}
-{%- if obj.parameters.items %}
-Parameters::
+  {{obj.description | rewrap | indent(2)}}
+{%- else %}
+Description MISSING
+{%- endif %}
+
+{%- if obj.parameters is defined %}
+{% if obj.parameters.items %}
+Parameters list:
 {%- for param in obj.parameters.items %}
-{{param.name}}
+  Index {{loop.index0}}, name "{{param.name}}", type {{type_summary(param.typeobj)}}
+
 {%- endfor %}
 {%- else %}
 Parameters: none
 {%- endif %}
 {%- endif %}
-{% endmacro -%}
+
+{%- if obj.result is defined and obj.result.typeobj is defined %}
+
+Result name "{{obj.result.name}}", type {{type_summary(obj.result.typeobj)}}
+{%- endif %}
+
+{%- endmacro -%}
 
 {% macro reg_params(obj) %}
 {%- if obj.parameters.items %}
@@ -29,7 +65,7 @@ Parameters: none
 {%- else %}
 // no parameters
 {%- endif %}
-{% endmacro -%}
+{%- endmacro -%}
 
 {% macro ari_set_value(ptrname, value) -%}
 {%- if value is instance(ari.LiteralARI) -%}
@@ -159,14 +195,60 @@ static int {{func_sym}}(const refda_amm_oper_desc_t *obj _U_, refda_eval_ctx_t *
 int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {
     CHKERR1(agent);
-    CACE_LOG_DEBUG("Registering ADM: ietf-dtnma-agent");
+    CACE_LOG_DEBUG("Registering ADM: " {{adm.norm_name | c_str}});
     REFDA_AGENT_LOCK(agent);
 
-    cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(&(agent->objs), {{adm.name | c_str}}, true, {{adm | cpp_enum}});
+    cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(&(agent->objs), {{adm.norm_name | c_str}}, true, {{adm | cpp_enum}});
     if (adm)
     {
         cace_amm_obj_desc_t *obj;
-{% if adm.const %}
+
+{%- if adm.ident %}
+
+        /**
+         * Register IDENT objects
+         */
+{%- for obj in adm.ident %}
+        { // For {{obj | ref_text}}
+            refda_amm_ident_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_ident_desc_t));
+            refda_amm_ident_desc_init(objdata);
+{%- if obj.bases %}
+            // IDENT bases:
+{%- for base in obj.bases %}
+            {
+                refda_amm_ident_base_t *base = refda_amm_ident_base_list_push_back_new(objdata.bases);
+                {{ ari_set_value('base->name', base.base_ari) | indent(16) }}
+            }
+{%- endfor %}
+{%- else %}
+            // no IDENT bases
+{%- endif %}
+
+            obj = refda_register_ident(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
+            {{- reg_params(obj) | indent(12) }}
+        }
+{%- endfor %}
+{%- endif %}
+
+{%- if adm.typedef %}
+
+        /**
+         * Register TYPEDEF objects
+         */
+{%- for obj in adm.typedef %}
+        { // For {{obj | ref_text}}
+            refda_amm_typedef_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_typedef_desc_t));
+            refda_amm_typedef_desc_init(objdata);
+            // named type:
+            {{ amm_type_set('&(objdata->typeobj)', obj.typeobj) | indent(12) }}
+            obj = refda_register_typedef(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
+            // no parameters possible
+        }
+{%- endfor %}
+{%- endif %}
+
+{%- if adm.const %}
+
         /**
          * Register CONST objects
          */
@@ -174,14 +256,16 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
         { // For {{obj | ref_text}}
             refda_amm_const_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_const_desc_t));
             refda_amm_const_desc_init(objdata);
-            // constant value
+            // constant value:
             {{ ari_set_value('&(objdata->value)', obj.init_ari) | indent(12) }}
-            obj = refda_register_const(adm, cace_amm_obj_id_withenum({{obj.name | c_str}}, {{obj | cpp_enum}}), objdata);
+            obj = refda_register_const(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
             {{- reg_params(obj) | indent(12) }}
         }
 {%- endfor %}
 {%- endif %}
-{% if adm.var %}
+
+{%- if adm.var %}
+
         /**
          * Register VAR objects
          */
@@ -189,16 +273,18 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
         { // For {{obj | ref_text}}
             refda_amm_var_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_var_desc_t));
             refda_amm_var_desc_init(objdata);
-            // stored value type
+            // stored value type:
             {{ amm_type_set('&(objdata->val_type)', obj.typeobj) | indent(12) }}
-            // initial value
+            // initial value:
             {{ ari_set_value('&(objdata->value)', obj.init_ari) | indent(12) }}
-            obj = refda_register_var(adm, cace_amm_obj_id_withenum({{obj.name | c_str}}, {{obj | cpp_enum}}), objdata);
+            obj = refda_register_var(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
             {{- reg_params(obj) | indent(12) }}
         }
 {%- endfor %}
 {%- endif %}
-{% if adm.edd %}
+
+{%- if adm.edd %}
+
         /**
          * Register EDD objects
          */
@@ -211,7 +297,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             // callback:
             objdata->produce = {{obj | c_func}};
 
-            obj = refda_register_edd(adm, cace_amm_obj_id_withenum({{obj.name | c_str}}, {{obj | cpp_enum}}), objdata);
+            obj = refda_register_edd(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
             {{- reg_params(obj) | indent(12) }}
         }
 {%- endfor %}
@@ -234,7 +320,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             // callback:
             objdata->execute = {{obj | c_func}};
 
-            obj = refda_register_ctrl(adm, cace_amm_obj_id_withenum({{obj.name | c_str}}, {{obj | cpp_enum}}), objdata);
+            obj = refda_register_ctrl(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
             {{- reg_params(obj) | indent(12) }}
         }
 {%- endfor %}
@@ -253,7 +339,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             // callback:
             objdata->evaluate = {{obj | c_func}};
 
-            obj = refda_register_oper(adm, cace_amm_obj_id_withenum({{obj.name | c_str}}, {{obj | cpp_enum}}), objdata);
+            obj = refda_register_oper(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
             {{- reg_params(obj) | indent(12) }}
         }
 {%- endfor %}

@@ -85,8 +85,14 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         Indentation outside or inside is done with a separate filter.
         '''
         newl = env.newline_sequence
-        lines = value.rstrip(newl).split(newl)
-        return '/* ' + lines.pop(0) + (newl + ' * ').join(lines) + (newl + ' */')
+        lines = value.strip(newl).split(newl)
+        buf = '/* ' + lines.pop(0)
+        for line in lines:
+            buf += newl + ' *'
+            if line:
+                buf += ' ' + line
+        buf += newl + ' */'
+        return buf
 
     def c_int(value) -> str:
         ''' Enforce an integer value in C source.
@@ -101,7 +107,7 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
     def rewrap(value:str, prefix:str='\n'):
         ''' Unwrap and re-wrap text along word bounaries.
         '''
-        return prefix + prefix.join(textwrap.wrap(value))
+        return prefix.join(textwrap.wrap(value))
 
     def as_text(ari:ari.ARI) -> str:
         ''' Encode an ARI as text form URI.
@@ -114,7 +120,7 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
     def ref_text(obj:models.AdmObjMixin) -> str:
         ''' Create a text reference for an AMM object.
         '''
-        return f'./{amm_obj_type(obj).name}/{obj.name}'
+        return f'./{amm_obj_type(obj).name}/{obj.norm_name}'
 
     def deref(ari:ari.ARI) -> models.AdmObjMixin:
         ''' Dereference an ARI into an AMM object.
