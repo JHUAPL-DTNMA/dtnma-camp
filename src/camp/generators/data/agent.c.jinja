@@ -294,7 +294,8 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             // initial value:
             {{ ari_set_value('&(objdata->value)', obj.init_ari) | indent(12) }}
             obj = refda_register_var(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
-            {# FIXME add to ace {{- reg_params(obj) | indent(12) }} #}
+            {#- FIXME add to ace {{- reg_params(obj) | indent(12) }} #}
+            // no parameters
         }
 {%- endfor %}
 {%- endif %}
