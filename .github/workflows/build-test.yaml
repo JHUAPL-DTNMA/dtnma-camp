@@ -24,8 +24,9 @@ name: Build and run tests
 on: [push]
 
 env:
-  ACE_REPO: "git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@haining-ace-yang-updates"
-  ADMS_REPO: "https://github.com/JHUAPL-DTNMA/dtnma-adms.git"
+  ACE_REPO: "git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@apl-fy24"
+  ADMS_REPO: "-b apl-fy24 https://github.com/JHUAPL-DTNMA/dtnma-adms.git"
+  DTNMA_TOOLS_REPO: "-b 76-base-adm-objects https://github.com/JHUAPL-DTNMA/dtnma-tools.git"
 
 jobs:
   build:
@@ -62,15 +63,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
       - name: Prep
         run: |
           pip3 install --upgrade pip
           pip3 install ${ACE_REPO}
           pip3 install -e '.[test]'
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
       - name: Test
         run: python3 -m pytest -v --cov=camp tests/unit_test
 
@@ -161,7 +162,7 @@ jobs:
       - name: Prep repos
         run: |
           git clone ${ADMS_REPO} tests/integration_test/anms-adms
-          git clone https://github.com/JHUAPL-DTNMA/dtnma-tools.git tests/integration_test/dtnma-tools
+          git clone ${DTNMA_TOOLS_REPO} tests/integration_test/dtnma-tools
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build ruby build-essential autoconf libtool civetweb libcivetweb-dev libssl-dev libcjson-dev          
           cd tests/integration_test/dtnma-tools
