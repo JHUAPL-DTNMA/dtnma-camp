@@ -82,7 +82,7 @@ class TestCamp(unittest.TestCase):
     @unittest.expectedFailure
     def test_run_sql(self):
         args = argparse.Namespace()
-        args.admfile = os.path.join(SELFDIR, 'data', 'test_adm.json')
+        args.admfile = os.path.join(SELFDIR, 'data', 'test-adm.yang')
         args.out = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
         args.only_sql = True
         args.only_ch = False
@@ -104,7 +104,7 @@ class TestCamp(unittest.TestCase):
 
     def test_run_ch_new(self):
         args = argparse.Namespace()
-        args.admfile = os.path.join(SELFDIR, 'data', 'test_adm.json')
+        args.admfile = os.path.join(SELFDIR, 'data', 'test-adm.yang')
         args.out = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
         args.only_sql = False
         args.only_ch = True
@@ -114,12 +114,9 @@ class TestCamp(unittest.TestCase):
             exitcode = camp.tools.camp.run(args)
             self.assertEqual(0, exitcode)
         finally:
-            got_files = self._walk_files(args.out)
-        expect_files = [
-            'agent/adm_test_adm_agent.c',
-            'agent/adm_test_adm_impl.c',
-            'agent/adm_test_adm_impl.h',
-            'mgr/adm_test_adm_mgr.c',
-            'shared/adm/adm_test_adm.h',
-        ]
+            got_files = set(self._walk_files(args.out))
+        expect_files = set([
+            'test_adm.c',
+            'test_adm.h',
+        ])
         self.assertEqual(expect_files, got_files)

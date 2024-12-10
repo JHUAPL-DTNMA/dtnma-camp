@@ -7,12 +7,18 @@
 {%- endif %}
 {%- endmacro -%}
 
+/** @file
+ * This is the header for the implementation of the
+ * ADM "{{adm.name}}" for the C-language reference DA.
+ * This contains defines for each enumeration in the ADM and
+ * declarations of module-level initialization functions.
+ */
+
 #include "refda/agent.h"
 #include <cace/util/defs.h>
 
 {{scraper.write_custom_includes()}}
-
-{%- set guard_sym = adm | cpp_guard %}
+{% set guard_sym = adm | cpp_guard %}
 #ifndef {{guard_sym}}
 #define {{guard_sym}}
 

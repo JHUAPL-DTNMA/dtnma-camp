@@ -21,11 +21,8 @@
 # under the prime contract 80NM0018D0004 between the Caltech and NASA under
 # subcontract 1658085.
 #
-
 import io
-import os
-import re
-import datetime
+import logging
 import jinja2
 import textwrap
 from typing import Union, Optional
@@ -33,6 +30,8 @@ import ace
 from ace import models, ari, ari_text
 from ace.lookup import dereference, ORM_TYPE
 from . import camputil as cu
+
+LOGGER = logging.getLogger(__name__)
 
 AdmEntity = Union[models.AdmModule, models.AdmObjMixin]
 ''' Either an ADM itself or an AMM object defined within one. '''
@@ -125,6 +124,7 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
     def deref(ari:ari.ARI) -> models.AdmObjMixin:
         ''' Dereference an ARI into an AMM object.
         '''
+        LOGGER.debug('deref from %s', ari)
         return dereference(ari, admset.db_session())
 
     env.globals |= {

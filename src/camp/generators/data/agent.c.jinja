@@ -1,12 +1,13 @@
 {%- macro type_summary(typeobj) -%}
 {%- if typeobj is instance(typing.TypeUse) -%}
-use of {{typeobj.type_text}}
+use of {{typeobj.type_ari | as_text}}
 {%- elif typeobj is instance(typing.UniformList) -%}
 ulist of {{type_summary(typeobj.base)}}
 {%- elif typeobj is instance(typing.TableTemplate) -%}
 TBLT with {{typeobj.columns | count}} columns (
 {%- for col in typeobj.columns -%}
-{{type_summary(col.typeobj)}}
+{{- ', ' if loop.index0 != 0 -}}
+{{type_summary(col.base)}}
 {%- endfor -%}
 )
 {%- elif typeobj is instance(typing.TypeUnion) -%}
@@ -35,7 +36,7 @@ Description MISSING
 {% if obj.parameters.items %}
 Parameters list:
 {%- for param in obj.parameters.items %}
-  Index {{loop.index0}}, name "{{param.name}}", type {{type_summary(param.typeobj)}}
+ * Index {{loop.index0}}, name "{{param.name}}", type: {{type_summary(param.typeobj)}}
 
 {%- endfor %}
 {%- else %}
@@ -45,12 +46,17 @@ Parameters: none
 
 {%- if obj.result is defined and obj.result.typeobj is defined %}
 
-Result name "{{obj.result.name}}", type {{type_summary(obj.result.typeobj)}}
+Result name "{{obj.result.name}}", type: {{type_summary(obj.result.typeobj)}}
+{%- endif %}
+
+{%- if obj.typeobj is defined %}
+
+Produced type: {{type_summary(obj.typeobj)}}
 {%- endif %}
 
 {%- endmacro -%}
 
-{% macro reg_params(obj) %}
+{%- macro reg_params(obj) %}
 {%- if obj.parameters.items %}
 // parameters:
 {%- for param in obj.parameters.items %}
@@ -67,7 +73,7 @@ Result name "{{obj.result.name}}", type {{type_summary(obj.result.typeobj)}}
 {%- endif %}
 {%- endmacro -%}
 
-{% macro ari_set_value(ptrname, value) -%}
+{%- macro ari_set_value(ptrname, value) -%}
 {%- if value is instance(ari.LiteralARI) -%}
 {%- if value.type_id == ari.StructType.ARITYPE -%}
 ari_set_aritype({{ptrname}}, {{value.value | cpp_enum}});
@@ -89,12 +95,15 @@ ari_set_aritype({{ptrname}}, {{value.value | cpp_enum}});
 {%- elif value is instance(ari.ReferenceARI) -%}
 // {{value | as_text}}
 {% set refdobj = value | deref -%}
+{%- if refdobj -%}
 ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.enum}}, {{value.ident.type_id | cpp_enum}}, {{refdobj.enum}});
-{#- ari_set_objref_path_intid({{ptrname}}, {{refdobj.module | cpp_enum}}, {{value.ident.type_id | cpp_enum}}, {{refdobj | cpp_enum}}); -#}
+{%- else -%}
+// FIXME reference to unknown object
+{%- endif %}
 {%- endif %}
 {%- endmacro -%}
 
-{% macro amm_type_set(ptrname, typeobj) %}
+{%- macro amm_type_set(ptrname, typeobj) %}
 {%- if typeobj is instance(typing.TypeUse) -%}
 {
     ari_t name = ARI_INIT_UNDEFINED;
@@ -139,6 +148,13 @@ ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.enum}}, {{value.ident.ty
 // FIXME unhandled type {{typeobj}}
 {%- endif %}
 {%- endmacro -%}
+
+/** @file
+ * This is the compilation unit for the implementation of the
+ * ADM "{{adm.name}}" for the C-language reference DA.
+ * This contains definitions of every AMM object instance in the ADM and
+ * file-local callback functions for all EDDs, CTRLs, and OPERs.
+ */
 
 #include "{{adm | cpp_header}}"
 #include "refda/agent.h"

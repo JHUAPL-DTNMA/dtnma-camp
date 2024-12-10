@@ -111,6 +111,7 @@ def run(args: argparse.Namespace):
 
     try:
         admset = ace.AdmSet()
+        admset.load_default_dirs()
         LOGGER.info("Loading %s ... ", args.admfile)
         adm = admset.load_from_file(args.admfile)
         LOGGER.info("Finished loading ADM %s", adm.norm_name)

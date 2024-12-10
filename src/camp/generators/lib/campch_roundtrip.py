@@ -160,7 +160,7 @@ class C_Scraper(Scraper):
 	def _get_custom_body_re_markers(self):
 		indicator, marker = self._get_custom_body_pieces()
 
-		marker = '\* \\' + marker
+		marker = '\\* \\' + marker
 		function_string_matcher = '(.+)'
 
 		return indicator, marker.format('START', function_string_matcher), marker.format('STOP', function_string_matcher)

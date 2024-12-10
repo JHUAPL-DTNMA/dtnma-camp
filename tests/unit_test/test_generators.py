@@ -40,8 +40,9 @@ from camp.generators import (
 from .util import TmpDir
 
 LOGGER = logging.getLogger(__name__)
-# : Directory containing this file
+''' Logger for this module '''
 SELFDIR = os.path.dirname(__file__)
+''' Directory containing this file '''
 
 
 class BaseTest(unittest.TestCase):
@@ -57,8 +58,9 @@ class BaseTest(unittest.TestCase):
 
     def setUp(self):
         self.maxDiff = None
-        # logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-        self._dir = TmpDir()
+        logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
+        self._dir = TmpDir(delete=False)
+        LOGGER.info('Working in %s', self._dir)
         self._admset = AdmSet()
 
     def tearDown(self):
@@ -106,17 +108,18 @@ class TestCreateCH(BaseTest):
     def test_create_impl_h_noscrape(self):
         adm = self._get_adm('test-adm.yang')
         outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
+        LOGGER.info('Writing to %s', outdir)
 
         writer = create_impl_h.Writer(self._admset, adm, outdir, H_Scraper(None))
         self.assertEqual(
-            os.path.join(outdir, 'agent', 'adm_test_adm_impl.h'),
+            os.path.join(outdir, 'test_adm.h'),
             writer.file_path()
         )
 
         buf = io.StringIO()
         writer.write(buf)
 
-        tmpl = self._tmpl_env.get_template('gen_ch/agent/adm_test_adm_impl.h.jinja')
+        tmpl = self._tmpl_env.get_template('gen_ch/test_adm.h.jinja')
         content = tmpl.render(datestamp=self._today_datestamp())
         self.assertEqual(content, buf.getvalue())
 
@@ -126,30 +129,13 @@ class TestCreateCH(BaseTest):
 
         writer = create_impl_c.Writer(self._admset, adm, outdir, C_Scraper(None))
         self.assertEqual(
-            os.path.join(outdir, 'agent', 'adm_test_adm_impl.c'),
+            os.path.join(outdir, 'test_adm.c'),
             writer.file_path()
         )
 
         buf = io.StringIO()
         writer.write(buf)
 
-        tmpl = self._tmpl_env.get_template('gen_ch/agent/adm_test_adm_impl.c.jinja')
-        content = tmpl.render(datestamp=self._today_datestamp())
-        self.assertEqual(content, buf.getvalue())
-
-    def test_create_agent_c(self):
-        adm = self._get_adm('test-adm.yang')
-        outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
-
-        writer = create_agent_c.Writer(self._admset, adm, outdir)
-        self.assertEqual(
-            os.path.join(outdir, 'agent', 'adm_test_adm_agent.c'),
-            writer.file_path()
-        )
-
-        buf = io.StringIO()
-        writer.write(buf)
-
-        tmpl = self._tmpl_env.get_template('gen_ch/agent/adm_test_adm_agent.c.jinja')
+        tmpl = self._tmpl_env.get_template('gen_ch/test_adm.c.jinja')
         content = tmpl.render(datestamp=self._today_datestamp())
         self.assertEqual(content, buf.getvalue())
