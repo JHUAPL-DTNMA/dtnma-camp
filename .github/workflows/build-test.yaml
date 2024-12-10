@@ -164,10 +164,12 @@ jobs:
           git clone ${ADMS_REPO} tests/integration_test/anms-adms
           git clone ${DTNMA_TOOLS_REPO} tests/integration_test/dtnma-tools
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build ruby build-essential autoconf libtool civetweb libcivetweb-dev libssl-dev libcjson-dev          
+          sudo apt-get install -y \
+              cmake ninja-build ruby build-essential autoconf libtool \
+              flex libfl-dev bison libpcre2-dev civetweb libcivetweb-dev libssl-dev libcjson-dev
           cd tests/integration_test/dtnma-tools
           git submodule update --init --recursive
-          ./prep.sh
+          ./prep.sh -DTEST_MEMCHECK=OFF -DTEST_COVERAGE=OFF -DBUILD_DOCS=OFF
           ./build.sh check
       - name: Test
         run: python3 -m pytest -v --cov=camp tests/integration_test/test_c_integration.py
