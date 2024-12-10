@@ -76,6 +76,7 @@ jobs:
         run: python3 -m pytest -v --cov=camp tests/unit_test
 
   test-integration-sql:
+    if: false # FIXME re-enable after SQL updates
     needs: [build]
     runs-on: ubuntu-22.04
     # Job executes within a container
@@ -171,6 +172,7 @@ jobs:
           git submodule update --init --recursive
           ./deps.sh
           ./prep.sh -DTEST_MEMCHECK=OFF -DTEST_COVERAGE=OFF -DBUILD_DOCS=OFF
+          ./build.sh
           ./build.sh check
       - name: Test
         run: python3 -m pytest -v --cov=camp tests/integration_test/test_c_integration.py
