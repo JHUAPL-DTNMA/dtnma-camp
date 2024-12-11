@@ -197,7 +197,7 @@ int refda_adm_test_adm_init(refda_agent_t *agent)
     CACE_LOG_DEBUG("Registering ADM: " "test-adm");
     REFDA_AGENT_LOCK(agent);
 
-    cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(&(agent->objs), "test-adm", true, REFDA_ADM_TEST_ADM_ENUM_ADM);
+    cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(&(agent->objs), "test-adm", "2024-11-21", true, REFDA_ADM_TEST_ADM_ENUM_ADM);
     if (adm)
     {
         cace_amm_obj_desc_t *obj;

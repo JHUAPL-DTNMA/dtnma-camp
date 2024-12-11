@@ -14,13 +14,14 @@
  * declarations of module-level initialization functions.
  */
 
+{% set guard_sym = adm | cpp_guard -%}
+#ifndef {{guard_sym}}
+#define {{guard_sym}}
+
 #include "refda/agent.h"
 #include <cace/util/defs.h>
 
 {{scraper.write_custom_includes()}}
-{% set guard_sym = adm | cpp_guard %}
-#ifndef {{guard_sym}}
-#define {{guard_sym}}
 
 #ifdef __cplusplus
 extern "C" {

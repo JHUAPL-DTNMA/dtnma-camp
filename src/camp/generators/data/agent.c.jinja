@@ -216,7 +216,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
     CACE_LOG_DEBUG("Registering ADM: " {{adm.norm_name | c_str}});
     REFDA_AGENT_LOCK(agent);
 
-    cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(&(agent->objs), {{adm.norm_name | c_str}}, true, {{adm | cpp_enum}});
+    cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(&(agent->objs), {{adm.norm_name | c_str}}, {{adm.latest_revision | c_str}}, true, {{adm | cpp_enum}});
     if (adm)
     {
         cace_amm_obj_desc_t *obj;
