@@ -130,7 +130,7 @@ ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.enum}}, {{value.ident.ty
     amm_semtype_tblt_t *semtype = amm_type_set_tblt_size({{ptrname}}, {{typeobj.columns | count}});
     {%- for col in typeobj.columns %}
     {
-        amm_semtype_tblt_col_t *col = amm_semtype_tblt_col_array_get(semtype->columns, {{loop.index0}});
+        amm_named_type_t *col = amm_named_type_array_get(semtype->columns, {{loop.index0}});
         m_string_set_cstr(col->name, {{col.name | c_str}});
         {{amm_type_set('&(col->typeobj)', col.base) | indent(8) }}
     }
@@ -164,7 +164,7 @@ ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.enum}}, {{value.ident.ty
 #include "refda/register.h"
 #include "refda/edd_prod_ctx.h"
 #include "refda/ctrl_exec_ctx.h"
-//#include "refda/reporting.h"
+#include "refda/oper_eval_ctx.h"
 #include <cace/amm/semtype.h>
 #include <cace/ari/text.h>
 #include <cace/util/logging.h>
@@ -181,7 +181,7 @@ ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.enum}}, {{value.ident.ty
 {{ callback_summary(obj) | c_comment }}
 static void {{func_sym}}(refda_edd_prod_ctx_t *ctx)
 {
-{{scraper.write_custom_body(func_sym)}}
+{{scraper.write_custom_body(func_sym) -}}
 }
 {%- endfor %}
 {%- endif %}
@@ -203,10 +203,9 @@ static void {{func_sym}}(refda_ctrl_exec_ctx_t *ctx)
 {% set func_sym = obj | c_func %}
 
 {{ callback_summary(obj) | c_comment }}
-static int {{func_sym}}(const refda_amm_oper_desc_t *obj _U_, refda_eval_ctx_t *ctx _U_)
+static void {{func_sym}}(refda_oper_eval_ctx_t *ctx)
 {
-{{scraper.write_custom_body(func_sym)}}
-    return 0; //FIXME
+{{scraper.write_custom_body(func_sym) -}}
 }
 {%- endfor %}
 {%- endif %}
@@ -356,7 +355,16 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
         { // For {{obj | ref_text}}
             refda_amm_oper_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_oper_desc_t));
             refda_amm_oper_desc_init(objdata);
-            // result type
+            // operands:
+            amm_named_type_array_resize(objdata->operand_types, {{obj.operands.items | count}});
+{%- for operand in obj.operands.items %}
+            {
+                amm_named_type_t *operand = amm_named_type_array_get(objdata->operand_types, {{loop.index0}});
+                string_set_str(operand->name, {{operand.name | c_str}});
+                {{ amm_type_set('&(operand->typeobj)', operand.typeobj) | indent(16) }}
+            }
+{%- endfor %}
+            // result type:
             {{ amm_type_set('&(objdata->res_type)', obj.result.typeobj) | indent(12) }}
             // callback:
             objdata->evaluate = {{obj | c_func}};
