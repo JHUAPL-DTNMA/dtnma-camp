@@ -8,8 +8,9 @@
 #include "test_adm.h"
 #include "refda/agent.h"
 #include "refda/register.h"
-#include "refda/valprod.h"
-#include "refda/reporting.h"
+#include "refda/edd_prod_ctx.h"
+#include "refda/ctrl_exec_ctx.h"
+//#include "refda/reporting.h"
 #include <cace/amm/semtype.h>
 #include <cace/ari/text.h>
 #include <cace/util/logging.h>
@@ -32,7 +33,7 @@
  *
  * Produced type: use of ari:/ARITYPE/UVAST
  */
-static void refda_adm_test_adm_edd_edd__uvast(const refda_amm_edd_desc_t *obj _U_, refda_valprod_ctx_t *ctx _U_)
+static void refda_adm_test_adm_edd_edd__uvast(refda_edd_prod_ctx_t *ctx)
 {
 	/*
 	 * +-------------------------------------------------------------------------+
@@ -57,7 +58,7 @@ static void refda_adm_test_adm_edd_edd__uvast(const refda_amm_edd_desc_t *obj _U
  *
  * Produced type: use of ari:/ARITYPE/UVAST
  */
-static void refda_adm_test_adm_edd_edd__uvast__param(const refda_amm_edd_desc_t *obj _U_, refda_valprod_ctx_t *ctx _U_)
+static void refda_adm_test_adm_edd_edd__uvast__param(refda_edd_prod_ctx_t *ctx)
 {
 	/*
 	 * +-------------------------------------------------------------------------+
@@ -81,7 +82,7 @@ static void refda_adm_test_adm_edd_edd__uvast__param(const refda_amm_edd_desc_t 
  *
  * Produced type: use of ari:/ARITYPE/TP
  */
-static void refda_adm_test_adm_edd_edd__tp(const refda_amm_edd_desc_t *obj _U_, refda_valprod_ctx_t *ctx _U_)
+static void refda_adm_test_adm_edd_edd__tp(refda_edd_prod_ctx_t *ctx)
 {
 	/*
 	 * +-------------------------------------------------------------------------+
@@ -106,7 +107,7 @@ static void refda_adm_test_adm_edd_edd__tp(const refda_amm_edd_desc_t *obj _U_, 
  *
  * Produced type: use of ari:/ARITYPE/UVAST
  */
-static void refda_adm_test_adm_edd_endpoint__active(const refda_amm_edd_desc_t *obj _U_, refda_valprod_ctx_t *ctx _U_)
+static void refda_adm_test_adm_edd_endpoint__active(refda_edd_prod_ctx_t *ctx)
 {
 	/*
 	 * +-------------------------------------------------------------------------+
@@ -131,7 +132,7 @@ static void refda_adm_test_adm_edd_endpoint__active(const refda_amm_edd_desc_t *
  *
  * Result name "data", type: use of ari:/ARITYPE/BYTESTR
  */
-static int refda_adm_test_adm_ctrl_get(const refda_amm_ctrl_desc_t *obj _U_, refda_exec_ctx_t *ctx _U_)
+static void refda_adm_test_adm_ctrl_get(refda_ctrl_exec_ctx_t *ctx)
 {
 	/*
 	 * +-------------------------------------------------------------------------+
@@ -143,8 +144,6 @@ static int refda_adm_test_adm_ctrl_get(const refda_amm_ctrl_desc_t *obj _U_, ref
 	 * |STOP CUSTOM FUNCTION refda_adm_test_adm_ctrl_get BODY
 	 * +-------------------------------------------------------------------------+
 	 */
-
-    return 0; //FIXME
 }
 
 
@@ -158,7 +157,7 @@ static int refda_adm_test_adm_ctrl_get(const refda_amm_ctrl_desc_t *obj _U_, ref
  *
  * Result name "errorcode", type: use of ari:/ARITYPE/BYTE
  */
-static int refda_adm_test_adm_ctrl_set(const refda_amm_ctrl_desc_t *obj _U_, refda_exec_ctx_t *ctx _U_)
+static void refda_adm_test_adm_ctrl_set(refda_ctrl_exec_ctx_t *ctx)
 {
 	/*
 	 * +-------------------------------------------------------------------------+
@@ -170,8 +169,6 @@ static int refda_adm_test_adm_ctrl_set(const refda_amm_ctrl_desc_t *obj _U_, ref
 	 * |STOP CUSTOM FUNCTION refda_adm_test_adm_ctrl_set BODY
 	 * +-------------------------------------------------------------------------+
 	 */
-
-    return 0; //FIXME
 }
 
 
@@ -394,7 +391,6 @@ int refda_adm_test_adm_init(refda_agent_t *agent)
             }
         }
 
-
         /**
          * Register CTRL objects
          */
@@ -453,7 +449,6 @@ int refda_adm_test_adm_init(refda_agent_t *agent)
                 }
             }
         }
-
 
         /**
          * Register OPER objects

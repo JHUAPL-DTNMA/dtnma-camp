@@ -23,6 +23,7 @@ dependencies = [
   "dtnma-ace",
   "cbor2",
   "configobj",
+  "setuptools",
   "xdg",
   "jinja2",
 ]
@@ -49,6 +50,17 @@ docs = [
   "sphinx_rtd_theme",
   "sphinx-argparse",
 ]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--log-cli-level=info",
+    "--import-mode=importlib",
+]
+testpaths = [
+    "test",
+    "integration-test",
+]
+norecursedirs = "deps"
 
 [tool.pylint.MAIN]
 load-plugins="pylint_junit"

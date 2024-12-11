@@ -39,8 +39,8 @@
 import argparse
 import logging
 import os
-import re
 import sys
+import tempfile
 import ace
 # Import all generators
 from camp.generators import (
@@ -112,6 +112,8 @@ def run(args: argparse.Namespace):
     try:
         admset = ace.AdmSet()
         admset.load_default_dirs()
+        # Treat the parent dir as part of the search path
+        admset.load_from_dirs([os.path.dirname(args.admfile)])
         LOGGER.info("Loading %s ... ", args.admfile)
         adm = admset.load_from_file(args.admfile)
         LOGGER.info("Finished loading ADM %s", adm.norm_name)
@@ -136,21 +138,27 @@ def run(args: argparse.Namespace):
     failures = 0
     for gen in generators:
         file_path = gen.file_path()
-        dir_path = os.path.dirname(file_path)
+        dir_path, file_name = os.path.split(file_path)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
 
+        # Double-buffer write into temporary file and then replace after success
+        tmp = tempfile.NamedTemporaryFile(dir=dir_path, prefix=file_name, delete=False)
+
         try:
             LOGGER.info('Generating %s ...', os.path.relpath(file_path, args.out))
-            with open(file_path, "w") as outfile:
+            with open(tmp.name, "w") as outfile:
                 gen.write(outfile)
+            os.rename(tmp.name, file_path)
             LOGGER.info('done.')
         except IOError as err:
             LOGGER.error("Failed to open %s for writing: %s", file_path, err)
+            os.unlink(tmp.name)
             failures += 1
             continue
         except Exception as err:
             LOGGER.error("Failed to generate %s file: %s", file_path, err)
+            os.unlink(tmp.name)
             failures += 1
             raise
 

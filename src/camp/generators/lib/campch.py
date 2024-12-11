@@ -29,7 +29,6 @@ from typing import Union, Optional
 import ace
 from ace import models, ari, ari_text
 from ace.lookup import dereference, ORM_TYPE
-from . import camputil as cu
 
 LOGGER = logging.getLogger(__name__)
 
@@ -37,8 +36,16 @@ AdmEntity = Union[models.AdmModule, models.AdmObjMixin]
 ''' Either an ADM itself or an AMM object defined within one. '''
 
 
-def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
+def yang_to_c(identifier):
+    ''' Translates a valid YANG identifier to a valid C99 symbol name.
+    '''
+    return identifier.replace('_', '__').replace('-', '_').replace('.', '_p_')
 
+
+def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
+    ''' Set state of a jinja environment for ADM implementation
+    source generation.
+    '''
     REVERSE_MAP = {val: key for key, val in ORM_TYPE.items()}
 
     def amm_obj_type(obj:models.AdmObjMixin) -> ari.StructType:
@@ -48,12 +55,12 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         ''' Get the header name for a module.
         The symbol prefix is not part of the file name.
         '''
-        return cu.yang_to_c(adm.name).lower() + '.h'
+        return yang_to_c(adm.name).lower() + '.h'
 
     def cpp_guard(adm:models.AdmModule) -> str:
         ''' Get the header guard for a module.
         '''
-        return '_'.join([sym_prefix, cu.yang_to_c(adm.name), 'H_']).upper()
+        return '_'.join([sym_prefix, yang_to_c(adm.name), 'H_']).upper()
 
     def cpp_enum(value:AdmEntity) -> str:
         ''' Map from ORM and YANG names into C preprocessor define name.
@@ -65,16 +72,16 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
             parts = ['adm']
         elif isinstance(value, models.AdmObjMixin):
             module = value.module
-            parts = ['objid', amm_obj_type(value).name, cu.yang_to_c(value.name)]
-        return '_'.join([sym_prefix, cu.yang_to_c(module.name), 'enum'] + parts).upper()
+            parts = ['objid', amm_obj_type(value).name, yang_to_c(value.name)]
+        return '_'.join([sym_prefix, yang_to_c(module.name), 'enum'] + parts).upper()
 
     def c_func(value:AdmEntity, suffix:Optional[str]=None) -> str:
         ''' Map from ORM and YANG names into C function symbol name.
         '''
         if isinstance(value, models.AdmModule):
-            parts = [cu.yang_to_c(value.name)]
+            parts = [yang_to_c(value.name)]
         elif isinstance(value, models.AdmObjMixin):
-            parts = list(map(cu.yang_to_c, [value.module.name, amm_obj_type(value).name, value.name]))
+            parts = list(map(yang_to_c, [value.module.name, amm_obj_type(value).name, value.name]))
         if suffix:
             parts.append(suffix)
         return '_'.join([sym_prefix] + parts).lower()

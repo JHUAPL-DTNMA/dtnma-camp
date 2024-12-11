@@ -44,9 +44,12 @@ Parameters: none
 {%- endif %}
 {%- endif %}
 
-{%- if obj.result is defined and obj.result.typeobj is defined %}
-
+{%- if obj.result is defined %}
+{% if obj.result.typeobj is defined %}
 Result name "{{obj.result.name}}", type: {{type_summary(obj.result.typeobj)}}
+{%- else %}
+Result: none
+{%- endif %}
 {%- endif %}
 
 {%- if obj.typeobj is defined %}
@@ -159,8 +162,9 @@ ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.enum}}, {{value.ident.ty
 #include "{{adm | cpp_header}}"
 #include "refda/agent.h"
 #include "refda/register.h"
-#include "refda/valprod.h"
-#include "refda/reporting.h"
+#include "refda/edd_prod_ctx.h"
+#include "refda/ctrl_exec_ctx.h"
+//#include "refda/reporting.h"
 #include <cace/amm/semtype.h>
 #include <cace/ari/text.h>
 #include <cace/util/logging.h>
@@ -175,7 +179,7 @@ ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.enum}}, {{value.ident.ty
 {% set func_sym = obj | c_func %}
 
 {{ callback_summary(obj) | c_comment }}
-static void {{func_sym}}(const refda_amm_edd_desc_t *obj _U_, refda_valprod_ctx_t *ctx _U_)
+static void {{func_sym}}(refda_edd_prod_ctx_t *ctx)
 {
 {{scraper.write_custom_body(func_sym)}}
 }
@@ -187,10 +191,9 @@ static void {{func_sym}}(const refda_amm_edd_desc_t *obj _U_, refda_valprod_ctx_
 {% set func_sym = obj | c_func %}
 
 {{ callback_summary(obj) | c_comment }}
-static int {{func_sym}}(const refda_amm_ctrl_desc_t *obj _U_, refda_exec_ctx_t *ctx _U_)
+static void {{func_sym}}(refda_ctrl_exec_ctx_t *ctx)
 {
-{{scraper.write_custom_body(func_sym)}}
-    return 0; //FIXME
+{{scraper.write_custom_body(func_sym) -}}
 }
 {%- endfor %}
 {%- endif %}
@@ -320,7 +323,8 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {%- endfor %}
 {%- endif %}
 
-{% if adm.ctrl %}
+{%- if adm.ctrl %}
+
         /**
          * Register CTRL objects
          */
@@ -343,7 +347,8 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {%- endfor %}
 {%- endif %}
 
-{% if adm.oper %}
+{%- if adm.oper %}
+
         /**
          * Register OPER objects
          */

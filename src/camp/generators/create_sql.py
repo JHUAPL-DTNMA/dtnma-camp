@@ -31,11 +31,14 @@ import os
 import fileinput
 from typing import TextIO
 
-from camp.generators.lib import camputil as cu
 from camp.generators.base import AbstractWriter
 from ace import models
 
 LOGGER = logging.getLogger(__name__)
+
+
+def yang_to_sql(identifier):
+    return identifier.replace('_', '__').replace('-', '_').replace('.', '_p_')
 
 # :FIXME temporary removal until SQL procedures are updated
 # USE_UPDATE_RECORD = True

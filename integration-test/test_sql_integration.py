@@ -4,7 +4,8 @@ import ace
 import pytest
 
 from .util import ADMS_DIR, adm_files, run_camp
-from camp.generators.lib.camputil import yang_to_sql
+from camp.generators.create_sql import yang_to_sql
+
 
 @pytest.fixture(scope="session", autouse=True)
 def setup():
@@ -24,7 +25,7 @@ def setup():
             password=os.environ["PGPASSWORD"]
     )
     cursor = conn.cursor()
-    
+
     # reusable objects that the tests will need
     yield cursor,
 
@@ -40,7 +41,7 @@ def test_adms(setup, adm):
     Resulting sql files will be placed in ADMS_DIR/amp-sql/Agent_Scripts and executed in the anms library.
     """
 
-    if adm == 'ietf-amm.yang':  # doesn't have unique enum 
+    if adm == 'ietf-amm.yang':  # doesn't have unique enum
         pytest.xfail("ADM with known issue")
 
     cursor = setup[0]

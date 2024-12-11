@@ -25,8 +25,6 @@ on: [push]
 
 env:
   ACE_REPO: "git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@apl-fy24"
-  ADMS_REPO: "-b apl-fy24 https://github.com/JHUAPL-DTNMA/dtnma-adms.git"
-  DTNMA_TOOLS_REPO: "-b 76-base-adm-objects https://github.com/JHUAPL-DTNMA/dtnma-tools.git"
 
 jobs:
   build:
@@ -69,11 +67,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Prep
         run: |
-          pip3 install --upgrade pip
           pip3 install ${ACE_REPO}
           pip3 install -e '.[test]'
       - name: Test
-        run: python3 -m pytest -v --cov=camp tests/unit_test
+        run: python3 -m pytest -v --cov=camp test
 
   test-integration-sql:
     if: false # FIXME re-enable after SQL updates
@@ -110,35 +107,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
-      - name: Prep ANMS database
-        run: |
-          git clone https://github.com/NASA-AMMOS/anms.git tests/integration_test/anms
-          cd tests/integration_test/anms/amp-sql/postgres
-          psql -f Database_Scripts/Tables/amp_core_create_database.sql
-          psql -f Database_Scripts/Tables/transcoder.sql
-          psql -f Database_Scripts/Tables/adm_data.sql
-          psql -f Database_Scripts/Views/obj_view.sql
-          psql -f Database_Scripts/Views/ari_view.sql
-          psql -f Database_Scripts/Views/ctrl_view.sql
-          psql -f Database_Scripts/Views/edd_view.sql
-          psql -f Database_Scripts/Views/oper_view.sql
-          psql -f Database_Scripts/Views/message_view.sql
-          psql -f Database_Scripts/Views/sbr_view.sql
-          psql -f Database_Scripts/Views/tbr_view.sql
-          psql -f Database_Scripts/Views/tnvc_view.sql
-          psql -f Database_Scripts/Views/parm_view.sql
-          psql -f Database_Scripts/Views/var_view.sql
-          psql -f Database_Scripts/Views/namespace_view.sql
-          psql -f Database_Scripts/Routines/all_routines.sql
-          psql -f Database_Scripts/Tables/healthcheck_roles.sql
-          psql -f Database_Scripts/amp_core_functions.sql
-      - name: Install
-        run: |
-          pip3 install ${ACE_REPO}
-          pip install -e '.[test]'
-          git clone ${ADMS_REPO} tests/integration_test/anms-adms
       - name: Test
-        run: python3 -m pytest -v --cov=camp tests/integration_test/test_sql_integration.py
+        run: ./integration-test/run.sh sql
 
   test-integration-c:
     needs: [build]
@@ -156,26 +126,14 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install
+      - name: Install build dependencies
         run: |
-          pip3 install ${ACE_REPO}
-          pip3 install -e '.[test]'
-      - name: Prep repos
-        run: |
-          git clone ${ADMS_REPO} tests/integration_test/anms-adms
-          git clone ${DTNMA_TOOLS_REPO} tests/integration_test/dtnma-tools
           sudo apt-get update
           sudo apt-get install -y \
               cmake ninja-build ruby build-essential autoconf libtool \
               flex libfl-dev bison libpcre2-dev civetweb libcivetweb-dev libssl-dev libcjson-dev
-          cd tests/integration_test/dtnma-tools
-          git submodule update --init --recursive
-          ./deps.sh
-          ./prep.sh -DTEST_MEMCHECK=OFF -DTEST_COVERAGE=OFF -DBUILD_DOCS=OFF
-          ./build.sh
-          ./build.sh check
       - name: Test
-        run: python3 -m pytest -v --cov=camp tests/integration_test/test_c_integration.py
+        run: ./integration-test/run.sh c
 
   flake8:
     runs-on: ubuntu-latest

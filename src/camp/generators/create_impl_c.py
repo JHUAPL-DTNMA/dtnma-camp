@@ -24,14 +24,11 @@
 '''
 
 import os
-import io
 import jinja2
-from typing import Optional, TextIO, Union
-from camp.generators.lib import campch
+from typing import TextIO
+from camp.generators.lib.campch import yang_to_c, update_jinja_env
 from camp.generators.lib.campch_roundtrip import C_Scraper
-from camp.generators.lib import camputil as cu
 from camp.generators.base import AbstractWriter, CHelperMixin
-from ace import models, ari, typing
 
 
 class Writer(AbstractWriter, CHelperMixin):
@@ -41,7 +38,7 @@ class Writer(AbstractWriter, CHelperMixin):
     def __init__(self, admset, adm, out_path, scrape: bool):
         super().__init__(admset, adm, out_path)
 
-        self.c_norm_name = cu.yang_to_c(self.adm.norm_name)
+        self.c_norm_name = yang_to_c(self.adm.norm_name)
 
         full_path = self.file_path()
         scrape_src = full_path if scrape and os.path.exists(full_path) else None
@@ -59,7 +56,7 @@ class Writer(AbstractWriter, CHelperMixin):
             loader=jinja2.FileSystemLoader(os.path.join(SELFDIR, 'data')),
             keep_trailing_newline=True
         )
-        campch.update_jinja_env(self._tmpl_env, self.admset, sym_prefix='refda_adm')
+        update_jinja_env(self._tmpl_env, self.admset, sym_prefix='refda_adm')
 
         keys = dict(
             adm=self.adm,
