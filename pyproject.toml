@@ -21,10 +21,7 @@ classifiers = [
 
 dependencies = [
   "dtnma-ace",
-  "cbor2",
-  "configobj",
   "setuptools",
-  "xdg",
   "jinja2",
 ]
 
