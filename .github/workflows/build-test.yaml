@@ -68,7 +68,7 @@ jobs:
       - name: Prep
         run: |
           pip3 install ${ACE_REPO}
-          pip3 install -e '.[test]'
+          pip3 install '.[test]'
       - name: Test
         run: python3 -m pytest -v --cov=camp test
 

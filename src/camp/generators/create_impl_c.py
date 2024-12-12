@@ -62,5 +62,8 @@ class Writer(AbstractWriter, CHelperMixin):
             adm=self.adm,
             scraper=self._scraper,
         )
-        tmpl = self._tmpl_env.get_template('agent.c.jinja')
+        try:
+            tmpl = self._tmpl_env.get_template('agent.c.jinja')
+        except Exception as err:
+            raise RuntimeError('Failed to load template "agent.c.jinja"') from err
         tmpl.stream(**keys).dump(outfile)

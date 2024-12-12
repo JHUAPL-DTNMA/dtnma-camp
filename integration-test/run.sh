@@ -26,7 +26,7 @@ if [[ ! -d ${SELFDIR}/deps/dtnma-ace ]]
 then
     git clone --branch apl-fy24 https://github.com/JHUAPL-DTNMA/dtnma-ace.git ${SELFDIR}/deps/dtnma-ace
 fi
-pip3 install -e ${SELFDIR}/deps/dtnma-ace
+pip3 install ${SELFDIR}/deps/dtnma-ace
 
 if [[ "$1" = "c" ]]
 then
@@ -37,12 +37,10 @@ then
         git submodule update --init --recursive
         popd
     fi
-    if [[ ! -d ${SELFDIR}/deps/dtnma-tools/testroot ]]
-    then
-        pushd ${SELFDIR}/deps/dtnma-tools
-        ./deps.sh
-        popd
-    fi
+    pushd ${SELFDIR}/deps/dtnma-tools
+    git pull
+    ./deps.sh
+    popd
     if [[ ! -d ${SELFDIR}/deps/dtnma-tools/build ]]
     then
         pushd ${SELFDIR}/deps/dtnma-tools
@@ -58,5 +56,5 @@ else
 fi
 
 echo "Running tests..."
-pip3 install -e '.[test]'
+pip3 install '.[test]'
 python3 -m pytest -v --cov=camp ${PYTEST_ARGS}

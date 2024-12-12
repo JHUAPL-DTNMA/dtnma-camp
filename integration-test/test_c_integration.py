@@ -12,14 +12,18 @@ OUT_DIR = os.path.join(DTNMA_TOOLS_DIR, "src")
 LOGGER = logging.getLogger(__name__)
 
 
+def cleanup():
+    subprocess.check_call(["git", "restore", "."], cwd=DTNMA_TOOLS_DIR)
+    subprocess.check_call(["git", "clean", "-fd"], cwd=DTNMA_TOOLS_DIR)
+
+
 @pytest.fixture(autouse=True)
 def setup():
     """
     Restores the dtnma-tools repository
     @pre: DTNMA_TOOLS_DIR is a git working copy
     """
-    subprocess.check_call(["git", "restore", "."], cwd=DTNMA_TOOLS_DIR)
-    subprocess.check_call(["git", "clean", "-fd"], cwd=DTNMA_TOOLS_DIR)
+    cleanup()
 
 
 @pytest.mark.parametrize("adm", adm_files())

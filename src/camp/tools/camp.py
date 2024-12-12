@@ -148,7 +148,13 @@ def run(args: argparse.Namespace):
         try:
             LOGGER.info('Generating %s ...', os.path.relpath(file_path, args.out))
             with open(tmp.name, "w") as outfile:
-                gen.write(outfile)
+                try:
+                    gen.write(outfile)
+                except Exception as err:
+                    LOGGER.error("Failed to generate %s file: %s", file_path, err)
+                    os.unlink(tmp.name)
+                    failures += 1
+                    continue
             os.rename(tmp.name, file_path)
             LOGGER.info('done.')
         except IOError as err:
@@ -156,11 +162,6 @@ def run(args: argparse.Namespace):
             os.unlink(tmp.name)
             failures += 1
             continue
-        except Exception as err:
-            LOGGER.error("Failed to generate %s file: %s", file_path, err)
-            os.unlink(tmp.name)
-            failures += 1
-            raise
 
     LOGGER.debug('Resulted in %d failures out of %d files', failures, len(generators))
     return 2 if failures else 0
