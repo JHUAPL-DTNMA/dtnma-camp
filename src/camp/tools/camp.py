@@ -39,20 +39,15 @@
 import argparse
 import logging
 import os
-import re
 import sys
+import tempfile
 import ace
 # Import all generators
 from camp.generators import (
-    create_gen_h,
-    create_agent_c,
-    create_mgr_c,
     create_impl_h,
     create_impl_c,
     create_sql,
 )
-from camp.generators.lib import campsettings
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -63,8 +58,8 @@ def get_parser() -> argparse.ArgumentParser:
     p.add_argument('--log-level', choices=('debug', 'info', 'warning', 'error'),
                    default='info',
                    help='The minimum log severity.')
-    p.add_argument('-o', '--out',        
-                   help="The output directory",                         
+    p.add_argument('-o', '--out',
+                   help="The output directory",
                    default="./")
     p.add_argument('-s', '--scrape',
                    help="Previously generated H and C file to be scraped",
@@ -78,6 +73,7 @@ def get_parser() -> argparse.ArgumentParser:
                    help="Set this flag to only produce the .c and .h files",
                    action='store_true', default=False)
     return p
+
 
 #
 # Makes the output directory if it doesn't already exist
@@ -115,17 +111,15 @@ def run(args: argparse.Namespace):
 
     try:
         admset = ace.AdmSet()
+        admset.load_default_dirs()
+        # Treat the parent dir as part of the search path
+        admset.load_from_dirs([os.path.dirname(args.admfile)])
         LOGGER.info("Loading %s ... ", args.admfile)
         adm = admset.load_from_file(args.admfile)
         LOGGER.info("Finished loading ADM %s", adm.norm_name)
     except Exception as e:
         LOGGER.error("Loading error: %s", e)
         return 2
-
-    for mdat in ('name', 'namespace', 'enum'):
-        if admset.get_child(adm, ace.models.Mdat, mdat) is None:
-            LOGGER.error('The ADM is missing an "%s" metadata item', mdat)
-            return 2
 
     # Call each generator to generate files for the JSON ADM
     LOGGER.info("Generating files under %s", args.out)
@@ -134,9 +128,6 @@ def run(args: argparse.Namespace):
         generators += [
             create_impl_h.Writer(admset, adm, args.out, args.scrape),
             create_impl_c.Writer(admset, adm, args.out, args.scrape),
-            create_gen_h.Writer(admset, adm, args.out),
-            create_mgr_c.Writer(admset, adm, args.out),
-            create_agent_c.Writer(admset, adm, args.out),
         ]
 
     if not args.only_ch:
@@ -147,23 +138,30 @@ def run(args: argparse.Namespace):
     failures = 0
     for gen in generators:
         file_path = gen.file_path()
-        dir_path = os.path.dirname(file_path)
+        dir_path, file_name = os.path.split(file_path)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
 
+        # Double-buffer write into temporary file and then replace after success
+        tmp = tempfile.NamedTemporaryFile(dir=dir_path, prefix=file_name, delete=False)
+
         try:
             LOGGER.info('Generating %s ...', os.path.relpath(file_path, args.out))
-            with open(file_path, "w") as outfile:
-                gen.write(outfile)
+            with open(tmp.name, "w") as outfile:
+                try:
+                    gen.write(outfile)
+                except Exception as err:
+                    LOGGER.error("Failed to generate %s file: %s", file_path, err)
+                    os.unlink(tmp.name)
+                    failures += 1
+                    continue
+            os.rename(tmp.name, file_path)
             LOGGER.info('done.')
         except IOError as err:
             LOGGER.error("Failed to open %s for writing: %s", file_path, err)
+            os.unlink(tmp.name)
             failures += 1
             continue
-        except Exception as err:
-            LOGGER.error("Failed to generate %s file: %s", file_path, err)
-            failures += 1
-            raise
 
     LOGGER.debug('Resulted in %d failures out of %d files', failures, len(generators))
     return 2 if failures else 0

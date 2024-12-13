@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -23,7 +23,9 @@ dependencies = [
   "dtnma-ace",
   "cbor2",
   "configobj",
+  "setuptools",
   "xdg",
+  "jinja2",
 ]
 
 [project.optional-dependencies]
@@ -48,6 +50,17 @@ docs = [
   "sphinx_rtd_theme",
   "sphinx-argparse",
 ]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--log-cli-level=info",
+    "--import-mode=importlib",
+]
+testpaths = [
+    "test",
+    "integration-test",
+]
+norecursedirs = "deps"
 
 [tool.pylint.MAIN]
 load-plugins="pylint_junit"

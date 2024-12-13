@@ -38,5 +38,5 @@ class TmpDir:
         os.environ['XDG_DATA_HOME'] = os.path.join(self._dir.name, 'home', 'data')
         os.environ['XDG_DATA_DIRS'] = os.path.join(self._dir.name, 'usr', 'data')
 
-    def __del__(self):
-        self._dir.cleanup()
+    def __str__(self) -> str:
+        return str(self._dir)

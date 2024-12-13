@@ -9,10 +9,11 @@ from camp.tools.camp import run
 
 _util_path = os.path.dirname(os.path.abspath(__file__))
 
-ADMS_DIR = os.path.join(_util_path, "anms-adms")
+ADMS_DIR = os.path.join(_util_path, "deps", "adms")
 ''' ADM storage path. '''
-DTNMA_TOOLS_DIR = os.path.join(_util_path, "dtnma-tools")
+DTNMA_TOOLS_DIR = os.path.join(_util_path, "deps", "dtnma-tools")
 ''' DTNMA agent source path. '''
+
 
 def _good_file(name: str) -> bool:
     ''' Determine if a file path is an ADM to load.
@@ -22,7 +23,8 @@ def _good_file(name: str) -> bool:
         return False
 
     _, ext = os.path.splitext(name)
-    return ext == ".json" and not name == "index.json"
+    return ext == ".yang"
+
 
 def adm_files() -> Tuple[str]:
     ''' Get a list of available ADMs from the test directory.
@@ -30,6 +32,7 @@ def adm_files() -> Tuple[str]:
     '''
     paths = [name for name in os.listdir(ADMS_DIR)]
     return tuple(sorted(filter(_good_file, paths)))
+
 
 def run_camp(filepath, outpath, only_sql, only_ch, scrape=False) -> int:
     """
