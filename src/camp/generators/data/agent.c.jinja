@@ -66,9 +66,9 @@ Produced type: {{type_summary(obj.typeobj)}}
 {
     cace_amm_formal_param_t *fparam = refda_register_add_param(obj, {{param.name | c_str}});
     {{amm_type_set('&(fparam->typeobj)', param.typeobj) | indent(4)}}
-    {%- if param.default_ari is defined %}
+{%- if param.default_ari %}
     {{ari_set_value('&(fparam->defval)', param.default_ari) | indent(4)}}
-    {%- endif %}
+{%- endif %}
 }
 {%- endfor %}
 {%- else %}
@@ -285,6 +285,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             refda_amm_typedef_desc_init(objdata);
             // named type:
             {{ amm_type_set('&(objdata->typeobj)', obj.typeobj) | indent(12) }}
+
             obj = refda_register_typedef(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
             // no parameters possible
         }
@@ -302,6 +303,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             refda_amm_const_desc_init(objdata);
             // constant value:
             {{ ari_set_value('&(objdata->value)', obj.init_ari) | indent(12) }}
+
             obj = refda_register_const(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
             {{- reg_params(obj) | indent(12) }}
         }
@@ -321,6 +323,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             {{ amm_type_set('&(objdata->val_type)', obj.typeobj) | indent(12) }}
             // initial value:
             {{ ari_set_value('&(objdata->value)', obj.init_ari) | indent(12) }}
+
             obj = refda_register_var(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
             {{- reg_params(obj) | indent(12) }}
         }
