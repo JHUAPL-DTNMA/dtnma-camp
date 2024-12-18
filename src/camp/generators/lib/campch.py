@@ -171,6 +171,7 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         'c_int': c_int,
         'c_float': c_float,
         'c_str': c_str,
+        'c_bytes_init': c_bytes_init,
         'rewrap': rewrap,
         'as_text': as_text,
         'ref_text': ref_text,
