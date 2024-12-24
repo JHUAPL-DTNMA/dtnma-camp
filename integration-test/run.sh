@@ -32,7 +32,7 @@ if [[ "$1" = "c" ]]
 then
     if [[ ! -d ${SELFDIR}/deps/dtnma-tools ]]
     then
-        git clone --branch 76-base-adm-objects https://github.com/JHUAPL-DTNMA/dtnma-tools.git ${SELFDIR}/deps/dtnma-tools
+        git clone --branch apl-fy24 https://github.com/JHUAPL-DTNMA/dtnma-tools.git ${SELFDIR}/deps/dtnma-tools
         pushd ${SELFDIR}/deps/dtnma-tools
         git submodule update --init --recursive
         popd
@@ -46,6 +46,7 @@ then
         pushd ${SELFDIR}/deps/dtnma-tools
         ./prep.sh -DTEST_MEMCHECK=OFF -DTEST_COVERAGE=OFF -DBUILD_DOCS=OFF
         ./build.sh
+        # verification that the initial build is good
         ./build.sh check
         popd
     fi

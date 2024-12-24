@@ -66,9 +66,9 @@ Produced type: {{type_summary(obj.typeobj)}}
 {
     cace_amm_formal_param_t *fparam = refda_register_add_param(obj, {{param.name | c_str}});
     {{amm_type_set('&(fparam->typeobj)', param.typeobj) | indent(4)}}
-    {%- if param.default_value %}
+{%- if param.default_ari %}
     {{ari_set_value('&(fparam->defval)', param.default_ari) | indent(4)}}
-    {%- endif %}
+{%- endif %}
 }
 {%- endfor %}
 {%- else %}
@@ -78,9 +78,35 @@ Produced type: {{type_summary(obj.typeobj)}}
 
 {%- macro ari_set_value(ptrname, value) -%}
 {%- if value is instance(ari.LiteralARI) -%}
-{%- if value.type_id == ari.StructType.ARITYPE -%}
+{#- Primitive types #}
+{%- if value is ari_builtin('null') -%}
+ari_set_null({{ptrname}});
+{%- elif value is ari_builtin('bool') -%}
+ari_set_bool({{ptrname}}, {{value.value | c_bool}});
+{%- elif value is ari_builtin('int') -%}
+ari_set_int({{ptrname}}, {{value.value | c_int}});
+{%- elif value is ari_builtin('uint') -%}
+ari_set_uint({{ptrname}}, {{value.value | c_int}});
+{%- elif value is ari_builtin('vast') -%}
+ari_set_vast({{ptrname}}, {{value.value | c_int}});
+{%- elif value is ari_builtin('uvast') -%}
+ari_set_uvast({{ptrname}}, {{value.value | c_int}});
+{#- excluding real32 here #}
+{%- elif value is ari_builtin('real64') -%}
+ari_set_real64({{ptrname}}, {{value.value | c_float}});
+{%- elif value is ari_builtin('textstr') -%}
+ari_set_tstr({{ptrname}}, {{value.value | c_str}}, true);
+{%- elif value is ari_builtin('bytestr') -%}
+{
+    const uint8_t raw[] = {{value.value | c_bytes_init}};
+    cace_data_t data;
+    cace_data_init_view(&data, sizeof(raw), (cace_data_ptr_t)raw);
+    ari_set_bstr({{ptrname}}, &data, true);
+}
+{#- Non-primitive types #}
+{%- elif value is ari_builtin('aritype') -%}
 ari_set_aritype({{ptrname}}, {{value.value | cpp_enum}});
-{%- elif value.type_id == ari.StructType.AC -%}
+{%- elif value is ari_builtin('ac') -%}
 {
     ari_ac_t acinit;
     ari_ac_init(&acinit);
@@ -214,7 +240,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {
     CHKERR1(agent);
     CACE_LOG_DEBUG("Registering ADM: " {{adm.norm_name | c_str}});
-    REFDA_AGENT_LOCK(agent);
+    REFDA_AGENT_LOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
 
     cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(&(agent->objs), {{adm.norm_name | c_str}}, {{adm.latest_revision | c_str}}, true, {{adm | cpp_enum}});
     if (adm)
@@ -234,8 +260,8 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             // IDENT bases:
 {%- for base in obj.bases %}
             {
-                refda_amm_ident_base_t *base = refda_amm_ident_base_list_push_back_new(objdata.bases);
-                {{ ari_set_value('base->name', base.base_ari) | indent(16) }}
+                refda_amm_ident_base_t *base = refda_amm_ident_base_list_push_back_new(objdata->bases);
+                {{ ari_set_value('&(base->name)', base.base_ari) | indent(16) }}
             }
 {%- endfor %}
 {%- else %}
@@ -259,6 +285,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             refda_amm_typedef_desc_init(objdata);
             // named type:
             {{ amm_type_set('&(objdata->typeobj)', obj.typeobj) | indent(12) }}
+
             obj = refda_register_typedef(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
             // no parameters possible
         }
@@ -276,6 +303,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             refda_amm_const_desc_init(objdata);
             // constant value:
             {{ ari_set_value('&(objdata->value)', obj.init_ari) | indent(12) }}
+
             obj = refda_register_const(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
             {{- reg_params(obj) | indent(12) }}
         }
@@ -295,9 +323,9 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             {{ amm_type_set('&(objdata->val_type)', obj.typeobj) | indent(12) }}
             // initial value:
             {{ ari_set_value('&(objdata->value)', obj.init_ari) | indent(12) }}
+
             obj = refda_register_var(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
-            {#- FIXME add to ace {{- reg_params(obj) | indent(12) }} #}
-            // no parameters
+            {{- reg_params(obj) | indent(12) }}
         }
 {%- endfor %}
 {%- endif %}
@@ -376,6 +404,6 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {%- endif %}
 {# FIXME add SBR and TBRs #}
     }
-    REFDA_AGENT_UNLOCK(agent);
+    REFDA_AGENT_UNLOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
     return 0;
 }

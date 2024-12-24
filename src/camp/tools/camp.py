@@ -41,6 +41,7 @@ import logging
 import os
 import sys
 import tempfile
+import traceback
 import ace
 # Import all generators
 from camp.generators import (
@@ -152,6 +153,7 @@ def run(args: argparse.Namespace):
                     gen.write(outfile)
                 except Exception as err:
                     LOGGER.error("Failed to generate %s file: %s", file_path, err)
+                    LOGGER.debug('%s', traceback.format_exc())
                     os.unlink(tmp.name)
                     failures += 1
                     continue

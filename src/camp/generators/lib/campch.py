@@ -25,8 +25,10 @@ import io
 import logging
 import jinja2
 import textwrap
+import typing
 from typing import Union, Optional
 import ace
+from ace.typing import BUILTINS
 from ace import models, ari, ari_text
 from ace.lookup import dereference, ORM_TYPE
 
@@ -100,15 +102,31 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         buf += newl + ' */'
         return buf
 
+    def c_bool(value) -> str:
+        ''' Enforce a boolean value in C99 source.
+        '''
+        return 'true' if bool(value) else 'false'
+
     def c_int(value) -> str:
         ''' Enforce an integer value in C source.
         '''
-        return str(int(value))
+        return f'{int(value):d}'
 
-    def c_str(value:str):
+    def c_float(value) -> str:
+        ''' Enforce an floating point value in C source.
+        '''
+        return f'{float(value):e}'
+
+    def c_str(value:str) -> str:
         ''' Enforce an escaped text string in C source.
         '''
         return '"' + value.replace('\\', '\\\\') + '"'
+
+    def c_bytes_init(value:bytes) -> str:
+        ''' Encode a byte string as a sequence of uint8_t values
+        within an array initializer.
+        '''
+        return '{' + ', '.join([hex(part) for part in value]) + '}'
 
     def rewrap(value:str, prefix:str='\n'):
         ''' Unwrap and re-wrap text along word bounaries.
@@ -134,6 +152,11 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         LOGGER.debug('deref from %s', ari)
         return dereference(ari, admset.db_session())
 
+    def ari_builtin(ari:ari.ARI, typename:str) -> bool:
+        typeobj = BUILTINS[typename]
+        got = typeobj.get(ari)
+        return got is not None
+
     env.globals |= {
         'ari': ace.ari,
         'typing': ace.typing,
@@ -144,8 +167,11 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         'cpp_enum': cpp_enum,
         'c_func': c_func,
         'c_comment': c_comment,
+        'c_bool': c_bool,
         'c_int': c_int,
+        'c_float': c_float,
         'c_str': c_str,
+        'c_bytes_init': c_bytes_init,
         'rewrap': rewrap,
         'as_text': as_text,
         'ref_text': ref_text,
@@ -153,4 +179,5 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
     }
     env.tests |= {
         'instance': isinstance,
+        'ari_builtin': ari_builtin,
     }
