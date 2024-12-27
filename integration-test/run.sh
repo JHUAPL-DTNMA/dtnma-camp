@@ -46,6 +46,7 @@ then
         pushd ${SELFDIR}/deps/dtnma-tools
         ./prep.sh -DTEST_MEMCHECK=OFF -DTEST_COVERAGE=OFF -DBUILD_DOCS=OFF
         ./build.sh
+        # verification that the initial build is good
         ./build.sh check
         popd
     fi
