@@ -61,14 +61,36 @@ development (e.g., apostrophes in object descriptions).
 
 ## Development
 
+For development purposes, it is advised to operate within a Python virtual environment, ideally Python 3.11, to help prevent dependency errors later on. You can run the following commands to create and activate your venv:
+```
+python3.11 -m venv .venv
+source .venv/bin/activate
+```
+If you wish to deactivate your venv, simply run `deactivate`.
+
+Because CAmp utilizes ACE to run properly, one must install and set up ACE first before attempting to install and run CAmp. Set-up instructions for ACE can be found in the README [here](https://github.com/JHUAPL-DTNMA/dtnma-ace/tree/main). To install ACE via pip and point to a specific repo and branch (in this case, the apl-fy24 development branch) like so: 
+```
+pip install git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@apl-fy24
+```
 To install development and test dependencies for this project, run from the root directory (possibly under sudo if installing to the system path):
 ```sh
 pip3 install -r <(python3 -m piptools compile --extra test pyproject.toml 2>&1)
 ```
 
+If this command fails, you may have to install the pip-tools package first and then run two separate commands like so:
+```
+pip3 install pip-tools
+python3 -m piptools compile --extra test pyproject.toml
+pip3 install -r requirements.txt
+```
+
 To install the project itself from source run:
 ```
 pip3 install .
+```
+If you are still encountering installation errors, you may need to update the submodules:
+```
+git submodule update --init --recursive
 ```
 
 ### View Usage Options for CAmp
