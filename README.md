@@ -104,7 +104,7 @@ git submodule update --init --recursive
 The camp tool takes a YANG representation of an ADM for a network protocol as
 input and calls each of the included generators to generate files for the ADM.
 
-<!-- > The included `template.json` provides an example of how a JSON ADM should be
+<!-- > The included `template.yang` provides an example of how a YANG ADM should be
 > formatted. For more information on this data model, please consult the AMA 
 > Application Data Model IETF draft.-->
 >For information on how to format a YANG ADM, please consult the Application Management Model IETF draft.
@@ -130,14 +130,14 @@ Registry. To solve this, pass the nickname value for the ADM to camp via the
 `-n` command line option:
 
 ```
-    camp <adm.json> -n <value>
+    camp <adm.yang> -n <value>
 ```
 
 You can also use the `-n` option to make camp use a different nickname for an
 ADM that is present in the camp Name Registry. For example,
 
 ```
-    camp bp_agent.json -n 23
+    camp bp_agent.yang -n 23
 ```
 
 Will generate bp_agent files with a nickname of `23` instead of the registered
@@ -145,7 +145,7 @@ value of `2`. To make these changes permanent (or to add a new ADM to the
 name registry), pass the `-u` flag to camp:
 
 ```
-    camp <adm.json> -n <value> -u
+    camp <adm.yang> -n <value> -u
 ```
 
 ### Output
@@ -154,10 +154,10 @@ During a successful camp execution, output similar to the following will be
 printed to STDOUT.
 
 ```
-Loading  <path_to_json_file>/<adm.json>  ... 
+Loading  <path_to_yang_file>/<adm.yang>  ... 
 [ DONE ]
 Generating files ...
-Working on  .//ace/adm_<adm>.json 	[ DONE ]
+Working on  .//ace/adm_<adm>.yang 	[ DONE ]
 Working on  .//agent/adm_<adm>_impl.h 	[ DONE ]
 Working on  .//agent/adm_<adm>_impl.c 	[ DONE ]
 Working on  .//adm_<adm>.sql 		[ DONE ]
@@ -180,7 +180,7 @@ and put generated files into the appropriate created directory. Use the `-o`
 flag with camp to redirect output to a different directory.
 
 ```
-    camp <adm.json> -o <output_directory>
+    camp <adm.yang> -o <output_directory>
 ```
 
 If the path at <output_directory> does not already exist, camp will create it,
@@ -222,7 +222,7 @@ between camp custom tags, and will add it to the newly-generated version of the
 file. Example usage:
 
 ```
-    camp <adm.json> -c <path_to_existing_impl.c> -h <path_to_existing_impl.h>
+    camp <adm.yang> -c <path_to_existing_impl.c> -h <path_to_existing_impl.h>
 ```
 
 The resulting generated impl.c and impl.h files will contain the custom code
@@ -240,7 +240,7 @@ copied over to the correct area of the new file.
 
 ### CAmp Architecture
 
-- template.json   - Example JSON ADM template
+- template.yang   - Example YANG ADM template
 - CAmpPython/     - contains all of the source code for camp
   - CAmpPython.py - Main script of camp. This script calls all necessary 
                     generators and handles user input
@@ -267,10 +267,10 @@ copied over to the correct area of the new file.
       - common/             - Library functions helpful to all generators. 
         - campsettings.py   - initializes various global variables for camp 
                               (enumerations for portions of the ADM, etc.)
-        - camputil.py       - utility functions for parsing the JSON input file 
+        - camputil.py       - utility functions for parsing the YANG input file 
                               and creating ARIs. Contains the Retriever class, 
                               which is used by all generators to access ADM data
-        - jsonutil.py       - utility functions to validate JSON input.
+        - yangutil.py       - utility functions to validate YANG input.
                     
 
 ### Adding Generators
@@ -285,7 +285,7 @@ All generators should:
   and second argument:
     1. a Retriever object (pre-populated with the ADM passed to camp)
     2. a string that represents the path to the output directory
-- utilize the Retriever object to access fields of the JSON ADM
+- utilize the Retriever object to access fields of the YANG ADM
 - place generated file(s) in the output directory passed as the second argument
   to the `create()` function (the generator may choose to make a sub-directory 
   in the output directory)
