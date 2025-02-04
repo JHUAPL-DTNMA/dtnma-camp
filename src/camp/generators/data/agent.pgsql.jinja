@@ -4,13 +4,25 @@
 {%- set params  = [] -%}
 {%- for param in obj.parameters.items -%}
 {%- set count = count + 1  -%}
-{{- params.append( param.typeobj.type_text~"."~param.name) -}}
+{%- set params = params.append( param.typeobj.type_text~"."~param.name) -%}
 {% endfor %}
-CALL SP__insert_formal_parmspec( {{obj.parameters.items|length}}, "formal parameters for {{obj.name}}", {{ params }},fp_spec_id);
+CALL SP__insert_formal_parmspec( {{obj.parameters.items|length}}, 'formal parameters for {{obj.name}}', '{{params|join(', ')}}',fp_spec_id);
 {%- endmacro %}
-
-
-
+{%- macro gen_metadata(enum, obj) %}
+{%- set status = 'null' %}
+{%- if obj.status %}
+{%- set status = "'"~obj.status~"'" %}
+{%- endif %}
+{%- set reference = 'null' %}
+{%- if obj.reference %}
+{%- set reference = "'"~obj.reference~"'" %}
+{%- endif %}
+{%- set description = 'null' %}
+{%- if obj.description | replace('\n', '') %}
+{%- set description = "'"~obj.description | replace('\n', '')~"'" %}
+{%- endif %}
+CALL SP__insert_obj_metadata({{enum}}, '{{obj.name}}', r_data_model_id, {{obj.enum}}, {{status}}, {{reference}}, {{description}}, {{obj.name}}_oid);
+{%- endmacro%}
 -- -------------------------------------------------------------------
 --
 -- File Name: {{adm.name}}.sql
@@ -24,259 +36,235 @@ CALL SP__insert_formal_parmspec( {{obj.parameters.items|length}}, "formal parame
 -- Modification History:
 -- YYYY-MM-DD    AUTHOR          DESCRIPTION
 -- ----------    --------------  ------------------------------------
--- {{datestamp}}    AUTO            Auto-generated SQL file
+--     AUTO            Auto-generated SQL file
 --
--- -------------------------------------------------------------------
+-- ------------------------------------------------------------------
 
 DO
 $do$
-
-DECLARE ap_spec_id INTEGER;
-DECLARE fp_spec_id INTEGER;
+DECLARE
+ap_spec_id INTEGER;
+fp_spec_id INTEGER;
+r_data_model_id INTEGER;
 {%- if adm.ident %}
 {%- for obj in adm.ident %}
-DECLARE {{obj.name}}_did INTEGER;
-DECLARE {{obj.name}}_aid INTEGER;
+{{obj.name}}_oid INTEGER;
+{{obj.name}}_fid INTEGER;
+{{obj.name}}_aid INTEGER;
 {%- endfor %}
 {%- endif %}
-
 {%- if adm.const %}
 {%- for obj in adm.const %}
-DECLARE {{obj.name}}_did INTEGER;
-DECLARE {{obj.name}}_aid INTEGER;
+{{obj.name}}_oid INTEGER;
+{{obj.name}}_fid INTEGER;
+{{obj.name}}_aid INTEGER;
 {%- endfor %}
 {%- endif %}
-
-
 {%- if adm.ctrl %}
 {%- for obj in adm.ctrl %}
-DECLARE {{obj.name}}_did INTEGER;
-DECLARE {{obj.name}}_aid INTEGER;
+{{obj.name}}_oid INTEGER;
+{{obj.name}}_fid INTEGER;
+{{obj.name}}_aid INTEGER;
 {%- endfor %}
 {%- endif %}
-
-
 {%- if adm.edd %}
 {%- for obj in adm.edd %}
-DECLARE {{obj.name}}_did INTEGER;
-DECLARE {{obj.name}}_aid INTEGER;
+{{obj.name}}_oid INTEGER;
+{{obj.name}}_fid INTEGER;
+{{obj.name}}_aid INTEGER;
 {%- endfor %}
 {%- endif %}
-
 {%- if adm.oper %}
 {%- for obj in adm.oper %}
-DECLARE {{obj.name}}_did INTEGER;
-DECLARE {{obj.name}}_aid INTEGER;
+{{obj.name}}_oid INTEGER;
+{{obj.name}}_fid INTEGER;
+{{obj.name}}_aid INTEGER;
 {%- endfor %}
 {%- endif %}
-
 {%- if adm.sbr %}
 {%- for obj in adm.sbr %}
-DECLARE {{obj.name}}_did INTEGER;
-DECLARE {{obj.name}}_aid INTEGER;
+{{obj.name}}_oid INTEGER;
+{{obj.name}}_fid INTEGER;
+{{obj.name}}_aid INTEGER;
 {%- endfor %}
 {%- endif %}
-
-
-
 {%- if adm.tbr %}
 {%- for obj in adm.tbr %}
-DECLARE {{obj.name}}_did INTEGER;
-DECLARE {{obj.name}}_aid INTEGER;
+{{obj.name}}_oid INTEGER;
+{{obj.name}}_fid INTEGER;
+{{obj.name}}_aid INTEGER;
 {%- endfor %}
 {%- endif %}
-
-
 {%- if adm.var %}
 {%- for obj in adm.var %}
-DECLARE {{obj.name}}_did INTEGER;
-DECLARE {{obj.name}}_aid INTEGER;
+{{obj.name}}_oid INTEGER;
+{{obj.name}}_fid INTEGER;
+{{obj.name}}_aid INTEGER;
 {%- endfor %}
 {%- endif %}
-
-
 {%- if adm.typedef %}
 {%- for obj in adm.typedef %}
-DECLARE {{obj.name}}_did INTEGER;
-DECLARE {{obj.name}}_aid INTEGER;
+{{obj.name}}_oid INTEGER;
+{{obj.name}}_fid INTEGER;
+{{obj.name}}_aid INTEGER;
 {%- endfor %}
 {%- endif %}
-
-
 BEGIN
 
-
+{% set null_string = 'null' %}
 --namespace 
-CALL SP__insert_data_model("ADM", "{{adm.name}}", {{adm.enum}}, {{adm.revision}}, {{adm.description}}, r_data_model_id)
+CALL SP__insert_data_model('ADM', '{{adm.name}}', {{adm.enum}}, {{"'"~adm.revision~"'" if adm.revision else null_string}} , {{"'"~adm.description~"'" if adm.description else null_string}}, r_data_model_id);
 
 {%- if adm.ident %}
 {%- for obj in adm.ident %}
-CALL SP__insert_obj_metadata(-1, "{{obj.name}}", r_data_model_id, {{obj.enum}},  "{{obj.status}}", "{{obj.reference}}","{{obj.description}}" ,{{obj.name}}_id);
-
-{%- if obj.parameters is defined %}
-{{obj.parameters}}
-{{obj.parameters.items}}
+{{gen_metadata(-1, obj)}}
+{%- if obj.parameters.items|length > 0 %}
 {{ gen_params(obj) }}
-
-CALL SP__insert_ident_formal_definition({{obj.name}}_id, "{{obj.description}}", fp_spec_id, {{obj.name}}_did);
+CALL SP__insert_ident_formal_definition({{obj.name}}_oid, '{{obj.description | replace('\n', '')}}', fp_spec_id, {{obj.name}}_fid);
 {%- else %}
-CALL SP__insert_ident_formal_definition({{obj.name}}_id, "{{obj.description}}", NULL, {{obj.name}}_did);
-CALL SP__insert_ident_actual_definition({{obj.name}}_id, 'The singleton value for {{obj.name}}', NULL, {{obj.name}}_did);
+CALL SP__insert_ident_formal_definition({{obj.name}}_oid, '{{obj.description | replace('\n', '')}}', NULL, {{obj.name}}_fid);
+CALL SP__insert_ident_actual_definition({{obj.name}}_oid, 'The singleton value for {{obj.name}}', NULL, {{obj.name}}_aid);
 {%- endif %}
+
 {%- endfor %}
 {%- endif %}
 
 {%- if adm.const %}
+
 -- const
 {%- for obj in adm.const %}
-CALL SP__insert_obj_metadata(-2, "{{obj.name}}", r_data_model_id, {{obj.enum}},  "{{obj.status}}", "{{obj.reference}}","{{obj.description}}" ,{{obj.name}}_id);
-CALL SP__insert_const_actual_definition({{obj.name}}_id, "{{obj.description}}", {{obj.type}}, {{obj.value}}, {{obj.name}}_did);
-
+{{gen_metadata(-2, obj)}}
+CALL SP__insert_const_actual_definition({{obj.name}}_oid, '{{obj.description | replace('\n', '')}}', '{{obj.init_ari.type_id}}', '{{obj.init_value}}', {{obj.name}}_aid);
 {%- endfor %}
+
 {%- endif %}
-
-
 {%- if adm.ctrl %}
+
 -- ctrl
 {%- for obj in adm.ctrl %}
-CALL SP__insert_obj_metadata(-3, "{{obj.name}}", r_data_model_id, {{obj.enum}},  "{{obj.status}}", "{{obj.reference}}","{{obj.description}}" ,{{obj.name}}_id);
+{{gen_metadata(-3, obj)}}
 {% set result = "" %}
 {%- if obj.result is defined %}
 {% set result = obj.result.typeobj.type_text ~ "." ~obj.result.name %}
 {%- endif %}
-
-{%- if obj.parameters is defined %}
+{%- if obj.parameters.items|length > 0 %}
 {{ gen_params(obj)}}
-CALL SP__insert_ctrl_formal_definition({{obj.name}}_id, "{{obj.description}}", fp_spec_id, "{{result}}", {{obj.name}}_did);
+CALL SP__insert_control_formal_definition({{obj.name}}_oid, '{{obj.description | replace('\n', '')}}', fp_spec_id, '{{result}}', {{obj.name}}_fid);
 {%- else %}
-CALL SP__insert_ctrl_formal_definition({{obj.name}}_id, "{{obj.description}}", NULL, "{{result}}", {{obj.name}}_did);
-CALL SP__insert_ctrl_actual_definition({{obj.name}}_id, 'The singleton value for {{obj.name}}', NULL, {{obj.name}}_did);
+CALL SP__insert_control_formal_definition({{obj.name}}_oid, '{{obj.description | replace('\n', '')}}', NULL, '{{result}}', {{obj.name}}_fid);
+CALL SP__insert_control_actual_definition({{obj.name}}_oid, 'The singleton value for {{obj.name}}', NULL, {{obj.name}}_aid);
 {%- endif %}
 
 {%- endfor %}
 {%- endif %}
-
 
 {%- if adm.edd %}
+
+-- edd 
 {%- for obj in adm.edd %}
-CALL SP__insert_obj_metadata(-4, "{{obj.name}}", r_data_model_id, {{obj.enum}},  "{{obj.status}}", "{{obj.reference}}","{{obj.description}}" ,{{obj.name}}_id);
-
-{%- if obj.parameters is defined %}
-
+{{gen_metadata(-4, obj)}}
+{%- if obj.parameters.items|length > 0 %}
 {{ gen_params(obj) }}
-
-CALL SP__insert_edd_formal_definition({{obj.name}}_id, "{{obj.description}}", fp_spec_id, {{obj.type}}, {{obj.name}}_did);
+CALL SP__insert_edd_formal_definition({{obj.name}}_oid, '{{obj.description | replace('\n', '')}}', fp_spec_id, '{{obj.typeobj.type_text}}', {{obj.name}}_fid);
 {%- else %}
-CALL SP__insert_edd_formal_definition({{obj.name}}_id, "{{obj.description}}", NULL, {{obj.type}}, {{obj.name}}_did);
-CALL SP__insert_edd_actual_definition({{obj.name}}_id, 'The singleton value for {{obj.name}}', NULL, {{obj.name}}_aid);
+CALL SP__insert_edd_formal_definition({{obj.name}}_oid, '{{obj.description | replace('\n', '')}}', null, '{{obj.typeobj.type_text}}', {{obj.name}}_fid);
+CALL SP__insert_edd_actual_definition({{obj.name}}_oid, 'The singleton value for {{obj.name}}', null, {{obj.name}}_aid);
 {%- endif %}
+
 {%- endfor %}
 {%- endif %}
-
-
 
 {%- if adm.oper %}
-{%- for obj in adm.oper %}
-CALL SP__insert_obj_metadata(-6, "{{obj.name}}", r_data_model_id, {{obj.enum}},  "{{obj.status}}", "{{obj.reference}}","{{obj.description}}" ,{{obj.name}}_id);
 
+-- oper 
+{%- for obj in adm.oper %}
+{{gen_metadata(-6, obj)}}
 {% set opers = [] %}
 {% set num_operands = 0 %}
-{%- if obj.operand %}
-{%- for operand in obj.operand %}
-{{- opers.append( operand.type~"."~operand.name ) -}}
+{%- if obj.operands %}
+{%- for operand in obj.operands.items %}
+{%- set opers = opers.append( operand.type~"."~operand.name ) -%}
 {%- endfor %}
-{%- set num_operands = obj.operand|length  -%}
+{%- set num_operands = obj.operands.items|length  -%}
 {%- endif %}
-
-{%- if obj.parameters is defined %}
+{%- if obj.parameters.items|length > 0 %}
 {{ gen_params(obj) }}
-
-CALL SP__insert_oper_formal_definition({{obj.name}}_id, "{{obj.description}}", fp_spec_id, {{num_operands}}, {{obj.type}}, {{opers|join(',')}}, {{obj.result.name}}, {{obj.result.type}}, {{obj.name}}_did);
+CALL SP__insert_operator_formal_definition({{obj.name}}_oid, '{{obj.description | replace('\n', '')}}', fp_spec_id, {{num_operands}},  '{{opers|join(', ')}}', '{{obj.result.name}}', '{{obj.result.default_ari}}', {{obj.name}}_fid);
 {%- else %}
-CALL SP__insert_oper_formal_definition({{obj.name}}_id, "{{obj.description}}", null, {{num_operands}}, {{obj.type}}, {{opers|join(',')}}, {{obj.result.name}}, {{obj.result.type}}, {{obj.name}}_did);
-CALL SP__insert_oper_actual_definition({{obj.name}}_id, 'The singleton value for {{obj.name}}', NULL, {{obj.name}}_aid);
+CALL SP__insert_operator_formal_definition({{obj.name}}_oid, '{{obj.description | replace('\n', '')}}', null, {{num_operands}}, '{{opers|join(', ')}}', '{{obj.result.name}}', '{{obj.result.default_ari}}', {{obj.name}}_fid);
+CALL SP__insert_operator_actual_definition({{obj.name}}_oid, 'The singleton value for {{obj.name}}', null, {{obj.name}}_aid);
 {%- endif %}
 {%- endfor %}
+
 {%- endif %}
+
 {#
 {%- if adm.sbr %}
 {%- for obj in adm.sbr %}
-
-
 {% set min_interval = 0 %}
 {%- if obj."min-interval" %}
 {% set min_interval = obj."min-interval" %}
 {%- endif%}
-
-
 {% set max_count = 0 %}
 {%- if obj."max-count" %}
 {% set max_count = obj."max-count" %}
 {%- endif%}
-
-
-CALL SP__insert_obj_metadata(-8, "{{obj.name}}", r_data_model_id, {{obj.enum}},  "{{obj.status}}", "{{obj.reference}}","{{obj.description}}" ,{{obj.name}}_id);
-
-CALL SP__insert_sbr_actual_definition({{obj.name}}_id, {{obj.description}}, {{obj.condition}}, {{obj.action}},{{min_interval}}, {{max_count}}, {{obj.name}}_aid);
+{{gen_metadata(-8, obj)}}
+CALL SP__insert_sbr_actual_definition({{obj.name}}_oid, {{obj.description | replace('\n', '')}}, {{obj.condition}}, {{obj.action}},{{min_interval}}, {{max_count}}, {{obj.name}}_aid);
 {%- endfor %}
 {%- endif %}
-
-
-
-
 {%- if adm.tbr %}
 {%- for obj in adm.tbr %}
-
-
 {% set period = 0 %}
 {%- if obj.period %}
 {% set period = obj.period %}
 {%- endif%}
-
-
 {% set max_count = 0 %}
 {%- if obj."max-count" %}
 {% set max_count = obj."max-count" %}
 {%- endif%}
-
 {% set start = 0 %}
 {%- if obj.start %}
 {% set start = obj.start %}
 {%- endif%}
-
-CALL SP__insert_obj_metadata(-10, "{{obj.name}}", r_data_model_id, {{obj.enum}},  "{{obj.status}}", "{{obj.reference}}","{{obj.description}}" ,{{obj.name}}_id);
-
-CALL SP__insert_tbr_actual_definition({{obj.name}}_id, {{obj.description}}, {{period}}, {{max_count}},{{start}}, {{obj.action}}, {{obj.name}}_aid);
+{{gen_metadata(-10, obj)}}
+CALL SP__insert_tbr_actual_definition({{obj.name}}_oid, {{obj.description | replace('\n', '')}}, {{period}}, {{max_count}},{{start}}, {{obj.action}}, {{obj.name}}_aid);
 {%- endfor %}
 {%- endif %}
-
 #}
 
 {%- if adm.var %}
-{%- for obj in adm.var %}
-CALL SP__insert_obj_metadata(-11, "{{obj.name}}", r_data_model_id, {{obj.enum}},  "{{obj.status}}", "{{obj.reference}}","{{obj.description}}" ,{{obj.name}}_id);
 
-{%- set init_value = "" %}
-{%- if obj.init_value	is defined %}
+-- var
+{%- for obj in adm.var %}
+{{gen_metadata(-11, obj)}}
+{%- set init_value = " " %}
+{%- if obj.init_value is defined %}
 {%- set init_value = obj.init_value %}
 {%-endif %}
+{%- set type = "NULL" %}
+{%- if obj.init_ari is defined %}
+{{obj.init_ari}}
+{%- if obj.init_ari.typeobj is defined %}
+{%- set type =  obj.init_ari.typeobj %}
+{%-endif %}
+{%-endif %}
 
-{%- set expr = "" %}
+{%- set expr = "expr to do" %}
 {# {%- if obj.init-expr 	is defined %}
 # {%- set expr = obj.init-expr %}
 # {%-endif %}
 #}
-{%- if obj.parameters is defined %}
+{%- if obj.parameters.items|length > 0 %}
 {{ gen_params(obj) }}
-
-CALL SP__insert_var_formal_definition({{obj.name}}_id, "{{obj.description}}", fp_spec_id,{{obj.type}}, {{expr}}, {{init_value}},{{obj.name}}_did);
+CALL SP__insert_variable_formal_definition({{obj.name}}_oid, '{{obj.description | replace('\n', ' ')}}', fp_spec_id, '{{type}}', '{{expr}}', '{{init_value}}',{{obj.name}}_fid);
 {%- else %}
-CALL SP__insert_var_formal_definition({{obj.name}}_id, "{{obj.description}}", NULL, {{obj.type}}, {{obj.name}}_did);
-CALL SP__insert_var_actual_definition({{obj.name}}_id, 'The singleton value for {{obj.name}}', NULL, {{obj.name}}_aid);
+CALL SP__insert_variable_formal_definition({{obj.name}}_oid, '{{obj.description | replace('\n', ' ')}}', {{null_string}}, '{{type}}', '{{expr}}', '{{init_value}}', {{obj.name}}_fid);
+CALL SP__insert_variable_actual_definition({{obj.name}}_oid, 'The singleton value for {{obj.name}}', {{null_string}}, {{obj.name}}_aid);
 {%- endif %}
+
 {%- endfor %}
 {%- endif %}
-
 
 end
 $do$

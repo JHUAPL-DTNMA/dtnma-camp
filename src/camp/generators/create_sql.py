@@ -62,9 +62,8 @@ class Writer(AbstractWriter, CHelperMixin):
             adm=self.adm,
             scraper=self._scraper,
         )
-        # try:
-        tmpl = self._tmpl_env.get_template(f'agent.{self.dialect}.jinja')
-        # except Exception as err:
-            # print(f"TEST {err}")
-            # raise RuntimeError(f'Failed to load template "agent.{self.dialect}.jinja"') from err
+        try:
+            tmpl = self._tmpl_env.get_template(f'agent.{self.dialect}.jinja')
+        except Exception as err:
+            raise RuntimeError(f'Failed to load template "agent.{self.dialect}.jinja"') from err
         tmpl.stream(**keys).dump(outfile)
