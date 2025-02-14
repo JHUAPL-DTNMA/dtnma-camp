@@ -84,6 +84,8 @@ python3 -m piptools compile --extra test pyproject.toml
 pip3 install -r requirements.txt
 ```
 
+If the `python3 -m piptools compile --extra test pyproject.toml` command fails due to the following error: "Could not find a version that satisfies the requirement dtnma-ace (from versions: none)", then one solution is to remove the `dtnma-ace` dependency from the `pyproject.toml` file via a text editor and then try the command again. 
+
 To install the project itself from source run:
 ```
 pip3 install .
@@ -154,37 +156,27 @@ During a successful camp execution, output similar to the following will be
 printed to STDOUT.
 
 ```
-Loading  <path_to_yang_file>/<adm.yang>  ... 
-[ DONE ]
-Generating files ...
-Working on  .//ace/adm_<adm>.yang 	[ DONE ]
-Working on  .//agent/adm_<adm>_impl.h 	[ DONE ]
-Working on  .//agent/adm_<adm>_impl.c 	[ DONE ]
-Working on  .//adm_<adm>.sql 		[ DONE ]
-Working on  .//shared/adm_<adm>.h 	[ DONE ]
-Working on  .//mgr/adm_<adm>_mgr.c 	[ DONE ]
-Working on  .//agent/adm_<adm>_agent.c 	[ DONE ]
+INFO:camp.tools.camp:Loading <path_to_yang_file>/<adm.yang>  ...
+INFO:camp.tools.camp:Finished loading ADM <adm>
+INFO:camp.tools.camp:Generating files under ./
+INFO:camp.tools.camp:Generating <adm>.h ...
+INFO:camp.tools.camp:done.
+INFO:camp.tools.camp:Generating <adm>.c ...
+INFO:camp.tools.camp:done.
+INFO:camp.tools.camp:Generating <adm>.sql
+INFO:camp.tools.camp:done.
 [ End of CAmpPython Execution ]
 ```
 
 This output shows that camp completed a successful generation of each of the
-files listed. If they don't already exist, camp will create the following
-directories in the current directory:
-
-- ace
-- agent
-- shared
-- mgr
-
-and put generated files into the appropriate created directory. Use the `-o`
-flag with camp to redirect output to a different directory.
+files listed. Use the `-o`flag with camp to redirect output to a directory 
+different from the current one.
 
 ```
     camp <adm.yang> -o <output_directory>
 ```
 
-If the path at <output_directory> does not already exist, camp will create it,
-and will create the directories listed above within <output_directory>.
+If the path at <output_directory> does not already exist, camp will create it.
 
 > Camp will not delete any existing directory structure, but files present in
 > the output directories with the same name as generated files will be
