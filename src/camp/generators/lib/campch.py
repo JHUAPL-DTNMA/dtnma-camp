@@ -44,6 +44,12 @@ def yang_to_c(identifier):
     return identifier.replace('_', '__').replace('-', '_').replace('.', '_p_')
 
 
+def yang_to_sql(identifier):
+    ''' Translates a valid YANG identifier to a valid SQL symbol name.
+    '''
+    return identifier.replace('-', '_').replace('.', '_p_')
+
+
 def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
     ''' Set state of a jinja environment for ADM implementation
     source generation.
@@ -156,6 +162,11 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         typeobj = BUILTINS[typename]
         got = typeobj.get(ari)
         return got is not None
+    
+    def sql_name(value:str) -> str:
+        ''' valid sql name
+        '''
+        return  yang_to_sql(value).lower()
 
     env.globals |= {
         'ari': ace.ari,
@@ -176,6 +187,10 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         'as_text': as_text,
         'ref_text': ref_text,
         'deref': deref,
+        'sql_name': sql_name,
+        
+
+
     }
     env.tests |= {
         'instance': isinstance,
