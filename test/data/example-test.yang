@@ -1,6 +1,6 @@
-module test-adm {
+module example-test {
   yang-version 1.1;
-  namespace "ari://test-adm/";
+  namespace "ari://example/test/";
   prefix test;
 
   import ietf-amm {
@@ -8,7 +8,9 @@ module test-adm {
   }
 
   organization
-    "JHU APL";
+    "Example Org." {
+    amm:enum 65535;
+  }
   contact
     "WG Web: <http://tools.ietf.org/wg/dtn/>
      WG List: <mailto:dtn@ietf.org>

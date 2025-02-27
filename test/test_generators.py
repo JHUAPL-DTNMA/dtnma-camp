@@ -86,7 +86,7 @@ class TestCreateSql(BaseTest):
 
     @unittest.expectedFailure
     def test_create_sql(self):
-        adm = self._get_adm('test-adm.yang')
+        adm = self._get_adm('example-test.yang')
         outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
 
         writer = create_sql.Writer(self._admset, adm, outdir, dialect='pgsql')
@@ -106,36 +106,36 @@ class TestCreateSql(BaseTest):
 class TestCreateCH(BaseTest):
 
     def test_create_impl_h_noscrape(self):
-        adm = self._get_adm('test-adm.yang')
+        adm = self._get_adm('example-test.yang')
         outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
         LOGGER.info('Writing to %s', outdir)
 
         writer = create_impl_h.Writer(self._admset, adm, outdir, H_Scraper(None))
         self.assertEqual(
-            os.path.join(outdir, 'test_adm.h'),
+            os.path.join(outdir, 'example_test.h'),
             writer.file_path()
         )
 
         buf = io.StringIO()
         writer.write(buf)
 
-        tmpl = self._tmpl_env.get_template('gen_ch/test_adm.h.jinja')
+        tmpl = self._tmpl_env.get_template('gen_ch/example_test.h.jinja')
         content = tmpl.render(datestamp=self._today_datestamp())
         self.assertEqual(content, buf.getvalue())
 
     def test_create_impl_c_noscrape(self):
-        adm = self._get_adm('test-adm.yang')
+        adm = self._get_adm('example-test.yang')
         outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
 
         writer = create_impl_c.Writer(self._admset, adm, outdir, C_Scraper(None))
         self.assertEqual(
-            os.path.join(outdir, 'test_adm.c'),
+            os.path.join(outdir, 'example_test.c'),
             writer.file_path()
         )
 
         buf = io.StringIO()
         writer.write(buf)
 
-        tmpl = self._tmpl_env.get_template('gen_ch/test_adm.c.jinja')
+        tmpl = self._tmpl_env.get_template('gen_ch/example_test.c.jinja')
         content = tmpl.render(datestamp=self._today_datestamp())
         self.assertEqual(content, buf.getvalue())

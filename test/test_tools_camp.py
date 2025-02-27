@@ -82,11 +82,10 @@ class TestCamp(unittest.TestCase):
     @unittest.expectedFailure
     def test_run_sql(self):
         args = argparse.Namespace()
-        args.admfile = os.path.join(SELFDIR, 'data', 'test-adm.yang')
+        args.admfile = os.path.join(SELFDIR, 'data', 'example-test.yang')
         args.out = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
         args.only_sql = True
         args.only_ch = False
-        args.nickname = 9999
         try:
             exitcode = camp.tools.camp.run(args)
             self.assertEqual(0, exitcode)
@@ -104,11 +103,10 @@ class TestCamp(unittest.TestCase):
 
     def test_run_ch_new(self):
         args = argparse.Namespace()
-        args.admfile = os.path.join(SELFDIR, 'data', 'test-adm.yang')
+        args.admfile = os.path.join(SELFDIR, 'data', 'example-test.yang')
         args.out = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
         args.only_sql = False
         args.only_ch = True
-        args.nickname = 9999
         args.scrape = False
         try:
             exitcode = camp.tools.camp.run(args)
@@ -116,7 +114,7 @@ class TestCamp(unittest.TestCase):
         finally:
             got_files = set(self._walk_files(args.out))
         expect_files = set([
-            'test_adm.c',
-            'test_adm.h',
+            'example_test.c',
+            'example_test.h',
         ])
         self.assertEqual(expect_files, got_files)

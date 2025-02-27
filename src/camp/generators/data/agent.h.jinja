@@ -9,7 +9,7 @@
 
 /** @file
  * This is the header for the implementation of the
- * ADM "{{adm.name}}" for the C-language reference DA.
+ * ADM module "{{adm.module_name}}" for the C-language reference DA.
  * This contains defines for each enumeration in the ADM and
  * declarations of module-level initialization functions.
  */
@@ -28,7 +28,7 @@ extern "C" {
 #endif
 
 /// Enumeration of the ADM itself
-#define {{adm | cpp_enum}} {{adm.enum | c_int}}
+#define {{adm | cpp_enum}} {{adm.ns_model_enum | c_int}}
 
 {%- if adm.ident %}
 
@@ -100,7 +100,7 @@ extern "C" {
 {%- endfor %}
 {%- endif %}
 
-/** Initializer for the ADM {{adm.name}}.
+/** Initializer for the ADM module {{adm.module_name}}.
  * @param[in,out] agent The agent to register this namespace and its
  * objects within.
  * @return Zero upon success.
