@@ -44,7 +44,8 @@ then
     if [[ ! -d ${SELFDIR}/deps/dtnma-tools/build ]]
     then
         pushd ${SELFDIR}/deps/dtnma-tools
-        ./prep.sh -DTEST_MEMCHECK=OFF -DTEST_COVERAGE=OFF -DBUILD_DOCS=OFF
+        ./prep.sh -DTEST_MEMCHECK=OFF -DTEST_COVERAGE=OFF \
+		  -DBUILD_DOCS_API=OFF -DBUILD_DOCS_MAN=OFF
         ./build.sh
         # verification that the initial build is good
         ./build.sh check

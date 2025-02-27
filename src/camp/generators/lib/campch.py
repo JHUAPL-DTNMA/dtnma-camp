@@ -74,7 +74,7 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         ''' Map from ORM and YANG names into C preprocessor define name.
         '''
         if isinstance(value, ari.StructType):
-            return 'ARI_TYPE_' + value.name
+            return 'CACE_ARI_TYPE_' + value.name
         elif isinstance(value, models.AdmModule):
             module = value
             parts = ['adm']
