@@ -80,43 +80,43 @@ Produced type: {{type_summary(obj.typeobj)}}
 {%- if value is instance(ari.LiteralARI) -%}
 {#- Primitive types #}
 {%- if value is ari_builtin('null') -%}
-ari_set_null({{ptrname}});
+cace_ari_set_null({{ptrname}});
 {%- elif value is ari_builtin('bool') -%}
-ari_set_bool({{ptrname}}, {{value.value | c_bool}});
+cace_ari_set_bool({{ptrname}}, {{value.value | c_bool}});
 {%- elif value is ari_builtin('int') -%}
-ari_set_int({{ptrname}}, {{value.value | c_int}});
+cace_ari_set_int({{ptrname}}, {{value.value | c_int}});
 {%- elif value is ari_builtin('uint') -%}
-ari_set_uint({{ptrname}}, {{value.value | c_int}});
+cace_ari_set_uint({{ptrname}}, {{value.value | c_int}});
 {%- elif value is ari_builtin('vast') -%}
-ari_set_vast({{ptrname}}, {{value.value | c_int}});
+cace_ari_set_vast({{ptrname}}, {{value.value | c_int}});
 {%- elif value is ari_builtin('uvast') -%}
-ari_set_uvast({{ptrname}}, {{value.value | c_int}});
+cace_ari_set_uvast({{ptrname}}, {{value.value | c_int}});
 {#- excluding real32 here #}
 {%- elif value is ari_builtin('real64') -%}
-ari_set_real64({{ptrname}}, {{value.value | c_float}});
+cace_ari_set_real64({{ptrname}}, {{value.value | c_float}});
 {%- elif value is ari_builtin('textstr') -%}
-ari_set_tstr({{ptrname}}, {{value.value | c_str}}, true);
+cace_ari_set_tstr({{ptrname}}, {{value.value | c_str}}, true);
 {%- elif value is ari_builtin('bytestr') -%}
 {
     const uint8_t raw[] = {{value.value | c_bytes_init}};
     cace_data_t data;
     cace_data_init_view(&data, sizeof(raw), (cace_data_ptr_t)raw);
-    ari_set_bstr({{ptrname}}, &data, true);
+    cace_ari_set_bstr({{ptrname}}, &data, true);
 }
 {#- Non-primitive types #}
 {%- elif value is ari_builtin('aritype') -%}
-ari_set_aritype({{ptrname}}, {{value.value | cpp_enum}});
+cace_ari_set_aritype({{ptrname}}, {{value.value | cpp_enum}});
 {%- elif value is ari_builtin('ac') -%}
 {
-    ari_ac_t acinit;
-    ari_ac_init(&acinit);
+    cace_ari_ac_t acinit;
+    cace_ari_ac_init(&acinit);
 {%- for item in value.value %}
     {
-        ari_t *item = ari_list_push_back_new(acinit.items);
+        cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
         {{ ari_set_value('item', item) | indent(8) }}
     }
 {%- endfor %}
-    ari_set_ac({{ptrname}}, &acinit);
+    cace_ari_set_ac({{ptrname}}, &acinit);
 }
 {%- else %}
 // FIXME unhandled value {{value}}
@@ -125,7 +125,7 @@ ari_set_aritype({{ptrname}}, {{value.value | cpp_enum}});
 // {{value | as_text}}
 {% set refdobj = value | deref -%}
 {%- if refdobj -%}
-ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.enum}}, {{value.ident.type_id | cpp_enum}}, {{refdobj.enum}});
+cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int}}, {{refdobj.module.ns_model_enum | c_int}}, {{value.ident.type_id | cpp_enum}}, {{refdobj.enum | c_int}});
 {%- else -%}
 // FIXME reference to unknown object
 {%- endif %}
@@ -135,13 +135,13 @@ ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.enum}}, {{value.ident.ty
 {%- macro amm_type_set(ptrname, typeobj) %}
 {%- if typeobj is instance(typing.TypeUse) -%}
 {
-    ari_t name = ARI_INIT_UNDEFINED;
+    cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
     {{ ari_set_value('&name', typeobj.type_ari) | indent(4)}}
-    amm_type_set_use_ref_move({{ptrname}}, &name);
+    cace_amm_type_set_use_ref_move({{ptrname}}, &name);
 }
 {%- elif typeobj is instance(typing.UniformList) -%}
 {
-    amm_semtype_ulist_t *semtype = amm_type_set_ulist({{ptrname}});
+    cace_amm_semtype_ulist_t *semtype = cace_amm_type_set_ulist({{ptrname}});
     {{amm_type_set('&(semtype->item_type)', typeobj.base) | indent(4)}}
     {%- if typeobj.min_elements %}
     cace_amm_range_intvl_size_set_min(&(semtype->size), {{typeobj.min_elements | c_int}});
@@ -153,10 +153,10 @@ ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.enum}}, {{value.ident.ty
 {%- elif typeobj is instance(typing.TableTemplate) -%}
 {
     // table template
-    amm_semtype_tblt_t *semtype = amm_type_set_tblt_size({{ptrname}}, {{typeobj.columns | count}});
+    cace_amm_semtype_tblt_t *semtype = cace_amm_type_set_tblt_size({{ptrname}}, {{typeobj.columns | count}});
     {%- for col in typeobj.columns %}
     {
-        amm_named_type_t *col = amm_named_type_array_get(semtype->columns, {{loop.index0}});
+        cace_amm_named_type_t *col = cace_amm_named_type_array_get(semtype->columns, {{loop.index0}});
         m_string_set_cstr(col->name, {{col.name | c_str}});
         {{amm_type_set('&(col->typeobj)', col.base) | indent(8) }}
     }
@@ -165,10 +165,10 @@ ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.enum}}, {{value.ident.ty
 {%- elif typeobj is instance(typing.TypeUnion) -%}
 {
     // union
-    amm_semtype_union_t *semtype = amm_type_set_union_size({{ptrname}}, {{typeobj.types | count}});
+    cace_amm_semtype_union_t *semtype = cace_amm_type_set_union_size({{ptrname}}, {{typeobj.types | count}});
     {%- for choice in typeobj.types %}
     {
-        amm_type_t *choice = amm_type_array_get(semtype->choices, {{loop.index0}});
+        cace_amm_type_t *choice = cace_amm_type_array_get(semtype->choices, {{loop.index0}});
         {{amm_type_set('choice', choice) | indent(8) }}
     }
     {%- endfor %}
@@ -180,7 +180,7 @@ ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.enum}}, {{value.ident.ty
 
 /** @file
  * This is the compilation unit for the implementation of the
- * ADM "{{adm.name}}" for the C-language reference DA.
+ * ADM module "{{adm.module_name}}" for the C-language reference DA.
  * This contains definitions of every AMM object instance in the ADM and
  * file-local callback functions for all EDDs, CTRLs, and OPERs.
  */
@@ -191,6 +191,7 @@ ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.enum}}, {{value.ident.ty
 #include "refda/edd_prod_ctx.h"
 #include "refda/ctrl_exec_ctx.h"
 #include "refda/oper_eval_ctx.h"
+#include "refda/reporting.h"
 #include <cace/amm/semtype.h>
 #include <cace/ari/text.h>
 #include <cace/util/logging.h>
@@ -242,7 +243,9 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
     CACE_LOG_DEBUG("Registering ADM: " {{adm.norm_name | c_str}});
     REFDA_AGENT_LOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
 
-    cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(&(agent->objs), {{adm.norm_name | c_str}}, {{adm.latest_revision | c_str}}, true, {{adm | cpp_enum}});
+    cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(
+        &(agent->objs), cace_amm_idseg_ref_withenum({{adm.ns_org_name | c_str}}, {{adm.ns_org_enum | c_int}}),
+        cace_amm_idseg_ref_withenum({{adm.ns_model_name | c_str}}, {{adm | cpp_enum}}), {{adm.latest_revision_date | c_str}});
     if (adm)
     {
         cace_amm_obj_desc_t *obj;
@@ -254,7 +257,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
          */
 {%- for obj in adm.ident %}
         { // For {{obj | ref_text}}
-            refda_amm_ident_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_ident_desc_t));
+            refda_amm_ident_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_ident_desc_t));
             refda_amm_ident_desc_init(objdata);
 {%- if obj.bases %}
             // IDENT bases:
@@ -268,7 +271,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             // no IDENT bases
 {%- endif %}
 
-            obj = refda_register_ident(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
+            obj = refda_register_ident(adm, cace_amm_idseg_ref_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
             {{- reg_params(obj) | indent(12) }}
         }
 {%- endfor %}
@@ -281,12 +284,12 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
          */
 {%- for obj in adm.typedef %}
         { // For {{obj | ref_text}}
-            refda_amm_typedef_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_typedef_desc_t));
+            refda_amm_typedef_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_typedef_desc_t));
             refda_amm_typedef_desc_init(objdata);
             // named type:
             {{ amm_type_set('&(objdata->typeobj)', obj.typeobj) | indent(12) }}
 
-            obj = refda_register_typedef(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
+            obj = refda_register_typedef(adm, cace_amm_idseg_ref_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
             // no parameters possible
         }
 {%- endfor %}
@@ -299,12 +302,12 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
          */
 {%- for obj in adm.const %}
         { // For {{obj | ref_text}}
-            refda_amm_const_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_const_desc_t));
+            refda_amm_const_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_const_desc_t));
             refda_amm_const_desc_init(objdata);
             // constant value:
             {{ ari_set_value('&(objdata->value)', obj.init_ari) | indent(12) }}
 
-            obj = refda_register_const(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
+            obj = refda_register_const(adm, cace_amm_idseg_ref_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
             {{- reg_params(obj) | indent(12) }}
         }
 {%- endfor %}
@@ -317,14 +320,14 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
          */
 {%- for obj in adm.var %}
         { // For {{obj | ref_text}}
-            refda_amm_var_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_var_desc_t));
+            refda_amm_var_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_var_desc_t));
             refda_amm_var_desc_init(objdata);
             // stored value type:
             {{ amm_type_set('&(objdata->val_type)', obj.typeobj) | indent(12) }}
             // initial value:
             {{ ari_set_value('&(objdata->value)', obj.init_ari) | indent(12) }}
 
-            obj = refda_register_var(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
+            obj = refda_register_var(adm, cace_amm_idseg_ref_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
             {{- reg_params(obj) | indent(12) }}
         }
 {%- endfor %}
@@ -337,14 +340,14 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
          */
 {%- for obj in adm.edd %}
         { // For {{obj | ref_text}}
-            refda_amm_edd_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_edd_desc_t));
+            refda_amm_edd_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_edd_desc_t));
             refda_amm_edd_desc_init(objdata);
             // produced type
             {{ amm_type_set('&(objdata->prod_type)', obj.typeobj) | indent(12) }}
             // callback:
             objdata->produce = {{obj | c_func}};
 
-            obj = refda_register_edd(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
+            obj = refda_register_edd(adm, cace_amm_idseg_ref_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
             {{- reg_params(obj) | indent(12) }}
         }
 {%- endfor %}
@@ -357,7 +360,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
          */
 {%- for obj in adm.ctrl %}
         { // For {{obj | ref_text}}
-            refda_amm_ctrl_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_ctrl_desc_t));
+            refda_amm_ctrl_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_ctrl_desc_t));
             refda_amm_ctrl_desc_init(objdata);
 {%- if obj.result.typeobj is defined %}
             // result type
@@ -368,7 +371,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             // callback:
             objdata->execute = {{obj | c_func}};
 
-            obj = refda_register_ctrl(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
+            obj = refda_register_ctrl(adm, cace_amm_idseg_ref_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
             {{- reg_params(obj) | indent(12) }}
         }
 {%- endfor %}
@@ -381,13 +384,13 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
          */
 {%- for obj in adm.oper %}
         { // For {{obj | ref_text}}
-            refda_amm_oper_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_oper_desc_t));
+            refda_amm_oper_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_oper_desc_t));
             refda_amm_oper_desc_init(objdata);
             // operands:
-            amm_named_type_array_resize(objdata->operand_types, {{obj.operands.items | count}});
+            cace_amm_named_type_array_resize(objdata->operand_types, {{obj.operands.items | count}});
 {%- for operand in obj.operands.items %}
             {
-                amm_named_type_t *operand = amm_named_type_array_get(objdata->operand_types, {{loop.index0}});
+                cace_amm_named_type_t *operand = cace_amm_named_type_array_get(objdata->operand_types, {{loop.index0}});
                 string_set_str(operand->name, {{operand.name | c_str}});
                 {{ amm_type_set('&(operand->typeobj)', operand.typeobj) | indent(16) }}
             }
@@ -397,7 +400,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             // callback:
             objdata->evaluate = {{obj | c_func}};
 
-            obj = refda_register_oper(adm, cace_amm_obj_id_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
+            obj = refda_register_oper(adm, cace_amm_idseg_ref_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
             {{- reg_params(obj) | indent(12) }}
         }
 {%- endfor %}

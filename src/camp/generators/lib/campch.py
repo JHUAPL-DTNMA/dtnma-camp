@@ -44,6 +44,12 @@ def yang_to_c(identifier):
     return identifier.replace('_', '__').replace('-', '_').replace('.', '_p_')
 
 
+def yang_to_sql(identifier):
+    ''' Translates a valid YANG identifier to a valid SQL symbol name.
+    '''
+    return identifier.replace('-', '_').replace('.', '_p_')
+
+
 def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
     ''' Set state of a jinja environment for ADM implementation
     source generation.
@@ -57,33 +63,33 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         ''' Get the header name for a module.
         The symbol prefix is not part of the file name.
         '''
-        return yang_to_c(adm.name).lower() + '.h'
+        return yang_to_c(adm.module_name).lower() + '.h'
 
     def cpp_guard(adm:models.AdmModule) -> str:
         ''' Get the header guard for a module.
         '''
-        return '_'.join([sym_prefix, yang_to_c(adm.name), 'H_']).upper()
+        return '_'.join([sym_prefix, yang_to_c(adm.module_name), 'H_']).upper()
 
     def cpp_enum(value:AdmEntity) -> str:
         ''' Map from ORM and YANG names into C preprocessor define name.
         '''
         if isinstance(value, ari.StructType):
-            return 'ARI_TYPE_' + value.name
+            return 'CACE_ARI_TYPE_' + value.name
         elif isinstance(value, models.AdmModule):
             module = value
             parts = ['adm']
         elif isinstance(value, models.AdmObjMixin):
             module = value.module
             parts = ['objid', amm_obj_type(value).name, yang_to_c(value.name)]
-        return '_'.join([sym_prefix, yang_to_c(module.name), 'enum'] + parts).upper()
+        return '_'.join([sym_prefix, yang_to_c(module.module_name), 'enum'] + parts).upper()
 
     def c_func(value:AdmEntity, suffix:Optional[str]=None) -> str:
         ''' Map from ORM and YANG names into C function symbol name.
         '''
         if isinstance(value, models.AdmModule):
-            parts = [yang_to_c(value.name)]
+            parts = [yang_to_c(value.module_name)]
         elif isinstance(value, models.AdmObjMixin):
-            parts = list(map(yang_to_c, [value.module.name, amm_obj_type(value).name, value.name]))
+            parts = list(map(yang_to_c, [value.module.module_name, amm_obj_type(value).name, value.name]))
         if suffix:
             parts.append(suffix)
         return '_'.join([sym_prefix] + parts).lower()
@@ -120,7 +126,7 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
     def c_str(value:str) -> str:
         ''' Enforce an escaped text string in C source.
         '''
-        return '"' + value.replace('\\', '\\\\') + '"'
+        return '"' + str(value).replace('\\', '\\\\') + '"'
 
     def c_bytes_init(value:bytes) -> str:
         ''' Encode a byte string as a sequence of uint8_t values
@@ -156,6 +162,11 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         typeobj = BUILTINS[typename]
         got = typeobj.get(ari)
         return got is not None
+    
+    def sql_name(value:str) -> str:
+        ''' valid sql name
+        '''
+        return  yang_to_sql(value).lower()
 
     env.globals |= {
         'ari': ace.ari,
@@ -176,6 +187,10 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         'as_text': as_text,
         'ref_text': ref_text,
         'deref': deref,
+        'sql_name': sql_name,
+        
+
+
     }
     env.tests |= {
         'instance': isinstance,

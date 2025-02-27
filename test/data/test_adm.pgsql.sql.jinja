@@ -1,8 +1,9 @@
+
 -- -------------------------------------------------------------------
 --
--- File Name: adm_test_adm.sql
+-- File Name: test-adm.sql
 --
--- Description: TODO
+-- Description: auto generated postgressql for test-adm 
 --
 -- Notes: TODO
 --
@@ -11,223 +12,127 @@
 -- Modification History:
 -- YYYY-MM-DD    AUTHOR          DESCRIPTION
 -- ----------    --------------  ------------------------------------
--- {{datestamp}}    AUTO            Auto-generated SQL file
+--     AUTO            Auto-generated SQL file
 --
 -- -------------------------------------------------------------------
 
--- ADM: 'test_ns'
-
 DO
 $do$
-DECLARE adm_enum INTEGER := 9999;
-DECLARE ap_spec_id INTEGER;
-DECLARE fp_spec_id INTEGER;
-DECLARE mac_ac_id INTEGER;
-DECLARE op_tnvc_id INTEGER;
-DECLARE p_lit_meta_3_id INTEGER;
-DECLARE r_ac_entry_id INTEGER;
-DECLARE r_ac_entry_id_1 INTEGER;
-DECLARE r_ac_rpt_entry_1 INTEGER;
-DECLARE r_ac_rpt_entry_2 INTEGER;
-DECLARE r_ac_rpt_entry_3 INTEGER;
-DECLARE r_fp_ent INTEGER;
-DECLARE r_lit_3_id INTEGER;
-DECLARE rptt_ac_id INTEGER;
-DECLARE tbl_tnvc_id INTEGER;
-DECLARE test_ns_cnst_amp_epoch INTEGER;
-DECLARE test_ns_cnst_amp_epoch_aid INTEGER;
-DECLARE test_ns_cnst_amp_epoch_did INTEGER;
-DECLARE test_ns_ctrl_add_var INTEGER;
-DECLARE test_ns_ctrl_add_var_aid INTEGER;
-DECLARE test_ns_ctrl_add_var_did INTEGER;
-DECLARE test_ns_edd_edd_tv INTEGER;
-DECLARE test_ns_edd_edd_tv_aid INTEGER;
-DECLARE test_ns_edd_edd_tv_did INTEGER;
-DECLARE test_ns_edd_edd_uint INTEGER;
-DECLARE test_ns_edd_edd_uint_aid INTEGER;
-DECLARE test_ns_edd_edd_uint_did INTEGER;
-DECLARE test_ns_edd_endpoint_active INTEGER;
-DECLARE test_ns_edd_endpoint_active_aid INTEGER;
-DECLARE test_ns_edd_endpoint_active_aid_endpoint_id_1 INTEGER;
-DECLARE test_ns_edd_endpoint_active_did INTEGER;
-DECLARE test_ns_edd_endpoint_active_fp INTEGER;
-DECLARE test_ns_edd_uint_with_param INTEGER;
-DECLARE test_ns_edd_uint_with_param_aid INTEGER;
-DECLARE test_ns_edd_uint_with_param_aid_1_3 INTEGER;
-DECLARE test_ns_edd_uint_with_param_did INTEGER;
-DECLARE test_ns_edd_uint_with_param_fp INTEGER;
-DECLARE test_ns_meta_enum INTEGER;
-DECLARE test_ns_meta_enum_aid INTEGER;
-DECLARE test_ns_meta_enum_did INTEGER;
-DECLARE test_ns_meta_name INTEGER;
-DECLARE test_ns_meta_name_aid INTEGER;
-DECLARE test_ns_meta_name_did INTEGER;
-DECLARE test_ns_meta_namespace INTEGER;
-DECLARE test_ns_meta_namespace_aid INTEGER;
-DECLARE test_ns_meta_namespace_did INTEGER;
-DECLARE test_ns_meta_organization INTEGER;
-DECLARE test_ns_meta_organization_aid INTEGER;
-DECLARE test_ns_meta_organization_did INTEGER;
-DECLARE test_ns_meta_version INTEGER;
-DECLARE test_ns_meta_version_aid INTEGER;
-DECLARE test_ns_meta_version_did INTEGER;
-DECLARE test_ns_namespace_id INTEGER;
-DECLARE test_ns_op_plusint INTEGER;
-DECLARE test_ns_op_plusint_aid INTEGER;
-DECLARE test_ns_op_plusint_did INTEGER;
-DECLARE test_ns_op_plusreal64 INTEGER;
-DECLARE test_ns_op_plusreal64_aid INTEGER;
-DECLARE test_ns_op_plusreal64_did INTEGER;
-DECLARE test_ns_rpttpl_endpoint_report INTEGER;
-DECLARE test_ns_rpttpl_endpoint_report_aid INTEGER;
-DECLARE test_ns_rpttpl_endpoint_report_did INTEGER;
-DECLARE test_ns_rpttpl_full_report INTEGER;
-DECLARE test_ns_rpttpl_full_report_aid INTEGER;
-DECLARE test_ns_rpttpl_full_report_did INTEGER;
-DECLARE test_ns_tblt_rptts INTEGER;
-DECLARE test_ns_tblt_rptts_aid INTEGER;
-DECLARE test_ns_tblt_rptts_did INTEGER;
-DECLARE test_ns_tblt_variables INTEGER;
-DECLARE test_ns_tblt_variables_aid INTEGER;
-DECLARE test_ns_tblt_variables_did INTEGER;
-DECLARE test_ns_var_var_with_init INTEGER;
-DECLARE test_ns_var_var_with_init_aid INTEGER;
-DECLARE test_ns_var_var_with_init_did INTEGER;
-DECLARE tnvc_entry1 INTEGER;
-DECLARE tnvc_entry2 INTEGER;
-DECLARE var_ac_id INTEGER;
+DECLARE
+ap_spec_id INTEGER;
+fp_spec_id INTEGER;
+r_data_model_id INTEGER;
+const1_oid INTEGER;
+const1_fid INTEGER;
+const1_aid INTEGER;
+showall_oid INTEGER;
+showall_fid INTEGER;
+showall_aid INTEGER;
+get_oid INTEGER;
+get_fid INTEGER;
+get_aid INTEGER;
+set_oid INTEGER;
+set_fid INTEGER;
+set_aid INTEGER;
+edd_uvast_oid INTEGER;
+edd_uvast_fid INTEGER;
+edd_uvast_aid INTEGER;
+edd_uvast_param_oid INTEGER;
+edd_uvast_param_fid INTEGER;
+edd_uvast_param_aid INTEGER;
+edd_tp_oid INTEGER;
+edd_tp_fid INTEGER;
+edd_tp_aid INTEGER;
+endpoint_active_oid INTEGER;
+endpoint_active_fid INTEGER;
+endpoint_active_aid INTEGER;
+add_oid INTEGER;
+add_fid INTEGER;
+add_aid INTEGER;
+var_uvast_val_oid INTEGER;
+var_uvast_val_fid INTEGER;
+var_uvast_val_aid INTEGER;
+counter32_oid INTEGER;
+counter32_fid INTEGER;
+counter32_aid INTEGER;
+gauge32_oid INTEGER;
+gauge32_fid INTEGER;
+gauge32_aid INTEGER;
+counter64_oid INTEGER;
+counter64_fid INTEGER;
+counter64_aid INTEGER;
+gauge64_oid INTEGER;
+gauge64_fid INTEGER;
+gauge64_aid INTEGER;
 BEGIN
 
 
-CALL SP__insert_adm_defined_namespace('JHUAPL', 'test_ns', 'v0', 'test_adm', adm_enum, NULL, 'The namespace of the ADM.', test_ns_namespace_id);
+--namespace 
+CALL SP__insert_data_model('ADM', 'test-adm', 9999, null , null, r_data_model_id);
+
+-- const
+
+CALL SP__insert_obj_metadata(-2, 'const1', r_data_model_id, 0, null, null, 'Example value.', const1_oid);
+CALL SP__insert_const_actual_definition(const1_oid, 'Example value.', 'None', '31', const1_aid);
+
+CALL SP__insert_obj_metadata(-2, 'showall', r_data_model_id, 1, null, null, 'None', showall_oid);
+CALL SP__insert_const_actual_definition(showall_oid, 'None', '17', '/AC/(./CONST/const1)', showall_aid);
+
+-- ctrl
+
+CALL SP__insert_obj_metadata(-3, 'get', r_data_model_id, 2, null, null, 'Get a single MIB value from the agent.', get_oid);
 
 
--- MDAT
 
-CALL SP__insert_obj_metadata(0, 'name', test_ns_namespace_id, test_ns_meta_name);
-CALL SP__insert_const_actual_definition(test_ns_meta_name, 'The human-readable name of the ADM.', 'STR', 'test_adm', test_ns_meta_name_aid);
+CALL SP__insert_formal_parmspec( 1, 'formal parameters for get', '/ARITYPE/OBJECT.object',fp_spec_id);
+CALL SP__insert_control_formal_definition(get_oid, 'Get a single MIB value from the agent.', fp_spec_id, '/ARITYPE/BYTESTR.data', get_fid);
 
-CALL SP__insert_obj_metadata(0, 'namespace', test_ns_namespace_id, test_ns_meta_namespace);
-CALL SP__insert_const_actual_definition(test_ns_meta_namespace, 'The namespace of the ADM.', 'STR', 'test_ns', test_ns_meta_namespace_aid);
-
-CALL SP__insert_obj_metadata(0, 'version', test_ns_namespace_id, test_ns_meta_version);
-CALL SP__insert_const_actual_definition(test_ns_meta_version, 'The version of the ADM.', 'STR', 'v0', test_ns_meta_version_aid);
-
-CALL SP__insert_obj_metadata(0, 'organization', test_ns_namespace_id, test_ns_meta_organization);
-CALL SP__insert_const_actual_definition(test_ns_meta_organization, 'The name of the issuing organization of the ADM.', 'STR', 'JHUAPL', test_ns_meta_organization_aid);
-
-CALL SP__insert_obj_metadata(0, 'enum', test_ns_namespace_id, test_ns_meta_enum);
-CALL SP__insert_const_actual_definition(test_ns_meta_enum, 'None', 'UINT', '9999', test_ns_meta_enum_aid);
+CALL SP__insert_obj_metadata(-3, 'set', r_data_model_id, 3, null, null, 'Set a single MIB value in the agent.', set_oid);
 
 
--- EDD
+
+CALL SP__insert_formal_parmspec( 2, 'formal parameters for set', '/ARITYPE/OBJECT.object, /ARITYPE/BYTESTR.data',fp_spec_id);
+CALL SP__insert_control_formal_definition(set_oid, 'Set a single MIB value in the agent.', fp_spec_id, '/ARITYPE/BYTE.errorcode', set_fid);
+
+-- edd
+
+CALL SP__insert_obj_metadata(-4, 'edd_uvast', r_data_model_id, 0, null, null, 'Example UVAST EDD.', edd_uvast_oid);
+CALL SP__insert_edd_formal_definition(edd_uvast_oid, 'Example UVAST EDD.', null, '/ARITYPE/UVAST', edd_uvast_fid);
+CALL SP__insert_edd_actual_definition(edd_uvast_oid, 'The singleton value for edd_uvast', null, edd_uvast_aid);
+
+CALL SP__insert_obj_metadata(-4, 'edd_uvast_param', r_data_model_id, 1, null, null, 'Example UVAST EDD with parameters.', edd_uvast_param_oid);
+
+CALL SP__insert_formal_parmspec( 1, 'formal parameters for edd_uvast_param', '/ARITYPE/UVAST.other',fp_spec_id);
+CALL SP__insert_edd_formal_definition(edd_uvast_param_oid, 'Example UVAST EDD with parameters.', fp_spec_id, '/ARITYPE/UVAST', edd_uvast_param_fid);
+
+CALL SP__insert_obj_metadata(-4, 'edd_tp', r_data_model_id, 2, null, null, 'Example TP EDD: current system time.', edd_tp_oid);
+CALL SP__insert_edd_formal_definition(edd_tp_oid, 'Example TP EDD: current system time.', null, '/ARITYPE/TP', edd_tp_fid);
+CALL SP__insert_edd_actual_definition(edd_tp_oid, 'The singleton value for edd_tp', null, edd_tp_aid);
+
+CALL SP__insert_obj_metadata(-4, 'endpoint_active', r_data_model_id, 3, null, null, 'Is the given endpoint active? (0=no)', endpoint_active_oid);
+
+CALL SP__insert_formal_parmspec( 1, 'formal parameters for endpoint_active', '/ARITYPE/TEXTSTR.endpoint_name',fp_spec_id);
+CALL SP__insert_edd_formal_definition(endpoint_active_oid, 'Is the given endpoint active? (0=no)', fp_spec_id, '/ARITYPE/UVAST', endpoint_active_fid);
+
+-- oper
+
+CALL SP__insert_obj_metadata(-6, 'add', r_data_model_id, 0, null, null, 'Add two uvast values.The operands are cast to the least compatible numeric typebefore the arithmetic.', add_oid);
 
 
-CALL SP__insert_obj_metadata(2, 'edd_uint', test_ns_namespace_id, test_ns_edd_edd_uint);
-CALL SP__insert_edd_formal_definition(test_ns_edd_edd_uint, 'This is the number of report templates known to the Agent.', NULL, 'UINT', test_ns_edd_edd_uint_did);
-CALL SP__insert_edd_actual_definition(test_ns_edd_edd_uint, 'The singleton value for edd_uint', NULL, test_ns_edd_edd_uint_aid);
-
-CALL SP__insert_obj_metadata(2, 'uint_with_param', test_ns_namespace_id, test_ns_edd_uint_with_param);
-CALL SP__insert_formal_parmspec(1, 'parms for uint_with_param', test_ns_edd_uint_with_param_fp);
-CALL SP__insert_formal_parmspec_entry(test_ns_edd_uint_with_param_fp, 1, 'other', 'UINT', null, r_fp_ent);
-CALL SP__insert_edd_formal_definition(test_ns_edd_uint_with_param, 'This is the number of report templates known to the Agent.', test_ns_edd_uint_with_param_fp, 'UINT', test_ns_edd_uint_with_param_did);
-
-CALL SP__insert_obj_metadata(2, 'edd_tv', test_ns_namespace_id, test_ns_edd_edd_tv);
-CALL SP__insert_edd_formal_definition(test_ns_edd_edd_tv, 'This is the current system time.', NULL, 'TV', test_ns_edd_edd_tv_did);
-CALL SP__insert_edd_actual_definition(test_ns_edd_edd_tv, 'The singleton value for edd_tv', NULL, test_ns_edd_edd_tv_aid);
-
-CALL SP__insert_obj_metadata(2, 'endpoint_active', test_ns_namespace_id, test_ns_edd_endpoint_active);
-CALL SP__insert_formal_parmspec(1, 'parms for endpoint_active', test_ns_edd_endpoint_active_fp);
-CALL SP__insert_formal_parmspec_entry(test_ns_edd_endpoint_active_fp, 1, 'endpoint_name', 'STR', null, r_fp_ent);
-CALL SP__insert_edd_formal_definition(test_ns_edd_endpoint_active, 'is the given endpoint active? (0=no)', test_ns_edd_endpoint_active_fp, 'UINT', test_ns_edd_endpoint_active_did);
+CALL SP__insert_operator_formal_definition(add_oid, 'Add two uvast values.The operands are cast to the least compatible numeric typebefore the arithmetic.', null, 2, '.left, .right', 'result', 'None', add_fid);
+CALL SP__insert_operator_actual_definition(add_oid, 'The singleton value for add', null, add_aid);
 
 
--- OPER
 
-CALL SP__insert_obj_metadata(5, 'plusINT', test_ns_namespace_id, test_ns_op_plusint);
-CALL SP__insert_tnvc_collection('operands for plusINT', op_tnvc_id);
-CALL SP__insert_tnvc_int_entry(op_tnvc_id, 1, null, null, tnvc_entry1);
-CALL SP__insert_tnvc_int_entry(op_tnvc_id, 2, null, null, tnvc_entry2);
-CALL SP__insert_operator_actual_definition(test_ns_op_plusint, 'Int32 addition', 'INT', 2, op_tnvc_id, test_ns_op_plusint_aid);
+-- var
 
-CALL SP__insert_obj_metadata(5, 'plusREAL64', test_ns_namespace_id, test_ns_op_plusreal64);
-CALL SP__insert_tnvc_collection('operands for plusREAL64', op_tnvc_id);
-CALL SP__insert_tnvc_real64_entry(op_tnvc_id, 1, null, null, tnvc_entry1);
-CALL SP__insert_tnvc_real64_entry(op_tnvc_id, 2, null, null, tnvc_entry2);
-CALL SP__insert_operator_actual_definition(test_ns_op_plusreal64, 'Real64 addition', 'REAL64', 2, op_tnvc_id, test_ns_op_plusreal64_aid);
+CALL SP__insert_obj_metadata(-11, 'var_uvast_val', r_data_model_id, 0, null, null, 'Example UVAST VAR with initialized value.', var_uvast_val_oid);
 
+CALL SP__insert_variable_formal_definition(var_uvast_val_oid, 'Example UVAST VAR with initialized value.', null, 'NULL', 'expr to do', '34', var_uvast_val_fid);
+CALL SP__insert_variable_actual_definition(var_uvast_val_oid, 'The singleton value for var_uvast_val', null, var_uvast_val_aid);
 
--- VAR
-
--- create ac for expression
-CALL SP__insert_obj_metadata(12, 'var_with_init', test_ns_namespace_id, test_ns_var_var_with_init);
-CALL SP__insert_ac_id(1, 'ac for the expression used by test_ns_var_var_with_init', var_ac_id);
-
-CALL SP__insert_ac_actual_entry(var_ac_id, test_ns_edd_edd_uint_aid, 1, r_ac_entry_id_1 );
-CALL SP__insert_variable_definition(test_ns_var_var_with_init, 'This is the number of rules known to the Agent (#TBR + #SBR).', 20, var_ac_id, test_ns_var_var_with_init_aid);
-
-
--- TBLT
-
-CALL SP__insert_obj_metadata(10, 'variables', test_ns_namespace_id, test_ns_tblt_variables);
-CALL SP__insert_tnvc_collection('columns for the variables table', tbl_tnvc_id);
-CALL SP__insert_tnvc_ari_entry(tbl_tnvc_id, 1, 'ids', null, tnvc_entry1);
-CALL SP__insert_table_template_actual_definition(test_ns_tblt_variables, 'This table lists the ARI for every variable that is known to the agent.', tbl_tnvc_id, test_ns_tblt_variables_did);
-
-CALL SP__insert_obj_metadata(10, 'rptts', test_ns_namespace_id, test_ns_tblt_rptts);
-CALL SP__insert_tnvc_collection('columns for the rptts table', tbl_tnvc_id);
-CALL SP__insert_tnvc_ari_entry(tbl_tnvc_id, 1, 'ids', null, tnvc_entry1);
-CALL SP__insert_table_template_actual_definition(test_ns_tblt_rptts, 'This table lists the ARI for every report template that is known to the agent.', tbl_tnvc_id, test_ns_tblt_rptts_did);
-
-
--- RPTT
-
-CALL SP__insert_obj_metadata(7, 'full_report', test_ns_namespace_id, test_ns_rpttpl_full_report);
-
-CALL SP__insert_actual_parmspec(test_ns_edd_uint_with_param_fp, 1, 'actual parms for uint_with_param passed 3', ap_spec_id);
-CALL SP__insert_obj_metadata(3, 'Literal value 3', test_ns_namespace_id, p_lit_meta_3_id);
-CALL SP__insert_literal_actual_definition(p_lit_meta_3_id, 'literal value 3', 'UINT', '3', r_lit_3_id);
-CALL SP__insert_actual_parms_object(ap_spec_id, 1, 'UINT', r_lit_3_id);
-CALL SP__insert_edd_actual_definition(test_ns_edd_uint_with_param, NULL, ap_spec_id, test_ns_edd_uint_with_param_aid_1_3);
-CALL SP__insert_ac_id(3, 'ac for report template full_report', rptt_ac_id);
-CALL SP__insert_ac_actual_entry(rptt_ac_id, test_ns_meta_name_aid, 1, r_ac_rpt_entry_1);
-CALL SP__insert_ac_actual_entry(rptt_ac_id, test_ns_var_var_with_init_aid, 2, r_ac_rpt_entry_2);
-CALL SP__insert_ac_actual_entry(rptt_ac_id, test_ns_edd_uint_with_param_aid_1_3, 3, r_ac_rpt_entry_3);
-
-CALL SP__insert_report_template_formal_definition(test_ns_rpttpl_full_report, 'This is all known meta-data, EDD, and VAR values known by the agent.', null, rptt_ac_id, test_ns_rpttpl_full_report_did);
-
-CALL SP__insert_report_actual_definition(test_ns_rpttpl_full_report, null, null, 'Singleton value for full_report', test_ns_rpttpl_full_report_aid);
-
-CALL SP__insert_obj_metadata(7, 'endpoint_report', test_ns_namespace_id, test_ns_rpttpl_endpoint_report);
-CALL SP__insert_formal_parmspec(1, 'parms for endpoint_active', fp_spec_id);
-CALL SP__insert_formal_parmspec_entry(fp_spec_id, 1, 'endpoint_active', 'STR', null, r_fp_ent);
-
-CALL SP__insert_actual_parmspec(test_ns_edd_endpoint_active_fp, 1, '', ap_spec_id);
-CALL SP__insert_actual_parms_names(ap_spec_id, 1, 'STR', r_fp_ent);
-CALL SP__insert_edd_actual_definition(test_ns_edd_endpoint_active, NULL, ap_spec_id, test_ns_edd_endpoint_active_aid_endpoint_id_1);
-CALL SP__insert_ac_id(1, 'ac for report template endpoint_report', rptt_ac_id);
-CALL SP__insert_ac_actual_entry(rptt_ac_id, test_ns_edd_endpoint_active_aid_endpoint_id_1, 1, r_ac_rpt_entry_1);
-
-CALL SP__insert_report_template_formal_definition(test_ns_rpttpl_endpoint_report, 'This is all known endpoint information', fp_spec_id, rptt_ac_id, test_ns_rpttpl_endpoint_report_did);
-
-
--- CTRL
-
-CALL SP__insert_obj_metadata(1, 'add_var', test_ns_namespace_id, test_ns_ctrl_add_var);
-CALL SP__insert_formal_parmspec(3, 'parms for the add_var control', fp_spec_id);
-CALL SP__insert_formal_parmspec_entry(fp_spec_id, 1, 'id', 'ARI', null, r_fp_ent);
-CALL SP__insert_formal_parmspec_entry(fp_spec_id, 2, 'def', 'EXPR', null, r_fp_ent);
-CALL SP__insert_formal_parmspec_entry(fp_spec_id, 3, 'type', 'BYTE', null, r_fp_ent);
-CALL SP__insert_control_formal_definition(test_ns_ctrl_add_var , 'This control configures a new variable definition on the Agent.', fp_spec_id, test_ns_ctrl_add_var_did);
-
-
--- CONST
-
-CALL SP__insert_obj_metadata(0, 'amp_epoch', test_ns_namespace_id, test_ns_cnst_amp_epoch);
-CALL SP__insert_const_actual_definition(test_ns_cnst_amp_epoch, 'This constant is the time epoch for the Agent.', 'TS', '1504915200', test_ns_cnst_amp_epoch_aid);
-
-
--- MAC
-
-END
+end
 $do$
+
+
+

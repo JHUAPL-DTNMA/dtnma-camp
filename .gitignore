@@ -27,3 +27,6 @@ testresults.xml
 coverage.xml
 .pytest_cache/
 tests/adms/
+test_adm.c
+test_adm.h
+test_adm.sql

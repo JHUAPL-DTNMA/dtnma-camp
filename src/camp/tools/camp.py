@@ -133,7 +133,7 @@ def run(args: argparse.Namespace):
 
     if not args.only_ch:
         generators += [
-            create_sql.Writer(admset, adm, args.out, dialect='pgsql')
+            create_sql.Writer(admset, adm, args.out, args.scrape, dialect='pgsql')
         ]
 
     failures = 0

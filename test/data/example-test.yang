@@ -1,6 +1,6 @@
-module test-adm {
+module example-test {
   yang-version 1.1;
-  namespace "ari://test-adm/";
+  namespace "ari://example/test/";
   prefix test;
 
   import ietf-amm {
@@ -8,7 +8,9 @@ module test-adm {
   }
 
   organization
-    "JHU APL";
+    "Example Org." {
+    amm:enum 65535;
+  }
   contact
     "WG Web: <http://tools.ietf.org/wg/dtn/>
      WG List: <mailto:dtn@ietf.org>
@@ -24,116 +26,128 @@ module test-adm {
     reference
       "draft-ietf-dtn-adm-yang";
   }
-  amm:enum 9999;
+
   feature example {
     description
       "some feature";
   }
+
+  amm:enum 9999;
   amm:typedef counter32 {
     amm:enum 26;
+    description
+      "32-bit counter";
     amm:type "/ARITYPE/UINT";
   }
   amm:typedef gauge32 {
     amm:enum 27;
+    description
+      "32-bit gauge";
     amm:type "/ARITYPE/INT";
   }
   amm:typedef counter64 {
     amm:enum 28;
+    description
+      "64-bit counter";
     amm:type "/ARITYPE/UVAST";
   }
   amm:typedef gauge64 {
     amm:enum 29;
+    description
+      "64-bit gauge";
     amm:type "/ARITYPE/VAST";
   }
   amm:edd edd_uvast {
     amm:enum 0;
-    amm:type "/ARITYPE/UVAST";
     description
       "Example UVAST EDD.";
+    amm:type "/ARITYPE/UVAST";
   }
   amm:edd edd_uvast_param {
     amm:enum 1;
-    amm:type "/ARITYPE/UVAST";
-    amm:parameter other {
-      amm:type "/ARITYPE/UVAST";
-      description
-        "Example parameter.";
-    }
     description
       "Example UVAST EDD with parameters.";
+    amm:type "/ARITYPE/UVAST";
+    amm:parameter other {
+      description
+        "Example parameter.";
+      amm:type "/ARITYPE/UVAST";
+    }
   }
   amm:edd edd_tp {
     amm:enum 2;
-    amm:type "/ARITYPE/TP";
     description
       "Example TP EDD: current system time.";
+    amm:type "/ARITYPE/TP";
   }
   amm:edd endpoint_active {
     amm:enum 3;
-    amm:type "/ARITYPE/UVAST";
-    amm:parameter endpoint_name {
-      amm:type "/ARITYPE/TEXTSTR";
-      description
-        "Endpoint name.";
-    }
     description
       "Is the given endpoint active? (0=no)";
+    amm:type "/ARITYPE/UVAST";
+    amm:parameter endpoint_name {
+      description
+        "Endpoint name.";
+      amm:type "/ARITYPE/TEXTSTR";
+    }
   }
   amm:var var_uvast_val {
     amm:enum 0;
-    amm:type "/ARITYPE/UVAST";
-    amm:init-value "34";
     description
       "Example UVAST VAR with initialized value.";
+    amm:init-value "34";
+    amm:type "/ARITYPE/UVAST";
   }
   amm:const const1 {
-    amm:enum 0;
     if-feature "example";
-    amm:type "/ARITYPE/UVAST";
-    amm:init-value "31";
+    amm:enum 0;
     description
       "Example value.";
+    amm:init-value "31";
+    amm:type "/ARITYPE/UVAST";
   }
   amm:const showall {
     amm:enum 1;
-    amm:type "/ARITYPE/AC";
+    description
+      "Some constant list";
     amm:init-value "/AC/(./CONST/const1)";
+    amm:type "/ARITYPE/AC";
   }
   amm:ctrl get {
     amm:enum 2;
-    amm:parameter object {
-      amm:type "/ARITYPE/OBJECT";
-      amm:default "hello";
-      description
-        "Identity of the object to retrieve.";
-    }
-    amm:result data {
-      amm:type "/ARITYPE/BYTESTR";
-      description
-        "Encoded value of the object.";
-    }
     description
       "Get a single MIB value from the agent.";
+    amm:parameter object {
+      description
+        "Identity of the object to retrieve.";
+      amm:default "hello";
+      amm:type "/ARITYPE/OBJECT";
+    }
+    amm:result data {
+      description
+        "Encoded value of the object.";
+      amm:type "/ARITYPE/BYTESTR";
+    }
   }
   amm:ctrl set {
     amm:enum 3;
-    amm:parameter object {
-      amm:type "/ARITYPE/OBJECT";
-      description
-        "Identify the value to retrieve.";
-    }
-    amm:parameter data {
-      amm:type "/ARITYPE/BYTESTR";
-      description
-        "Endcoded value used to write the object";
-    }
-    amm:result errorcode {
-      amm:type "/ARITYPE/BYTE";
-      description
-        "If non-zero, an indicator of an error.";
-    }
     description
       "Set a single MIB value in the agent.";
+    amm:parameter object {
+      description
+        "Identify the value to retrieve.";
+      amm:type "/ARITYPE/OBJECT";
+    }
+    amm:parameter data {
+      description
+        "Endcoded value used to write the object";
+      amm:type "/ARITYPE/BYTESTR";
+    }
+    amm:result errorcode {
+      description
+        "If non-zero, an indicator of an error.";
+      amm:type "/ARITYPE/BYTE";
+    }
   }
   amm:oper add {
     amm:enum 0;
