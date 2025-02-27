@@ -11,6 +11,7 @@
 #include "refda/edd_prod_ctx.h"
 #include "refda/ctrl_exec_ctx.h"
 #include "refda/oper_eval_ctx.h"
+#include "refda/reporting.h"
 #include <cace/amm/semtype.h>
 #include <cace/ari/text.h>
 #include <cace/util/logging.h>
@@ -197,7 +198,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
     CACE_LOG_DEBUG("Registering ADM: " "example-test");
     REFDA_AGENT_LOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
 
-    cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(&(agent->objs), "example-test", "2024-11-21", true, REFDA_ADM_EXAMPLE_TEST_ENUM_ADM);
+    cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(
+        &(agent->objs), cace_amm_idseg_ref_withenum("example", 65535),
+        cace_amm_idseg_ref_withenum("test", REFDA_ADM_EXAMPLE_TEST_ENUM_ADM), "2024-11-21");
     if (adm)
     {
         cace_amm_obj_desc_t *obj;
@@ -206,55 +209,55 @@ int refda_adm_example_test_init(refda_agent_t *agent)
          * Register TYPEDEF objects
          */
         { // For ./TYPEDEF/counter32
-            refda_amm_typedef_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_typedef_desc_t));
+            refda_amm_typedef_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_typedef_desc_t));
             refda_amm_typedef_desc_init(objdata);
             // named type:
             {
-                ari_t name = ARI_INIT_UNDEFINED;
-                ari_set_aritype(&name, ARI_TYPE_UINT);
-                amm_type_set_use_ref_move(&(objdata->typeobj), &name);
+                cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                cace_ari_set_aritype(&name, CACE_ARI_TYPE_UINT);
+                cace_amm_type_set_use_ref_move(&(objdata->typeobj), &name);
             }
 
-            obj = refda_register_typedef(adm, cace_amm_obj_id_withenum("counter32", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_TYPEDEF_COUNTER32), objdata);
+            obj = refda_register_typedef(adm, cace_amm_idseg_ref_withenum("counter32", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_TYPEDEF_COUNTER32), objdata);
             // no parameters possible
         }
         { // For ./TYPEDEF/gauge32
-            refda_amm_typedef_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_typedef_desc_t));
+            refda_amm_typedef_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_typedef_desc_t));
             refda_amm_typedef_desc_init(objdata);
             // named type:
             {
-                ari_t name = ARI_INIT_UNDEFINED;
-                ari_set_aritype(&name, ARI_TYPE_INT);
-                amm_type_set_use_ref_move(&(objdata->typeobj), &name);
+                cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                cace_ari_set_aritype(&name, CACE_ARI_TYPE_INT);
+                cace_amm_type_set_use_ref_move(&(objdata->typeobj), &name);
             }
 
-            obj = refda_register_typedef(adm, cace_amm_obj_id_withenum("gauge32", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_TYPEDEF_GAUGE32), objdata);
+            obj = refda_register_typedef(adm, cace_amm_idseg_ref_withenum("gauge32", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_TYPEDEF_GAUGE32), objdata);
             // no parameters possible
         }
         { // For ./TYPEDEF/counter64
-            refda_amm_typedef_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_typedef_desc_t));
+            refda_amm_typedef_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_typedef_desc_t));
             refda_amm_typedef_desc_init(objdata);
             // named type:
             {
-                ari_t name = ARI_INIT_UNDEFINED;
-                ari_set_aritype(&name, ARI_TYPE_UVAST);
-                amm_type_set_use_ref_move(&(objdata->typeobj), &name);
+                cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                cace_ari_set_aritype(&name, CACE_ARI_TYPE_UVAST);
+                cace_amm_type_set_use_ref_move(&(objdata->typeobj), &name);
             }
 
-            obj = refda_register_typedef(adm, cace_amm_obj_id_withenum("counter64", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_TYPEDEF_COUNTER64), objdata);
+            obj = refda_register_typedef(adm, cace_amm_idseg_ref_withenum("counter64", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_TYPEDEF_COUNTER64), objdata);
             // no parameters possible
         }
         { // For ./TYPEDEF/gauge64
-            refda_amm_typedef_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_typedef_desc_t));
+            refda_amm_typedef_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_typedef_desc_t));
             refda_amm_typedef_desc_init(objdata);
             // named type:
             {
-                ari_t name = ARI_INIT_UNDEFINED;
-                ari_set_aritype(&name, ARI_TYPE_VAST);
-                amm_type_set_use_ref_move(&(objdata->typeobj), &name);
+                cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                cace_ari_set_aritype(&name, CACE_ARI_TYPE_VAST);
+                cace_amm_type_set_use_ref_move(&(objdata->typeobj), &name);
             }
 
-            obj = refda_register_typedef(adm, cace_amm_obj_id_withenum("gauge64", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_TYPEDEF_GAUGE64), objdata);
+            obj = refda_register_typedef(adm, cace_amm_idseg_ref_withenum("gauge64", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_TYPEDEF_GAUGE64), objdata);
             // no parameters possible
         }
 
@@ -262,30 +265,30 @@ int refda_adm_example_test_init(refda_agent_t *agent)
          * Register CONST objects
          */
         { // For ./CONST/const1
-            refda_amm_const_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_const_desc_t));
+            refda_amm_const_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_const_desc_t));
             refda_amm_const_desc_init(objdata);
             // constant value:
-            ari_set_int(&(objdata->value), 31);
+            cace_ari_set_int(&(objdata->value), 31);
 
-            obj = refda_register_const(adm, cace_amm_obj_id_withenum("const1", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_CONST_CONST1), objdata);
+            obj = refda_register_const(adm, cace_amm_idseg_ref_withenum("const1", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_CONST_CONST1), objdata);
             // no parameters
         }
         { // For ./CONST/showall
-            refda_amm_const_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_const_desc_t));
+            refda_amm_const_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_const_desc_t));
             refda_amm_const_desc_init(objdata);
             // constant value:
             {
-                ari_ac_t acinit;
-                ari_ac_init(&acinit);
+                cace_ari_ac_t acinit;
+                cace_ari_ac_init(&acinit);
                 {
-                    ari_t *item = ari_list_push_back_new(acinit.items);
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
                     // ari://example/test/CONST/const1
-                    ari_set_objref_path_intid(item, 65535, 9999, ARI_TYPE_CONST, 0);
+                    cace_ari_set_objref_path_intid(item, 65535, 9999, CACE_ARI_TYPE_CONST, 0);
                 }
-                ari_set_ac(&(objdata->value), &acinit);
+                cace_ari_set_ac(&(objdata->value), &acinit);
             }
 
-            obj = refda_register_const(adm, cace_amm_obj_id_withenum("showall", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_CONST_SHOWALL), objdata);
+            obj = refda_register_const(adm, cace_amm_idseg_ref_withenum("showall", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_CONST_SHOWALL), objdata);
             // no parameters
         }
 
@@ -293,18 +296,18 @@ int refda_adm_example_test_init(refda_agent_t *agent)
          * Register VAR objects
          */
         { // For ./VAR/var_uvast_val
-            refda_amm_var_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_var_desc_t));
+            refda_amm_var_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_var_desc_t));
             refda_amm_var_desc_init(objdata);
             // stored value type:
             {
-                ari_t name = ARI_INIT_UNDEFINED;
-                ari_set_aritype(&name, ARI_TYPE_UVAST);
-                amm_type_set_use_ref_move(&(objdata->val_type), &name);
+                cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                cace_ari_set_aritype(&name, CACE_ARI_TYPE_UVAST);
+                cace_amm_type_set_use_ref_move(&(objdata->val_type), &name);
             }
             // initial value:
-            ari_set_int(&(objdata->value), 34);
+            cace_ari_set_int(&(objdata->value), 34);
 
-            obj = refda_register_var(adm, cace_amm_obj_id_withenum("var_uvast_val", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_VAR_VAR__UVAST__VAL), objdata);
+            obj = refda_register_var(adm, cace_amm_idseg_ref_withenum("var_uvast_val", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_VAR_VAR__UVAST__VAL), objdata);
             // no parameters
         }
 
@@ -312,78 +315,78 @@ int refda_adm_example_test_init(refda_agent_t *agent)
          * Register EDD objects
          */
         { // For ./EDD/edd_uvast
-            refda_amm_edd_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_edd_desc_t));
+            refda_amm_edd_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_edd_desc_t));
             refda_amm_edd_desc_init(objdata);
             // produced type
             {
-                ari_t name = ARI_INIT_UNDEFINED;
-                ari_set_aritype(&name, ARI_TYPE_UVAST);
-                amm_type_set_use_ref_move(&(objdata->prod_type), &name);
+                cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                cace_ari_set_aritype(&name, CACE_ARI_TYPE_UVAST);
+                cace_amm_type_set_use_ref_move(&(objdata->prod_type), &name);
             }
             // callback:
             objdata->produce = refda_adm_example_test_edd_edd__uvast;
 
-            obj = refda_register_edd(adm, cace_amm_obj_id_withenum("edd_uvast", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_EDD_EDD__UVAST), objdata);
+            obj = refda_register_edd(adm, cace_amm_idseg_ref_withenum("edd_uvast", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_EDD_EDD__UVAST), objdata);
             // no parameters
         }
         { // For ./EDD/edd_uvast_param
-            refda_amm_edd_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_edd_desc_t));
+            refda_amm_edd_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_edd_desc_t));
             refda_amm_edd_desc_init(objdata);
             // produced type
             {
-                ari_t name = ARI_INIT_UNDEFINED;
-                ari_set_aritype(&name, ARI_TYPE_UVAST);
-                amm_type_set_use_ref_move(&(objdata->prod_type), &name);
+                cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                cace_ari_set_aritype(&name, CACE_ARI_TYPE_UVAST);
+                cace_amm_type_set_use_ref_move(&(objdata->prod_type), &name);
             }
             // callback:
             objdata->produce = refda_adm_example_test_edd_edd__uvast__param;
 
-            obj = refda_register_edd(adm, cace_amm_obj_id_withenum("edd_uvast_param", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_EDD_EDD__UVAST__PARAM), objdata);
+            obj = refda_register_edd(adm, cace_amm_idseg_ref_withenum("edd_uvast_param", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_EDD_EDD__UVAST__PARAM), objdata);
             // parameters:
             {
                 cace_amm_formal_param_t *fparam = refda_register_add_param(obj, "other");
                 {
-                    ari_t name = ARI_INIT_UNDEFINED;
-                    ari_set_aritype(&name, ARI_TYPE_UVAST);
-                    amm_type_set_use_ref_move(&(fparam->typeobj), &name);
+                    cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                    cace_ari_set_aritype(&name, CACE_ARI_TYPE_UVAST);
+                    cace_amm_type_set_use_ref_move(&(fparam->typeobj), &name);
                 }
             }
         }
         { // For ./EDD/edd_tp
-            refda_amm_edd_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_edd_desc_t));
+            refda_amm_edd_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_edd_desc_t));
             refda_amm_edd_desc_init(objdata);
             // produced type
             {
-                ari_t name = ARI_INIT_UNDEFINED;
-                ari_set_aritype(&name, ARI_TYPE_TP);
-                amm_type_set_use_ref_move(&(objdata->prod_type), &name);
+                cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                cace_ari_set_aritype(&name, CACE_ARI_TYPE_TP);
+                cace_amm_type_set_use_ref_move(&(objdata->prod_type), &name);
             }
             // callback:
             objdata->produce = refda_adm_example_test_edd_edd__tp;
 
-            obj = refda_register_edd(adm, cace_amm_obj_id_withenum("edd_tp", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_EDD_EDD__TP), objdata);
+            obj = refda_register_edd(adm, cace_amm_idseg_ref_withenum("edd_tp", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_EDD_EDD__TP), objdata);
             // no parameters
         }
         { // For ./EDD/endpoint_active
-            refda_amm_edd_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_edd_desc_t));
+            refda_amm_edd_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_edd_desc_t));
             refda_amm_edd_desc_init(objdata);
             // produced type
             {
-                ari_t name = ARI_INIT_UNDEFINED;
-                ari_set_aritype(&name, ARI_TYPE_UVAST);
-                amm_type_set_use_ref_move(&(objdata->prod_type), &name);
+                cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                cace_ari_set_aritype(&name, CACE_ARI_TYPE_UVAST);
+                cace_amm_type_set_use_ref_move(&(objdata->prod_type), &name);
             }
             // callback:
             objdata->produce = refda_adm_example_test_edd_endpoint__active;
 
-            obj = refda_register_edd(adm, cace_amm_obj_id_withenum("endpoint_active", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_EDD_ENDPOINT__ACTIVE), objdata);
+            obj = refda_register_edd(adm, cace_amm_idseg_ref_withenum("endpoint_active", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_EDD_ENDPOINT__ACTIVE), objdata);
             // parameters:
             {
                 cace_amm_formal_param_t *fparam = refda_register_add_param(obj, "endpoint_name");
                 {
-                    ari_t name = ARI_INIT_UNDEFINED;
-                    ari_set_aritype(&name, ARI_TYPE_TEXTSTR);
-                    amm_type_set_use_ref_move(&(fparam->typeobj), &name);
+                    cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                    cace_ari_set_aritype(&name, CACE_ARI_TYPE_TEXTSTR);
+                    cace_amm_type_set_use_ref_move(&(fparam->typeobj), &name);
                 }
             }
         }
@@ -392,57 +395,57 @@ int refda_adm_example_test_init(refda_agent_t *agent)
          * Register CTRL objects
          */
         { // For ./CTRL/get
-            refda_amm_ctrl_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_ctrl_desc_t));
+            refda_amm_ctrl_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_ctrl_desc_t));
             refda_amm_ctrl_desc_init(objdata);
             // result type
             {
-                ari_t name = ARI_INIT_UNDEFINED;
-                ari_set_aritype(&name, ARI_TYPE_BYTESTR);
-                amm_type_set_use_ref_move(&(objdata->res_type), &name);
+                cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                cace_ari_set_aritype(&name, CACE_ARI_TYPE_BYTESTR);
+                cace_amm_type_set_use_ref_move(&(objdata->res_type), &name);
             }
             // callback:
             objdata->execute = refda_adm_example_test_ctrl_get;
 
-            obj = refda_register_ctrl(adm, cace_amm_obj_id_withenum("get", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_CTRL_GET), objdata);
+            obj = refda_register_ctrl(adm, cace_amm_idseg_ref_withenum("get", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_CTRL_GET), objdata);
             // parameters:
             {
                 cace_amm_formal_param_t *fparam = refda_register_add_param(obj, "object");
                 {
-                    ari_t name = ARI_INIT_UNDEFINED;
-                    ari_set_aritype(&name, ARI_TYPE_OBJECT);
-                    amm_type_set_use_ref_move(&(fparam->typeobj), &name);
+                    cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                    cace_ari_set_aritype(&name, CACE_ARI_TYPE_OBJECT);
+                    cace_amm_type_set_use_ref_move(&(fparam->typeobj), &name);
                 }
-                ari_set_tstr(&(fparam->defval), "hello", true);
+                cace_ari_set_tstr(&(fparam->defval), "hello", true);
             }
         }
         { // For ./CTRL/set
-            refda_amm_ctrl_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_ctrl_desc_t));
+            refda_amm_ctrl_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_ctrl_desc_t));
             refda_amm_ctrl_desc_init(objdata);
             // result type
             {
-                ari_t name = ARI_INIT_UNDEFINED;
-                ari_set_aritype(&name, ARI_TYPE_BYTE);
-                amm_type_set_use_ref_move(&(objdata->res_type), &name);
+                cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                cace_ari_set_aritype(&name, CACE_ARI_TYPE_BYTE);
+                cace_amm_type_set_use_ref_move(&(objdata->res_type), &name);
             }
             // callback:
             objdata->execute = refda_adm_example_test_ctrl_set;
 
-            obj = refda_register_ctrl(adm, cace_amm_obj_id_withenum("set", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_CTRL_SET), objdata);
+            obj = refda_register_ctrl(adm, cace_amm_idseg_ref_withenum("set", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_CTRL_SET), objdata);
             // parameters:
             {
                 cace_amm_formal_param_t *fparam = refda_register_add_param(obj, "object");
                 {
-                    ari_t name = ARI_INIT_UNDEFINED;
-                    ari_set_aritype(&name, ARI_TYPE_OBJECT);
-                    amm_type_set_use_ref_move(&(fparam->typeobj), &name);
+                    cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                    cace_ari_set_aritype(&name, CACE_ARI_TYPE_OBJECT);
+                    cace_amm_type_set_use_ref_move(&(fparam->typeobj), &name);
                 }
             }
             {
                 cace_amm_formal_param_t *fparam = refda_register_add_param(obj, "data");
                 {
-                    ari_t name = ARI_INIT_UNDEFINED;
-                    ari_set_aritype(&name, ARI_TYPE_BYTESTR);
-                    amm_type_set_use_ref_move(&(fparam->typeobj), &name);
+                    cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                    cace_ari_set_aritype(&name, CACE_ARI_TYPE_BYTESTR);
+                    cace_amm_type_set_use_ref_move(&(fparam->typeobj), &name);
                 }
             }
         }
@@ -451,38 +454,38 @@ int refda_adm_example_test_init(refda_agent_t *agent)
          * Register OPER objects
          */
         { // For ./OPER/add
-            refda_amm_oper_desc_t *objdata = ARI_MALLOC(sizeof(refda_amm_oper_desc_t));
+            refda_amm_oper_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_oper_desc_t));
             refda_amm_oper_desc_init(objdata);
             // operands:
-            amm_named_type_array_resize(objdata->operand_types, 2);
+            cace_amm_named_type_array_resize(objdata->operand_types, 2);
             {
-                amm_named_type_t *operand = amm_named_type_array_get(objdata->operand_types, 0);
+                cace_amm_named_type_t *operand = cace_amm_named_type_array_get(objdata->operand_types, 0);
                 string_set_str(operand->name, "left");
                 {
-                    ari_t name = ARI_INIT_UNDEFINED;
-                    ari_set_aritype(&name, ARI_TYPE_UVAST);
-                    amm_type_set_use_ref_move(&(operand->typeobj), &name);
+                    cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                    cace_ari_set_aritype(&name, CACE_ARI_TYPE_UVAST);
+                    cace_amm_type_set_use_ref_move(&(operand->typeobj), &name);
                 }
             }
             {
-                amm_named_type_t *operand = amm_named_type_array_get(objdata->operand_types, 1);
+                cace_amm_named_type_t *operand = cace_amm_named_type_array_get(objdata->operand_types, 1);
                 string_set_str(operand->name, "right");
                 {
-                    ari_t name = ARI_INIT_UNDEFINED;
-                    ari_set_aritype(&name, ARI_TYPE_UVAST);
-                    amm_type_set_use_ref_move(&(operand->typeobj), &name);
+                    cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                    cace_ari_set_aritype(&name, CACE_ARI_TYPE_UVAST);
+                    cace_amm_type_set_use_ref_move(&(operand->typeobj), &name);
                 }
             }
             // result type:
             {
-                ari_t name = ARI_INIT_UNDEFINED;
-                ari_set_aritype(&name, ARI_TYPE_UVAST);
-                amm_type_set_use_ref_move(&(objdata->res_type), &name);
+                cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
+                cace_ari_set_aritype(&name, CACE_ARI_TYPE_UVAST);
+                cace_amm_type_set_use_ref_move(&(objdata->res_type), &name);
             }
             // callback:
             objdata->evaluate = refda_adm_example_test_oper_add;
 
-            obj = refda_register_oper(adm, cace_amm_obj_id_withenum("add", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_OPER_ADD), objdata);
+            obj = refda_register_oper(adm, cace_amm_idseg_ref_withenum("add", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_OPER_ADD), objdata);
             // no parameters
         }
 
