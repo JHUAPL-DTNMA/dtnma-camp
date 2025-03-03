@@ -278,7 +278,7 @@ All generators should:
   and second argument:
     1. a Retriever object (pre-populated with the ADM passed to camp)
     2. a string that represents the path to the output directory
-- utilize the Retriever object to access fields of the YANG ADM
+- utilize the Retriever object to access fields of the ADM module
 - place generated file(s) in the output directory passed as the second argument
   to the `create()` function (the generator may choose to make a sub-directory 
   in the output directory)
