@@ -111,10 +111,11 @@ git submodule update --init --recursive
 The camp tool takes a YANG representation of an ADM for a network protocol as
 input and calls each of the included generators to generate files for the ADM.
 
-<!-- > The included `template.yang` provides an example of how a YANG ADM should be
+<!-- > The included `template.yang` provides an example of how an ADM module should be
 > formatted. For more information on this data model, please consult the AMA 
 > Application Data Model IETF draft.-->
->For information on how to format a YANG ADM, please consult the Application Management Model IETF draft.
+> For information on how to format an ADM encoded as a YANG module file, please consult the 
+> Application Management Model IETF draft.
 
 Given the YANG representation of the ADM, run camp with:
 
@@ -237,37 +238,32 @@ copied over to the correct area of the new file.
 
 ### CAmp Architecture
 
-- template.yang   - Example YANG ADM template
-- CAmpPython/     - contains all of the source code for camp
-  - CAmpPython.py - Main script of camp. This script calls all necessary 
+- src/camp/     - contains all of the source code for camp
+  - tools/camp.py - Main script of camp. This script calls all necessary 
                     generators and handles user input
   - data/name_registry.cfg - Initial name registry configuration file installed 
                              with camp.
-  - utils/name_registry.py - Fuctions for getting and setting values of the camp 
-                             name registry. 
   - generators/   - All generator scripts and their utility functions
-    - create_ace.py    - Generates ACE tool input file
-    - create_agent.py  - Generates agent file (C code) for usage in NASA ION
+    - base.py    - Generates ACE tool input file
+    - create_agent_c.py  - Generates agent file (C code) for usage in NASA ION
     - create_gen_h.py  - Generates the shared header file needed for NASA ION
     - create_impl_c.py - Generates the implementation file (C code) for usage in
                          DTNMA C agent
     - create_impl_h.py - Generates the header file for the implementation file
                          created by create_impl_c.py
     - create_mgr_c.py  - Generates the manager file for usage in DTNMA C agent
-    - create_mysql.py  - Generates an SQL file for usage with DTNMA C agent stored
+    - create_sql.py  - Generates an SQL file for usage with DTNMA C agent stored
                          procedures
     - lib/        - Library functions for generating commonly-used patterns and 
                     accessing portions of the ADM.
       - campch.py - library functions commonly needed specifically for C code 
                     generators. 
       - campch_roundtrip.py - round-tripping functions
-      - common/             - Library functions helpful to all generators. 
-        - campsettings.py   - initializes various global variables for camp 
+      - campsettings.py   - initializes various global variables for camp 
                               (enumerations for portions of the ADM, etc.)
-        - camputil.py       - utility functions for parsing the YANG input file 
+      - camputil.py       - utility functions for parsing the YANG input file 
                               and creating ARIs. Contains the Retriever class, 
                               which is used by all generators to access ADM data
-        - yangutil.py       - utility functions to validate YANG input.
                     
 
 ### Adding Generators
