@@ -24,7 +24,7 @@
 '''
 # JHU/APL
 # Description: Entrypoint into the camp program. Calls generators to
-# create various files (i.e., C code for NASA ION) from the JSON representation
+# create various files (i.e., C code for NASA ION) from the YANG representation
 # of different ADMs for use by protocols in DTN
 #
 #   YYYY/MM/DD	    AUTHOR	   DESCRIPTION
@@ -66,7 +66,7 @@ def get_parser() -> argparse.ArgumentParser:
                    help="Previously generated H and C file to be scraped",
                    action='store_true', default=False)
     p.add_argument('admfile',
-                   help="JSON file to use for file generation")
+                   help="YANG file to use for file generation")
     p.add_argument('--only-sql',
                    help="Set this flag to only produce the SQL files",
                    action='store_true', default=False)
@@ -93,7 +93,7 @@ def set_up_outputdir(d_name):
 # Main function of this tool.
 #
 # Calls helper functions to initialize settings, read command line arguments,
-# parse the input JSON file, and generate files\
+# parse the input YANG file, and generate files\
 #
 def run(args: argparse.Namespace):
     try:
@@ -103,7 +103,7 @@ def run(args: argparse.Namespace):
             raise RuntimeError("Cannot have multiple --only-* option. No files will be generated.")
 
         if not os.path.exists(args.admfile):
-            raise RuntimeError("Passed JSON file does not exist ({})".format(args.admfile))
+            raise RuntimeError("Passed YANG file does not exist ({})".format(args.admfile))
 
         set_up_outputdir(args.out)
     except Exception as e:
@@ -122,7 +122,7 @@ def run(args: argparse.Namespace):
         LOGGER.error("Loading error: %s", e)
         return 2
 
-    # Call each generator to generate files for the JSON ADM
+    # Call each generator to generate files for the YANG ADM
     LOGGER.info("Generating files under %s", args.out)
     generators = []
     if not args.only_sql:
