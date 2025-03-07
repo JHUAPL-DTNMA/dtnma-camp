@@ -94,7 +94,7 @@ BEGIN
 
 {%- set null_string = 'null' %}
 --namespace 
-CALL SP__insert_data_model('ADM', '{{adm.name}}', {{adm.enum}}, {{"'"~adm.revision~"'" if adm.revision else null_string}} , {{"'"~adm.description~"'" if adm.description else null_string}}, r_data_model_id);
+CALL SP__insert_data_model('ADM', '{{adm.name}}', {{adm.enum if adm.enum else -1}}, {{"'"~adm.revision~"'" if adm.revision else null_string}} , {{"'"~adm.description~"'" if adm.description else null_string}}, r_data_model_id);
 
 {%- if adm.ident %}
 {%- for obj in adm.ident %}
