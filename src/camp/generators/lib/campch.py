@@ -169,9 +169,12 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         return  yang_to_sql(value).lower()
 
     def sql_string(value:str) -> str:
-        ''' valid sql name
+        ''' valid sql string
         '''
-        return  value.replace('\n', ' ').replace("'",'`')
+        if value:
+            return  value.replace('\n', ' ').replace("'",'`')
+        else:
+            return ''
 
 
     env.globals |= {
