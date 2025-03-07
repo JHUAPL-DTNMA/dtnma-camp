@@ -168,6 +168,12 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         '''
         return  yang_to_sql(value).lower()
 
+    def sql_string(value:str) -> str:
+        ''' valid sql name
+        '''
+        return  value.replace('\n', ' ').replace("'",'`')
+
+
     env.globals |= {
         'ari': ace.ari,
         'typing': ace.typing,
@@ -188,6 +194,7 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         'ref_text': ref_text,
         'deref': deref,
         'sql_name': sql_name,
+        'sql_string': sql_string,
         
 
 
