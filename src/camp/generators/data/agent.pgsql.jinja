@@ -4,7 +4,11 @@
 {%- set params  = [] -%}
 {%- for param in obj.parameters.items -%}
 {%- set count = count + 1  -%}
-{%- set params = params.append( param.typeobj.type_text~"."~param.name) -%}
+{%- set curr_param = ""-%}
+{%- if param.typeobj %}
+{%- set curr_param = param.typeobj.type_text -%}
+{%- endif %}
+{%- set params = params.append(curr_param~"."~param.name) -%}
 {% endfor %}
 CALL SP__insert_formal_parmspec( {{obj.parameters.items|length}}, 'formal parameters for {{obj.name | sql_name}}', '{{params|join(', ')}}',fp_spec_id);
 {%- endmacro %}
@@ -126,7 +130,10 @@ CALL SP__insert_const_actual_definition({{obj.name | sql_name}}_oid, '{{obj.desc
 {{gen_metadata(-3, obj)}}
 {% set result = "" %}
 {%- if obj.result is defined %}
+{% set result =  obj.result.name %}
+{%- if obj.result.typeobj is defined %}
 {% set result = obj.result.typeobj.type_text ~ "." ~obj.result.name %}
+{%- endif %}
 {%- endif %}
 {%- if obj.parameters.items|length > 0 %}
 {{ gen_params(obj)}}
@@ -225,7 +232,6 @@ CALL SP__insert_tbr_actual_definition({{obj.name | sql_name}}_oid, {{obj.descrip
 {%-endif %}
 {%- set type = "NULL" %}
 {%- if obj.init_ari is defined %}
-{{obj.init_ari}}
 {%- if obj.init_ari.typeobj is defined %}
 {%- set type =  obj.init_ari.typeobj %}
 {%-endif %}
