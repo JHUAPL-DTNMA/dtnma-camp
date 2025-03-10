@@ -1,9 +1,9 @@
-import pytest
 import logging
 import os
-import ace
+import pytest
 import shutil
 import subprocess
+import ace
 from camp.generators.lib.campch import yang_to_c
 from .util import ADMS_DIR, DTNMA_TOOLS_DIR, adm_files, run_camp
 
@@ -42,9 +42,9 @@ def test_adms(adm):
     adm_set = ace.AdmSet()
     # generates a new file
     norm_name = adm_set.load_from_file(filepath).norm_name
-    impl = f"{yang_to_c(norm_name)}.c"
-    LOGGER.info('Looking for implementation source %s', impl)
-    outdir = _find_dir(impl, OUT_DIR)
+    filename = f"{yang_to_c(norm_name)}.c"
+    LOGGER.info('Looking for implementation source %s', filename)
+    outdir = _find_dir(filename, OUT_DIR)
     if outdir is None:
         pytest.skip('No existing source')
     LOGGER.info('Found at %s', outdir)

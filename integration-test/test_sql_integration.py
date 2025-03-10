@@ -1,10 +1,13 @@
-import psycopg2
+import logging
 import os
-import ace
+import psycopg2
 import pytest
-
+import tempfile
+import ace
+from camp.generators.lib.campch import yang_to_sql
 from .util import ADMS_DIR, adm_files, run_camp
-from camp.generators.create_sql import yang_to_sql
+
+LOGGER = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -27,10 +30,9 @@ def setup():
     cursor = conn.cursor()
 
     # reusable objects that the tests will need
-    yield cursor,
+    yield conn,
 
     # teardown: close connections
-    cursor.close()
     conn.close()
 
 
@@ -41,22 +43,31 @@ def test_adms(setup, adm):
     Resulting sql files will be placed in ADMS_DIR/amp-sql/Agent_Scripts and executed in the anms library.
     """
 
-    if adm == 'ietf-amm.yang':  # doesn't have unique enum
-        pytest.xfail("ADM with known issue")
-
-    cursor = setup[0]
+    conn = setup[0]
 
     # input file full filepath
     filepath = os.path.join(ADMS_DIR, adm)
 
+    # output to temporary
+    adm_set = ace.AdmSet()
+    norm_name = adm_set.load_from_file(filepath).norm_name
+    filename = f"{yang_to_sql(norm_name)}.sql"
+    LOGGER.info('Expecting SQL source %s', filename)
+
+    outdir = tempfile.TemporaryDirectory()
+
     # run camp
-    exitcode = run_camp(filepath, ADMS_DIR, only_sql=True, only_ch=False)
+    exitcode = run_camp(filepath, outdir.name, only_sql=True, only_ch=False)
     assert 0 == exitcode
 
-    # execute sql
-    adm_set = ace.AdmSet()
-    norm_name = yang_to_sql(adm_set.load_from_file(filepath).norm_name)
-    sql_file = os.path.join(ADMS_DIR, "amp-sql", "Agent_Scripts", 'adm_{name}.sql'.format(name=norm_name))
-    with open(sql_file, "r") as f:
-        cursor.execute(f.read())
-        cursor.execute("rollback")
+    # verify the generated source executes
+    file_path = os.path.join(outdir.name, filename)
+    with open(file_path, "r") as srcfile:
+        script = srcfile.read()
+        LOGGER.info('Generated script:\n%s', script)
+
+        try:
+            with conn.cursor() as curs:
+                curs.execute(script)
+        finally:
+            conn.rollback()
