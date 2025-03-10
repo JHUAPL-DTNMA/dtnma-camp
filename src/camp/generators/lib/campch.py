@@ -23,6 +23,7 @@
 #
 import io
 import logging
+import ace.models
 import jinja2
 import textwrap
 import typing
@@ -31,6 +32,7 @@ import ace
 from ace.typing import BUILTINS
 from ace import models, ari, ari_text
 from ace.lookup import dereference, ORM_TYPE
+import re
 
 LOGGER = logging.getLogger(__name__)
 
@@ -47,8 +49,9 @@ def yang_to_c(identifier):
 def yang_to_sql(identifier):
     ''' Translates a valid YANG identifier to a valid SQL symbol name.
     '''
-    return identifier.replace('-', '_').replace('.', '_p_')
-
+    if identifier:
+        return identifier.replace('-', '_').replace('.', '_p_')
+    return ""
 
 def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
     ''' Set state of a jinja environment for ADM implementation
@@ -168,15 +171,23 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         '''
         return  yang_to_sql(value).lower()
 
+    def sql_var_name(obj:ace.models.AdmObjMixin) -> str:
+        ''' formatting a name to be a sql variable
+        '''
+        if obj:
+            return yang_to_sql(obj.__tablename__).lower()+"_"+yang_to_sql(obj.name).lower()
+        return "None"
+
+
     def sql_string(value:str) -> str:
-        ''' valid sql string
+        ''' escape string and add quotes for sql 
         '''
         if value:
-            return  value.replace('\n', ' ').replace("'",'`')
+            return  '\'' + value.replace('\\', '\\\\').replace("'",' `').replace('\n', ' ') + '\''
         else:
-            return ''
+            return '\'\''
 
-
+    
     env.globals |= {
         'ari': ace.ari,
         'typing': ace.typing,
@@ -198,6 +209,7 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         'deref': deref,
         'sql_name': sql_name,
         'sql_string': sql_string,
+        'sql_var_name': sql_var_name,
         
 
 
