@@ -1,4 +1,4 @@
-#
+zf#
 # Copyright (c) 2020-2024 The Johns Hopkins University Applied Physics
 # Laboratory LLC.
 #
@@ -66,7 +66,7 @@ def get_parser() -> argparse.ArgumentParser:
                    help="Previously generated H and C file to be scraped",
                    action='store_true', default=False)
     p.add_argument('admfile',
-                   help="YANG file to use for file generation")
+                   help="ADM module file to use for file generation")
     p.add_argument('--only-sql',
                    help="Set this flag to only produce the SQL files",
                    action='store_true', default=False)
@@ -93,7 +93,7 @@ def set_up_outputdir(d_name):
 # Main function of this tool.
 #
 # Calls helper functions to initialize settings, read command line arguments,
-# parse the input YANG file, and generate files\
+# parse the input ADM module file, and generate files\
 #
 def run(args: argparse.Namespace):
     try:
@@ -103,7 +103,7 @@ def run(args: argparse.Namespace):
             raise RuntimeError("Cannot have multiple --only-* option. No files will be generated.")
 
         if not os.path.exists(args.admfile):
-            raise RuntimeError("Passed YANG file does not exist ({})".format(args.admfile))
+            raise RuntimeError("Passed ADM module file does not exist ({})".format(args.admfile))
 
         set_up_outputdir(args.out)
     except Exception as e:
@@ -122,7 +122,7 @@ def run(args: argparse.Namespace):
         LOGGER.error("Loading error: %s", e)
         return 2
 
-    # Call each generator to generate files for the YANG ADM
+    # Call each generator to generate files for the ADM module
     LOGGER.info("Generating files under %s", args.out)
     generators = []
     if not args.only_sql:
