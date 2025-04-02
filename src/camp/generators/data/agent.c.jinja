@@ -406,6 +406,29 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {%- endfor %}
 {%- endif %}
 {# FIXME add SBR and TBRs #}
+{%- if adm.tbr %}
+
+        /**
+         * Register TBR objects
+         */
+{%- for obj in adm.tbr %}
+        { // For {{obj | ref_text}}
+            refda_amm_tbr_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_tbr_desc_t));
+            refda_amm_tbr_desc_init(objdata);
+            // action
+            {{ ari_set_value('&(objdata->action)', obj.action) | indent(12) }}
+            // start_time
+            // period
+            {{ ari_set_value('&(objdata->period)', obj.period) | indent(12) }}
+            // enabled
+            // max_exec_count
+            // init_enabled
+            // enabled
+
+            obj = refda_register_tbr(adm, cace_amm_idseg_ref_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
+        }
+{%- endfor %}
+{%- endif %}
     }
     REFDA_AGENT_UNLOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
     return 0;

@@ -171,4 +171,11 @@ module example-test {
       amm:type "/ARITYPE/UVAST";
     }
   }
+  amm:tbr tbr_rule {
+    amm:enum 30;
+    description
+      "Generate telemetry reports.";
+    amm:action "/AC/(./CTRL/first,./CTRL/other)";
+    amm:period "/TD/PT30S";
+  }
 }
