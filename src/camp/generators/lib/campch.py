@@ -126,7 +126,7 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
     def c_str(value:str) -> str:
         ''' Enforce an escaped text string in C source.
         '''
-        return '"' + str(value).replace('\\', '\\\\') + '"'
+        return '"' + str(value).replace('\\', '\\\\').replace('"', '\\"') + '"'
 
     def c_bytes_init(value:bytes) -> str:
         ''' Encode a byte string as a sequence of uint8_t values
