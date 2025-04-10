@@ -109,12 +109,13 @@ cace_ari_set_aritype({{ptrname}}, {{value.value | cpp_enum}});
 {%- elif value is ari_builtin('ac') -%}
 {
     {%- set c_varname = "acinit" + (depth|string) %}
+    {%- set i_varname = "item" + (depth|string) %}
     cace_ari_ac_t {{c_varname}};
     cace_ari_ac_init(&{{c_varname}});
 {%- for item in value.value %}
     {
-        cace_ari_t *item{{depth}} = cace_ari_list_push_back_new({{c_varname}}.items);
-        {{ ari_set_value('item' + (depth|string), item, depth+1) | indent(8) }}
+        cace_ari_t *{{i_varname}} = cace_ari_list_push_back_new({{c_varname}}.items);
+        {{ ari_set_value(i_varname, item, depth+1) | indent(8) }}
     }
 {%- endfor %}
     cace_ari_set_ac({{ptrname}}, &{{c_varname}});
@@ -122,12 +123,13 @@ cace_ari_set_aritype({{ptrname}}, {{value.value | cpp_enum}});
 {%- elif value is ari_builtin('am') -%}
 {
     {%- set c_varname = "aminit" + (depth|string) %}
+    {%- set i_varname = "item" + (depth|string) %}
     ari_am_t {{c_varname}};
     ari_am_init(&{{c_varname}});
 {%- for key, item in value.value.items() %}
     {
-        ari_t *item{{depth}} = ari_tree_safe_get({{c_varname}}.items, key)
-        {{ ari_set_value('item' + (depth|string), item, depth+1) | indent(8) }}
+        ari_t *{{i_varname}} = ari_tree_safe_get({{c_varname}}.items, key)
+        {{ ari_set_value(i_varname, item, depth+1) | indent(8) }}
     }
 {%- endfor %}
     ari_set_am({{ptrname}}, &{{c_varname}});
