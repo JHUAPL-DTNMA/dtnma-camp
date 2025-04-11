@@ -103,13 +103,14 @@ cace_ari_set_tstr({{ptrname}}, {{value.value | c_str}}, true);
     cace_data_init_view(&data, sizeof(raw), (cace_data_ptr_t)raw);
     cace_ari_set_bstr({{ptrname}}, &data, true);
 }
-#{%- elif value is ari_builtin('tp') -%}
-# TODO: cace_ari_set_tstr({{ptrname}}, {{value.value | c_str}}, true);
+{%- elif value is ari_builtin('tp') -%}
+{
+  {{ value.value | as_timespec }}
+  cace_ari_set_tp({{ptrname}}, ts);
+}
 {%- elif value is ari_builtin('td') -%}
 {
-  struct timespec ts;
-  ts.tv_sec = {{ (value.value.total_seconds()) }};
-  ts.tv_nsec = {{ (str(value.value.total_seconds()).split(".")[1]) if "." in str(value.value.total_seconds()) else 0 }};
+  {{ value.value | as_timespec }}
   cace_ari_set_td({{ptrname}}, ts);
 }
 {#- Non-primitive types #}
