@@ -100,6 +100,26 @@ extern "C" {
 {%- endfor %}
 {%- endif %}
 
+{%- if adm.sbr %}
+
+/*
+ * Enumerations for SBR objects
+ */
+{%- for obj in adm.sbr %}
+{{obj_enum(obj)}}
+{%- endfor %}
+{%- endif %}
+
+{%- if adm.tbr %}
+
+/*
+ * Enumerations for TBR objects
+ */
+{%- for obj in adm.tbr %}
+{{obj_enum(obj)}}
+{%- endfor %}
+{%- endif %}
+
 /** Initializer for the ADM module {{adm.module_name}}.
  * @param[in,out] agent The agent to register this namespace and its
  * objects within.
