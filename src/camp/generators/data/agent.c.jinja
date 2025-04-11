@@ -103,6 +103,15 @@ cace_ari_set_tstr({{ptrname}}, {{value.value | c_str}}, true);
     cace_data_init_view(&data, sizeof(raw), (cace_data_ptr_t)raw);
     cace_ari_set_bstr({{ptrname}}, &data, true);
 }
+#{%- elif value is ari_builtin('tp') -%}
+# TODO: cace_ari_set_tstr({{ptrname}}, {{value.value | c_str}}, true);
+{%- elif value is ari_builtin('td') -%}
+{
+  struct timespec ts;
+  ts.tv_sec = {{ (value.value.total_seconds()) }};
+  ts.tv_nsec = {{ (str(value.value.total_seconds()).split(".")[1]) if "." in str(value.value.total_seconds()) else 0 }};
+  cace_ari_set_td({{ptrname}}, ts);
+}
 {#- Non-primitive types #}
 {%- elif value is ari_builtin('aritype') -%}
 cace_ari_set_aritype({{ptrname}}, {{value.value | cpp_enum}});
@@ -416,14 +425,19 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             refda_amm_tbr_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_tbr_desc_t));
             refda_amm_tbr_desc_init(objdata);
             // action
-            {{ ari_set_value('&(objdata->action)', obj.action) | indent(12) }}
-            // start_time
+            {{ ari_set_value('&(objdata->action)', obj.action_ari) | indent(12) }}
             // period
-            {{ ari_set_value('&(objdata->period)', obj.period) | indent(12) }}
-            // enabled
-            // max_exec_count
+            {{ ari_set_value('&(objdata->period)', obj.period_ari) | indent(12) }}
+            // start_time
+            {{ ari_set_value('&(objdata->start_time)', obj.start_ari) | indent(12) }}
             // init_enabled
-            // enabled
+            objdata->init_enabled = {{obj.init_enabled | c_bool | indent(12)}};
+            // max_exec_count
+            objdata->max_exec_count = {{obj.max_count | c_int | indent(12)}};
+
+            // TODO: can we enable now? Or do we have to wait until ADM is initialized??
+            // probably best to wait, and have a job that starts all known rules once all
+            // ADM's are initialized
 
             obj = refda_register_tbr(adm, cace_amm_idseg_ref_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
         }

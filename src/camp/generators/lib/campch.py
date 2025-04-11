@@ -32,6 +32,7 @@ import ace
 from ace.typing import BUILTINS
 from ace import models, ari, ari_text
 from ace.lookup import dereference, ORM_TYPE
+from datetime import datetime
 import re
 
 LOGGER = logging.getLogger(__name__)
@@ -150,6 +151,12 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         enc.encode(ari, buf)
         return buf.getvalue()
 
+    def as_timespec(value:datetime) -> str:
+      seconds = value.total_seconds()
+      tv_sec = int(seconds)
+      tv_nsec = int(str(seconds).split(".")[1]) if "." in str(seconds) else 0 
+      return f"struct timespec ts; ts.tv_sec = {tv_sec}; ts.tv_nsec = {tv_nsec};"
+
     def ref_text(obj:models.AdmObjMixin) -> str:
         ''' Create a text reference for an AMM object.
         '''
@@ -205,6 +212,7 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         'c_bytes_init': c_bytes_init,
         'rewrap': rewrap,
         'as_text': as_text,
+        'as_timespec': as_timespec,
         'ref_text': ref_text,
         'deref': deref,
         'sql_name': sql_name,
