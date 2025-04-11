@@ -415,7 +415,30 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
         }
 {%- endfor %}
 {%- endif %}
-{# FIXME add SBR and TBRs #}
+{%- if adm.sbr %}
+
+        /**
+         * Register SBR objects
+         */
+{%- for obj in adm.sbr %}
+        { // For {{obj | ref_text}}
+            refda_amm_sbr_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_sbr_desc_t));
+            refda_amm_sbr_desc_init(objdata);
+            // action
+            {{ ari_set_value('&(objdata->action)', obj.action_ari) | indent(12) }}
+            // condition
+            {{ ari_set_value('&(objdata->condition)', obj.condition_ari) | indent(12) }}
+            // min_interval
+            {{ ari_set_value('&(objdata->min_interval)', obj.min_interval_ari) | indent(12) }}
+            // init_enabled
+            objdata->init_enabled = {{obj.init_enabled | c_bool | indent(12)}};
+            // max_exec_count
+            objdata->max_exec_count = {{obj.max_count | c_int | indent(12)}};
+
+            obj = refda_register_sbr(adm, cace_amm_idseg_ref_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
+        }
+{%- endfor %}
+{%- endif %}
 {%- if adm.tbr %}
 
         /**
@@ -435,10 +458,6 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             objdata->init_enabled = {{obj.init_enabled | c_bool | indent(12)}};
             // max_exec_count
             objdata->max_exec_count = {{obj.max_count | c_int | indent(12)}};
-
-            // TODO: can we enable now? Or do we have to wait until ADM is initialized??
-            // probably best to wait, and have a job that starts all known rules once all
-            // ADM's are initialized
 
             obj = refda_register_tbr(adm, cace_amm_idseg_ref_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
         }
