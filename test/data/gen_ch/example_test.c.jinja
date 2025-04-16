@@ -489,6 +489,153 @@ int refda_adm_example_test_init(refda_agent_t *agent)
             // no parameters
         }
 
+        /**
+         * Register SBR objects
+         */
+        { // For ./SBR/sbr1
+            refda_amm_sbr_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_sbr_desc_t));
+            refda_amm_sbr_desc_init(objdata);
+            // action
+            {
+                cace_ari_ac_t acinit;
+                cace_ari_ac_init(&acinit);
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    // ari://example/test/CTRL/first
+                    // FIXME reference to unknown object
+                }
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    // ari://example/test/CTRL/second
+                    // FIXME reference to unknown object
+                }
+                cace_ari_set_ac(&(objdata->action), &acinit);
+            }
+            // condition
+            {
+                cace_ari_ac_t acinit;
+                cace_ari_ac_init(&acinit);
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    // ari://example/test/EDD/sensor
+                    // FIXME reference to unknown object
+                }
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    // ari://example/test/VAR/min_threshold
+                    // FIXME reference to unknown object
+                }
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    // ari://example/test/OPER/compare_lt
+                    // FIXME reference to unknown object
+                }
+                cace_ari_set_ac(&(objdata->condition), &acinit);
+            }
+            // min_interval
+            {
+              struct timespec ts; ts.tv_sec = 30; ts.tv_nsec = 0;
+              cace_ari_set_td(&(objdata->min_interval), ts);
+            }
+            // init_enabled
+            objdata->init_enabled = false;
+            // max_exec_count
+            objdata->max_exec_count = 10;
+
+            obj = refda_register_sbr(adm, cace_amm_idseg_ref_withenum("sbr1", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_SBR_SBR1), objdata);
+        }
+        { // For ./SBR/sbr2
+            refda_amm_sbr_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_sbr_desc_t));
+            refda_amm_sbr_desc_init(objdata);
+            // action
+            {
+                cace_ari_ac_t acinit;
+                cace_ari_ac_init(&acinit);
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    // ari://example/test/CTRL/first
+                    // FIXME reference to unknown object
+                }
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    // ari://example/test/CTRL/second
+                    // FIXME reference to unknown object
+                }
+                cace_ari_set_ac(&(objdata->action), &acinit);
+            }
+            // condition
+            {
+                cace_ari_ac_t acinit;
+                cace_ari_ac_init(&acinit);
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    // ari://example/test/EDD/sensor
+                    // FIXME reference to unknown object
+                }
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    // ari://example/test/VAR/min_threshold
+                    // FIXME reference to unknown object
+                }
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    // ari://example/test/OPER/compare_lt
+                    // FIXME reference to unknown object
+                }
+                cace_ari_set_ac(&(objdata->condition), &acinit);
+            }
+            // min_interval
+            {
+              struct timespec ts; ts.tv_sec = 0; ts.tv_nsec = 0;
+              cace_ari_set_td(&(objdata->min_interval), ts);
+            }
+            // init_enabled
+            objdata->init_enabled = true;
+            // max_exec_count
+            objdata->max_exec_count = 0;
+
+            obj = refda_register_sbr(adm, cace_amm_idseg_ref_withenum("sbr2", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_SBR_SBR2), objdata);
+        }
+
+        /**
+         * Register TBR objects
+         */
+        { // For ./TBR/tbr_rule
+            refda_amm_tbr_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_tbr_desc_t));
+            refda_amm_tbr_desc_init(objdata);
+            // action
+            {
+                cace_ari_ac_t acinit;
+                cace_ari_ac_init(&acinit);
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    // ari://example/test/CTRL/first
+                    // FIXME reference to unknown object
+                }
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    // ari://example/test/CTRL/other
+                    // FIXME reference to unknown object
+                }
+                cace_ari_set_ac(&(objdata->action), &acinit);
+            }
+            // period
+            {
+              struct timespec ts; ts.tv_sec = 30; ts.tv_nsec = 0;
+              cace_ari_set_td(&(objdata->period), ts);
+            }
+            // start_time
+            {
+              struct timespec ts; ts.tv_sec = 0; ts.tv_nsec = 0;
+              cace_ari_set_td(&(objdata->start_time), ts);
+            }
+            // init_enabled
+            objdata->init_enabled = true;
+            // max_exec_count
+            objdata->max_exec_count = 0;
+
+            obj = refda_register_tbr(adm, cace_amm_idseg_ref_withenum("tbr_rule", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_TBR_TBR__RULE), objdata);
+        }
     }
     REFDA_AGENT_UNLOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
     return 0;
