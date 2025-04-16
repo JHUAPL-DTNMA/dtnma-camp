@@ -105,12 +105,12 @@ cace_ari_set_tstr({{ptrname}}, {{value.value | c_str}}, true);
 }
 {%- elif value is ari_builtin('tp') -%}
 {
-  {{ value.value | as_timespec }}
+  struct timespec ts = {{ value.value | as_timeperiod }};
   cace_ari_set_tp({{ptrname}}, ts);
 }
 {%- elif value is ari_builtin('td') -%}
 {
-  {{ value.value | as_timespec }}
+  struct timespec ts = {{ value.value | as_timedelta }};
   cace_ari_set_td({{ptrname}}, ts);
 }
 {#- Non-primitive types #}
