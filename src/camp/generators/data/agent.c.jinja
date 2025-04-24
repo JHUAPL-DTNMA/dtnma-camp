@@ -76,7 +76,7 @@ Produced type: {{type_summary(obj.typeobj)}}
 {%- endif %}
 {%- endmacro -%}
 
-{%- macro ari_set_value(ptrname, value) -%}
+{%- macro ari_set_value(ptrname, value, depth = 0) -%}
 {%- if value is instance(ari.LiteralARI) -%}
 {#- Primitive types #}
 {%- if value is ari_builtin('null') -%}
@@ -108,15 +108,31 @@ cace_ari_set_tstr({{ptrname}}, {{value.value | c_str}}, true);
 cace_ari_set_aritype({{ptrname}}, {{value.value | cpp_enum}});
 {%- elif value is ari_builtin('ac') -%}
 {
-    cace_ari_ac_t acinit;
-    cace_ari_ac_init(&acinit);
+    {%- set c_varname = "acinit" + (depth|string) %}
+    {%- set i_varname = "item" + (depth|string) %}
+    cace_ari_ac_t {{c_varname}};
+    cace_ari_ac_init(&{{c_varname}});
 {%- for item in value.value %}
     {
-        cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
-        {{ ari_set_value('item', item) | indent(8) }}
+        cace_ari_t *{{i_varname}} = cace_ari_list_push_back_new({{c_varname}}.items);
+        {{ ari_set_value(i_varname, item, depth+1) | indent(8) }}
     }
 {%- endfor %}
-    cace_ari_set_ac({{ptrname}}, &acinit);
+    cace_ari_set_ac({{ptrname}}, &{{c_varname}});
+}
+{%- elif value is ari_builtin('am') -%}
+{
+    {%- set c_varname = "aminit" + (depth|string) %}
+    {%- set i_varname = "item" + (depth|string) %}
+    ari_am_t {{c_varname}};
+    ari_am_init(&{{c_varname}});
+{%- for key, item in value.value.items() %}
+    {
+        ari_t *{{i_varname}} = ari_tree_safe_get({{c_varname}}.items, key)
+        {{ ari_set_value(i_varname, item, depth+1) | indent(8) }}
+    }
+{%- endfor %}
+    ari_set_am({{ptrname}}, &{{c_varname}});
 }
 {%- else %}
 // FIXME unhandled value {{value}}

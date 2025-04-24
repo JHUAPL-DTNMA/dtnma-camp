@@ -278,14 +278,14 @@ int refda_adm_example_test_init(refda_agent_t *agent)
             refda_amm_const_desc_init(objdata);
             // constant value:
             {
-                cace_ari_ac_t acinit;
-                cace_ari_ac_init(&acinit);
+                cace_ari_ac_t acinit0;
+                cace_ari_ac_init(&acinit0);
                 {
-                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    cace_ari_t *item0 = cace_ari_list_push_back_new(acinit0.items);
                     // ari://example/test/CONST/const1
-                    cace_ari_set_objref_path_intid(item, 65535, 9999, CACE_ARI_TYPE_CONST, 0);
+                    cace_ari_set_objref_path_intid(item0, 65535, 9999, CACE_ARI_TYPE_CONST, 0);
                 }
-                cace_ari_set_ac(&(objdata->value), &acinit);
+                cace_ari_set_ac(&(objdata->value), &acinit0);
             }
 
             obj = refda_register_const(adm, cace_amm_idseg_ref_withenum("showall", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_CONST_SHOWALL), objdata);
