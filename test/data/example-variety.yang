@@ -1,0 +1,193 @@
+module example-variety {
+  yang-version 1.1;
+  namespace "ari://example/variety/";
+  prefix test;
+
+  import ietf-amm {
+    prefix amm;
+  }
+
+  organization
+    "Example Org." {
+    amm:enum 65535;
+  }
+  contact
+    "WG Web: <http://tools.ietf.org/wg/dtn/>
+     WG List: <mailto:dtn@ietf.org>
+
+     Author: Jenny Cao
+             <mailto:jenny.cao@jhuapl.edu>";
+  description
+    "Test module.";
+
+  revision 2025-04-17 {
+    description
+      "First YANG test ADM";
+    reference
+      "draft-ietf-dtn-adm-yang";
+  }
+
+  feature example {
+    description
+      "some feature";
+  }
+
+  grouping variety-params {
+    status current;
+    description
+      "grouping of variety of parameters";
+    amm:parameter object {
+      description
+        "object param";
+      amm:type "/ARITYPE/OBJECT";
+    }
+    amm:parameter text {
+      description
+        "constrained text param";
+      amm:default "%22%5C%5C%22value%5C%27%3f%07%08%0c%0a%0d%09%0b%22";
+      amm:type "/ARITYPE/TEXTSTR" {
+        length "0..20";
+        pattern "*value*";
+      }
+    }
+    amm:parameter ulist {
+      description
+        "ulist param";
+      amm:default "/AC/(0,1)";
+      amm:ulist {
+        amm:type "/ARITYPE/UINT" {
+          range "0..9";
+          units "digits";
+        }
+        min-elements 1;
+        max-elements 2;
+      }
+    }
+    amm:parameter dlist {
+      description
+        "dlist param";
+      amm:default "/AC/(start, 0, 5, end)";
+      amm:dlist {
+        amm:type "/ARITYPE/TEXTSTR";
+        amm:seq {
+          amm:type "/ARITYPE/UINT" {
+          range "0..9";
+          units "digits";
+        }
+          min-elements 1;
+          max-elements 5;
+        }
+        amm:type "/ARITYPE/TEXTSTR";
+      }
+    }
+  }
+
+  amm:enum 9999;
+  amm:ident ident_base {
+    amm:enum 0;
+    description
+      "Ident to use as base.";
+    amm:parameter description {
+      description
+        "Text description.";
+      amm:type "/ARITYPE/TEXTSTR";
+    }
+  }
+  amm:ident ident_ext {
+    amm:enum 1;
+    description
+      "Ident with base.";
+    amm:base "./IDENT/ident_base";
+    uses variety-params;
+  }
+  amm:typedef counter {
+    amm:enum 26;
+    description
+      "uint counter";
+    amm:type "/ARITYPE/UINT";
+  }
+  amm:edd edd_uvast {
+    amm:enum 0;
+    description
+      "Example UVAST EDD.";
+    amm:type "/ARITYPE/UVAST";
+    uses variety-params;
+  }
+  amm:edd obj_list {
+    amm:enum 1;
+    description
+      "A table of objects within the agent.";
+    amm:tblt {
+      amm:key "obj";
+      amm:column obj {
+        amm:type "/ARITYPE/OBJECT";
+      }
+      amm:column objtype {
+        amm:type "/ARITYPE/aritype";
+      }
+      amm:column semtype {
+        amm:type "//ietf/amm/TYPEDEF/semtype";
+      }
+    }
+  }
+  amm:var var_uvast {
+    amm:enum 0;
+    description
+      "Example UVAST VAR.";
+    amm:init-value "0";
+    amm:type "/ARITYPE/UVAST";
+    uses variety-params;
+  }
+  amm:const const_uvast {
+    if-feature "example";
+    amm:enum 0;
+    description
+      "Example UVAST CONST.";
+    amm:init-value "0";
+    amm:type "/ARITYPE/UVAST";
+    uses variety-params;
+  }
+  amm:const const_rptt {
+    if-feature "example";
+    amm:enum 1;
+    description
+      "Example UVAST CONST.";
+    amm:init-value "0";
+    amm:type "//ietf/amm/TYPEDEF/rptt";
+    uses variety-params;
+  }
+  amm:ctrl ctrl_uvast {
+    amm:enum 0;
+    description
+      "Get a single MIB value from the agent.";
+    uses variety-params;
+    amm:result res {
+      description
+        "Encoded value of the object.";
+      amm:type "/ARITYPE/UVAST";
+    }
+  }
+  amm:oper add {
+    amm:enum 0;
+    description
+      "Add two uvast values.
+       The operands are cast to the least compatible numeric type
+       before the arithmetic.";
+    uses variety-params;
+    amm:operand left {
+      description
+        "The left-side operand.";
+      amm:type "/ARITYPE/UVAST";
+    }
+    amm:operand right {
+      description
+        "The left-side operand.";
+      amm:type "/ARITYPE/UVAST";
+    }
+    amm:result result {
+      description
+        "The single value.";
+      amm:type "/ARITYPE/UVAST";
+    }
+  }
+}
