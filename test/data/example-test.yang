@@ -195,5 +195,6 @@ module example-test {
       "Generate telemetry reports.";
     amm:action "/AC/(./CTRL/first,./CTRL/other)";
     amm:period "/TD/PT30S";
+    amm:start "/TP/20.5";
   }
 }

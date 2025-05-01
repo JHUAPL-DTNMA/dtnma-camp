@@ -32,7 +32,7 @@ import ace
 from ace.typing import BUILTINS
 from ace import models, ari, ari_text
 from ace.lookup import dereference, ORM_TYPE
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import re
 
 LOGGER = logging.getLogger(__name__)
@@ -152,7 +152,8 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         return buf.getvalue()
 
     def as_timeperiod(value:datetime) -> str:
-      seconds = value.total_seconds()
+      seconds = value.replace(tzinfo=timezone.utc).timestamp()
+      #seconds = value.timestamp()
       tv_sec = int(seconds)
       tv_nsec = int(str(seconds).split(".")[1]) if "." in str(seconds) else 0 
       return f"{{{tv_sec}, {tv_nsec}}}"
