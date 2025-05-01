@@ -153,7 +153,6 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
 
     def as_timeperiod(value:datetime) -> str:
       seconds = value.replace(tzinfo=timezone.utc).timestamp()
-      #seconds = value.timestamp()
       tv_sec = int(seconds)
       tv_nsec = int(str(seconds).split(".")[1]) if "." in str(seconds) else 0 
       return f"{{{tv_sec}, {tv_nsec}}}"
