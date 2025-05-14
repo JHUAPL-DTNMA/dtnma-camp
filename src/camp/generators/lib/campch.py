@@ -25,6 +25,7 @@ import io
 import logging
 import ace.models
 import jinja2
+import math
 import textwrap
 import typing
 from typing import Union, Optional
@@ -153,14 +154,16 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
 
     def as_timepoint(value:datetime) -> str:
       seconds = value.replace(tzinfo=timezone.utc).timestamp()
-      tv_sec = int(seconds)
-      tv_nsec = int(str(seconds).split(".")[1]) if "." in str(seconds) else 0 
+      frac_secs, whole_secs = math.modf(seconds)
+      tv_sec = int(whole_secs)
+      tv_nsec = int(frac_secs * (10 ** 9)) # Convert from seconds to nanoseconds
       return f"{{{tv_sec}, {tv_nsec}}}"
 
     def as_timedelta(value:timedelta) -> str:
       seconds = value.total_seconds()
-      tv_sec = int(seconds)
-      tv_nsec = int(str(seconds).split(".")[1]) if "." in str(seconds) else 0 
+      frac_secs, whole_secs = math.modf(seconds)
+      tv_sec = int(whole_secs)
+      tv_nsec = int(frac_secs * (10 ** 9)) # Convert from seconds to nanoseconds
       return f"{{{tv_sec}, {tv_nsec}}}"
 
     def ref_text(obj:models.AdmObjMixin) -> str:
