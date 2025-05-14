@@ -151,7 +151,7 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         enc.encode(ari, buf)
         return buf.getvalue()
 
-    def as_timeperiod(value:datetime) -> str:
+    def as_timepoint(value:datetime) -> str:
       seconds = value.replace(tzinfo=timezone.utc).timestamp()
       tv_sec = int(seconds)
       tv_nsec = int(str(seconds).split(".")[1]) if "." in str(seconds) else 0 
@@ -218,7 +218,7 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         'c_bytes_init': c_bytes_init,
         'rewrap': rewrap,
         'as_text': as_text,
-        'as_timeperiod': as_timeperiod,
+        'as_timepoint': as_timepoint,
         'as_timedelta': as_timedelta,
         'ref_text': ref_text,
         'deref': deref,

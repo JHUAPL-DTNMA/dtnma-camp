@@ -105,7 +105,7 @@ cace_ari_set_tstr({{ptrname}}, {{value.value | c_str}}, true);
 }
 {%- elif value is ari_builtin('tp') -%}
 {
-  struct timespec ts = {{ value.value | as_timeperiod }};
+  struct timespec ts = {{ value.value | as_timepoint }};
   cace_ari_set_tp({{ptrname}}, ts);
 }
 {%- elif value is ari_builtin('td') -%}
