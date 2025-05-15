@@ -626,7 +626,7 @@ int refda_adm_example_test_init(refda_agent_t *agent)
             }
             // start_time
             {
-              struct timespec ts = {946684820, 5};
+              struct timespec ts = {946684820, 500000000};
               cace_ari_set_tp(&(objdata->start_time), ts);
             }
             // init_enabled
