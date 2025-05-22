@@ -171,4 +171,30 @@ module example-test {
       amm:type "/ARITYPE/UVAST";
     }
   }
+  amm:sbr sbr1 {
+    amm:enum 8;
+    description
+      "";
+    amm:action "/AC/(./CTRL/first,./CTRL/second)";
+    amm:condition "/AC/(./EDD/sensor,./VAR/min_threshold,./OPER/compare_lt)";
+    amm:min-interval "/TD/PT30S";
+    amm:init-enabled false;
+    amm:max-count 10;
+  }
+
+  amm:sbr sbr2 {
+    amm:enum 9;
+    description
+      "";
+    amm:action "/AC/(./CTRL/first,./CTRL/second)";
+    amm:condition "/AC/(./EDD/sensor,./VAR/min_threshold,./OPER/compare_lt)";
+  }
+  amm:tbr tbr_rule {
+    amm:enum 30;
+    description
+      "Generate telemetry reports.";
+    amm:action "/AC/(./CTRL/first,./CTRL/other)";
+    amm:period "/TD/PT30S";
+    amm:start "/TP/20.5";
+  }
 }

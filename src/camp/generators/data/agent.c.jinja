@@ -103,6 +103,16 @@ cace_ari_set_tstr({{ptrname}}, {{value.value | c_str}}, true);
     cace_data_init_view(&data, sizeof(raw), (cace_data_ptr_t)raw);
     cace_ari_set_bstr({{ptrname}}, &data, true);
 }
+{%- elif value is ari_builtin('tp') -%}
+{
+  struct timespec ts = {{ value.value | as_timepoint }};
+  cace_ari_set_tp({{ptrname}}, ts);
+}
+{%- elif value is ari_builtin('td') -%}
+{
+  struct timespec ts = {{ value.value | as_timedelta }};
+  cace_ari_set_td({{ptrname}}, ts);
+}
 {#- Non-primitive types #}
 {%- elif value is ari_builtin('aritype') -%}
 cace_ari_set_aritype({{ptrname}}, {{value.value | cpp_enum}});
@@ -421,7 +431,54 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
         }
 {%- endfor %}
 {%- endif %}
-{# FIXME add SBR and TBRs #}
+{%- if adm.sbr %}
+
+        /**
+         * Register SBR objects
+         */
+{%- for obj in adm.sbr %}
+        { // For {{obj | ref_text}}
+            refda_amm_sbr_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_sbr_desc_t));
+            refda_amm_sbr_desc_init(objdata);
+            // action
+            {{ ari_set_value('&(objdata->action)', obj.action_ari) | indent(12) }}
+            // condition
+            {{ ari_set_value('&(objdata->condition)', obj.condition_ari) | indent(12) }}
+            // min_interval
+            {{ ari_set_value('&(objdata->min_interval)', obj.min_interval_ari) | indent(12) }}
+            // init_enabled
+            objdata->init_enabled = {{obj.init_enabled | c_bool | indent(12)}};
+            // max_exec_count
+            objdata->max_exec_count = {{obj.max_count | c_int | indent(12)}};
+
+            obj = refda_register_sbr(adm, cace_amm_idseg_ref_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
+        }
+{%- endfor %}
+{%- endif %}
+{%- if adm.tbr %}
+
+        /**
+         * Register TBR objects
+         */
+{%- for obj in adm.tbr %}
+        { // For {{obj | ref_text}}
+            refda_amm_tbr_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_tbr_desc_t));
+            refda_amm_tbr_desc_init(objdata);
+            // action
+            {{ ari_set_value('&(objdata->action)', obj.action_ari) | indent(12) }}
+            // period
+            {{ ari_set_value('&(objdata->period)', obj.period_ari) | indent(12) }}
+            // start_time
+            {{ ari_set_value('&(objdata->start_time)', obj.start_ari) | indent(12) }}
+            // init_enabled
+            objdata->init_enabled = {{obj.init_enabled | c_bool | indent(12)}};
+            // max_exec_count
+            objdata->max_exec_count = {{obj.max_count | c_int | indent(12)}};
+
+            obj = refda_register_tbr(adm, cace_amm_idseg_ref_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
+        }
+{%- endfor %}
+{%- endif %}
     }
     REFDA_AGENT_UNLOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
     return 0;

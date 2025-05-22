@@ -25,14 +25,14 @@ import io
 import logging
 import ace.models
 import jinja2
+import math
 import textwrap
-import typing
 from typing import Union, Optional
 import ace
 from ace.typing import BUILTINS
 from ace import models, ari, ari_text
 from ace.lookup import dereference, ORM_TYPE
-import re
+from datetime import datetime, timedelta, timezone
 
 LOGGER = logging.getLogger(__name__)
 
@@ -52,6 +52,7 @@ def yang_to_sql(identifier):
     if identifier:
         return identifier.replace('-', '_').replace('.', '_p_')
     return ""
+
 
 def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
     ''' Set state of a jinja environment for ADM implementation
@@ -152,6 +153,17 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         enc.encode(ari, buf)
         return buf.getvalue()
 
+    def as_timepoint(value:datetime) -> str:
+        diff = value - ari.DTN_EPOCH
+        tv_sec = diff.seconds + 24 * 60 * 60 * diff.days
+        tv_nsec = 1000 * diff.microseconds  # Convert to nanoseconds
+        return f"{{{tv_sec}, {tv_nsec}}}"
+
+    def as_timedelta(value:timedelta) -> str:
+        tv_sec = value.seconds + 24 * 60 * 60 * value.days
+        tv_nsec = 1000 * value.microseconds  # Convert to nanoseconds
+        return f"{{{tv_sec}, {tv_nsec}}}"
+
     def ref_text(obj:models.AdmObjMixin) -> str:
         ''' Create a text reference for an AMM object.
         '''
@@ -167,7 +179,7 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         typeobj = BUILTINS[typename]
         got = typeobj.get(ari)
         return got is not None
-    
+
     def sql_name(value:str) -> str:
         ''' valid sql name
         '''
@@ -177,19 +189,17 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         ''' formatting a name to be a sql variable
         '''
         if obj:
-            return yang_to_sql(obj.__tablename__).lower()+"_"+yang_to_sql(obj.name).lower()
+            return yang_to_sql(obj.__tablename__).lower() + "_" + yang_to_sql(obj.name).lower()
         return "None"
 
-
     def sql_string(value:str) -> str:
-        ''' escape string and add quotes for sql 
+        ''' escape string and add quotes for sql
         '''
         if value:
-            return  '\'' + value.replace('\\', '\\\\').replace("'",' `').replace('\n', ' ') + '\''
+            return  '\'' + value.replace('\\', '\\\\').replace("'", ' `').replace('\n', ' ') + '\''
         else:
             return '\'\''
 
-    
     env.globals |= {
         'ari': ace.ari,
         'typing': ace.typing,
@@ -207,13 +217,13 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         'c_bytes_init': c_bytes_init,
         'rewrap': rewrap,
         'as_text': as_text,
+        'as_timepoint': as_timepoint,
+        'as_timedelta': as_timedelta,
         'ref_text': ref_text,
         'deref': deref,
         'sql_name': sql_name,
         'sql_string': sql_string,
         'sql_var_name': sql_var_name,
-        
-
 
     }
     env.tests |= {
