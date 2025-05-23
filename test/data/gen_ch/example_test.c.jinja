@@ -543,6 +543,15 @@ int refda_adm_example_test_init(refda_agent_t *agent)
             objdata->max_exec_count = 10;
 
             obj = refda_register_sbr(adm, cace_amm_idseg_ref_withenum("sbr1", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_SBR_SBR1), objdata);
+
+            if (obj && obj->app_data.ptr)
+            {
+                refda_amm_sbr_desc_t *desc = obj->app_data.ptr;
+                if (desc->init_enabled)
+                {
+                    refda_exec_sbr_enable(agent, desc);
+                }
+            }
         }
         { // For ./SBR/sbr2
             refda_amm_sbr_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_sbr_desc_t));
@@ -595,6 +604,15 @@ int refda_adm_example_test_init(refda_agent_t *agent)
             objdata->max_exec_count = 0;
 
             obj = refda_register_sbr(adm, cace_amm_idseg_ref_withenum("sbr2", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_SBR_SBR2), objdata);
+
+            if (obj && obj->app_data.ptr)
+            {
+                refda_amm_sbr_desc_t *desc = obj->app_data.ptr;
+                if (desc->init_enabled)
+                {
+                    refda_exec_sbr_enable(agent, desc);
+                }
+            }
         }
 
         /**
@@ -635,6 +653,15 @@ int refda_adm_example_test_init(refda_agent_t *agent)
             objdata->max_exec_count = 0;
 
             obj = refda_register_tbr(adm, cace_amm_idseg_ref_withenum("tbr_rule", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_TBR_TBR__RULE), objdata);
+
+            if (obj && obj->app_data.ptr)
+            {
+                refda_amm_tbr_desc_t *desc = obj->app_data.ptr;
+                if (desc->init_enabled)
+                {
+                    refda_exec_tbr_enable(agent, desc);
+                }
+            }
         }
     }
     REFDA_AGENT_UNLOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);

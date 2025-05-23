@@ -452,6 +452,15 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             objdata->max_exec_count = {{obj.max_count | c_int | indent(12)}};
 
             obj = refda_register_sbr(adm, cace_amm_idseg_ref_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
+
+            if (obj && obj->app_data.ptr)
+            {
+                refda_amm_sbr_desc_t *desc = obj->app_data.ptr;
+                if (desc->init_enabled)
+                {
+                    refda_exec_sbr_enable(agent, desc);
+                }
+            }
         }
 {%- endfor %}
 {%- endif %}
@@ -476,6 +485,15 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             objdata->max_exec_count = {{obj.max_count | c_int | indent(12)}};
 
             obj = refda_register_tbr(adm, cace_amm_idseg_ref_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
+
+            if (obj && obj->app_data.ptr)
+            {
+                refda_amm_tbr_desc_t *desc = obj->app_data.ptr;
+                if (desc->init_enabled)
+                {
+                    refda_exec_tbr_enable(agent, desc);
+                }
+            }
         }
 {%- endfor %}
 {%- endif %}
