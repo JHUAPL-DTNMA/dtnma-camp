@@ -5,12 +5,23 @@
 {%- for param in obj.parameters.items -%}
 {%- set count = count + 1  -%}
 {%- set curr_param = ""-%}
-{%- if param.typeobj %}
-{%- set curr_param = param.typeobj.type_text -%}
+
+{%- if param.typeobj is instance(typing.TypeUse) -%}
+{%- set curr_param = param.typeobj.type_text~'/' -%}
+{%- elif param.typeobj is instance(typing.UniformList) -%}
+{%- set curr_param = param.typeobj.base.type_text~'/' -%}
+{%- elif param.typeobj is instance(typing.TypeUnion) -%}
+{%- set curr_param = []-%}
+{%- for choice in param.typeobj.types -%}
+{%- set curr_param =  curr_param.append(choice.type_text)-%}
+{%- endfor -%}
+{%- set curr_param = curr_param|join('|')~'/' -%}
+{%- else -%}
+{%- set curr_param = 'unhandledType/' -%}
 {%- endif %}
-{%- set params = params.append(curr_param~"."~param.name) -%}
+{%- set params = params.append(curr_param~param.name) -%}
 {% endfor %}
-CALL SP__insert_formal_parmspec( {{obj.parameters.items|length}}, 'formal parameters for {{obj.name | sql_name}}', '{{params|join(', ')}}',fp_spec_id);
+CALL SP__insert_formal_parmspec( {{obj.parameters.items|length}}, 'formal parameters for {{obj.name | sql_name}}', '{{params|join(',')}}',fp_spec_id);
 {%- endmacro %}
 {%- macro gen_metadata(enum, obj) %}
 {%- set status = 'null' %}
@@ -99,7 +110,7 @@ BEGIN
 {%- set null_string = 'null' %}
 --namespace 
 --{{adm.ns_model_enum}}
-CALL SP__insert_data_model('ADM', '{{adm.module_name}}', {{adm.ns_model_enum if adm.ns_model_enum is defined else -1}}, {{"'"~adm.ns_org_name~"'" if adm.ns_org_name else null_string }}, {{"'"~adm.latest_revision_date~"'" if adm.latest_revision_date else null_string}} , {{"'"~adm.revisions[-1].description~"'" if adm.revisions[-1].description else null_string}}, r_data_model_id);
+CALL SP__insert_data_model('ADM', '{{adm.ns_model_name}}', {{adm.ns_model_enum if adm.ns_model_enum is defined else -1}}, {{"'"~adm.ns_org_name~"'" if adm.ns_org_name else null_string }}, {{"'"~adm.latest_revision_date~"'" if adm.latest_revision_date else null_string}} , {{"'"~adm.revisions[-1].description~"'" if adm.revisions[-1].description else null_string}}, r_data_model_id);
 
 {%- if adm.ident %}
 {%- for obj in adm.ident %}
