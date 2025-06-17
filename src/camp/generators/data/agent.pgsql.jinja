@@ -21,7 +21,7 @@
 {%- endif %}
 {%- set params = params.append(curr_param~param.name) -%}
 {% endfor %}
-CALL SP__insert_formal_parmspec( {{obj.parameters.items|length}}, 'formal parameters for {{obj.name | sql_name}}', '{{params|join(',')}}',fp_spec_id);
+CALL SP__insert_formal_parmspec( {{obj.parameters.items|length}}, 'formal parameters for {{obj.name}}', '{{params|join(',')}}',fp_spec_id);
 {%- endmacro %}
 {%- macro gen_metadata(enum, obj) %}
 {%- set status = 'null' %}
@@ -36,7 +36,7 @@ CALL SP__insert_formal_parmspec( {{obj.parameters.items|length}}, 'formal parame
 {%- if obj.description  %}
 {%- set description = obj.description | sql_string %}
 {%- endif %}
-CALL SP__insert_obj_metadata({{enum}}, '{{obj.name | sql_name}}', r_data_model_id, {{obj.enum}}, {{status}}, {{reference}}, {{description}}, {{obj | sql_var_name}}_oid);
+CALL SP__insert_obj_metadata({{enum}}, '{{obj.name}}', r_data_model_id, {{obj.enum}}, {{status}}, {{reference}}, {{description}}, {{obj | sql_var_name}}_oid);
 {%- endmacro %}
 
 {%- macro gen_obj_variables(part) %}
@@ -120,7 +120,7 @@ CALL SP__insert_data_model('ADM', '{{adm.ns_model_name}}', {{adm.ns_model_enum i
 CALL SP__insert_ident_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, fp_spec_id, {{obj | sql_var_name}}_fid);
 {%- else %}
 CALL SP__insert_ident_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, NULL, {{obj | sql_var_name}}_fid);
-CALL SP__insert_ident_actual_definition({{obj | sql_var_name}}_oid, 'The singleton value for {{obj.name | sql_name}}', NULL, {{obj | sql_var_name}}_aid);
+CALL SP__insert_ident_actual_definition({{obj | sql_var_name}}_oid, 'The singleton value for {{obj.name}}', NULL, {{obj | sql_var_name}}_aid);
 {%- endif %}
 
 {%- endfor %}
@@ -152,7 +152,7 @@ CALL SP__insert_const_actual_definition({{obj | sql_var_name}}_oid, {{obj.descri
 CALL SP__insert_control_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, fp_spec_id, '{{result}}', {{obj | sql_var_name}}_fid);
 {%- else %}
 CALL SP__insert_control_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, NULL, '{{result}}', {{obj | sql_var_name}}_fid);
-CALL SP__insert_control_actual_definition({{obj | sql_var_name}}_oid, 'The singleton value for {{obj.name | sql_name}}', NULL, {{obj | sql_var_name}}_aid);
+CALL SP__insert_control_actual_definition({{obj | sql_var_name}}_oid, 'The singleton value for {{obj.name}}', NULL, {{obj | sql_var_name}}_aid);
 {%- endif %}
 
 {%- endfor %}
@@ -168,7 +168,7 @@ CALL SP__insert_control_actual_definition({{obj | sql_var_name}}_oid, 'The singl
 CALL SP__insert_edd_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, fp_spec_id, '{{obj.typeobj.type_text}}', {{obj | sql_var_name}}_fid);
 {%- else %}
 CALL SP__insert_edd_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, null, '{{obj.typeobj.type_text}}', {{obj | sql_var_name}}_fid);
-CALL SP__insert_edd_actual_definition({{obj | sql_var_name}}_oid, 'The singleton value for {{obj.name | sql_name}}', null, {{obj | sql_var_name}}_aid);
+CALL SP__insert_edd_actual_definition({{obj | sql_var_name}}_oid, 'The singleton value for {{obj.name}}', null, {{obj | sql_var_name}}_aid);
 {%- endif %}
 
 {%- endfor %}
@@ -192,7 +192,7 @@ CALL SP__insert_edd_actual_definition({{obj | sql_var_name}}_oid, 'The singleton
 CALL SP__insert_operator_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, fp_spec_id, {{num_operands}},  '{{opers|join(', ')}}', '{{obj.result.name}}', '{{obj.result.default_ari}}', {{obj | sql_var_name}}_fid);
 {%- else %}
 CALL SP__insert_operator_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, null, {{num_operands}}, '{{opers|join(', ')}}', '{{obj.result.name}}', '{{obj.result.default_ari}}', {{obj | sql_var_name}}_fid);
-CALL SP__insert_operator_actual_definition({{obj | sql_var_name}}_oid, 'The singleton value for {{obj.name | sql_name}}', null, {{obj | sql_var_name}}_aid);
+CALL SP__insert_operator_actual_definition({{obj | sql_var_name}}_oid, 'The singleton value for {{obj.name}}', null, {{obj | sql_var_name}}_aid);
 {%- endif %}
 {%- endfor %}
 
@@ -259,7 +259,7 @@ CALL SP__insert_tbr_actual_definition({{obj | sql_var_name}}_oid, {{obj.descript
 CALL SP__insert_variable_formal_definition({{obj | sql_var_name}}_oid, '{{obj.description | replace('\n', ' ')}}', fp_spec_id, '{{type}}', '{{expr}}', '{{init_value}}',{{obj | sql_var_name}}_fid);
 {%- else %}
 CALL SP__insert_variable_formal_definition({{obj | sql_var_name}}_oid, '{{obj.description | replace('\n', ' ')}}', {{null_string}}, '{{type}}', '{{expr}}', '{{init_value}}', {{obj | sql_var_name}}_fid);
-CALL SP__insert_variable_actual_definition({{obj | sql_var_name}}_oid, 'The singleton value for {{obj.name | sql_name}}', {{null_string}}, {{obj | sql_var_name}}_aid);
+CALL SP__insert_variable_actual_definition({{obj | sql_var_name}}_oid, 'The singleton value for {{obj.name}}', {{null_string}}, {{obj | sql_var_name}}_aid);
 {%- endif %}
 {%- endfor %}
 {%- endif %}
