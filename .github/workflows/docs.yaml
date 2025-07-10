@@ -45,7 +45,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  ACE_REPO: "git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@apl-fy24"
+  ACE_REPO: "git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@main"
 
 jobs:
   apidoc:
@@ -76,7 +76,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     needs: apidoc
-    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/apl-fy24' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/download-artifact@v4
