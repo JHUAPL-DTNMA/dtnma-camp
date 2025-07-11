@@ -34,10 +34,10 @@ sys.path.insert(0, os.path.abspath('../src/'))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'CAmp'
-copyright = '2022-2024, The Johns Hopkins University Applied Physics Laboratory'
+project = 'CAMP'
+copyright = '2022-2025, The Johns Hopkins University Applied Physics Laboratory'
 author = 'JHU/APL'
-release = get_distribution('anms-camp').version
+release = get_distribution('dtnma-camp').version
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

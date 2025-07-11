@@ -43,18 +43,18 @@ source ./build/venv/bin/activate
 echo "Installing dependencies..."
 if [[ ! -d ${SELFDIR}/deps/adms ]]
 then
-    git clone --branch apl-fy24 https://github.com/JHUAPL-DTNMA/dtnma-adms.git ${SELFDIR}/deps/adms
+    git clone --branch main https://github.com/JHUAPL-DTNMA/dtnma-adms.git ${SELFDIR}/deps/adms
 fi
 
 if [[ ! -d ${SELFDIR}/deps/dtnma-ace ]]
 then
-    git clone --branch apl-fy24 https://github.com/JHUAPL-DTNMA/dtnma-ace.git ${SELFDIR}/deps/dtnma-ace
+    git clone --branch main https://github.com/JHUAPL-DTNMA/dtnma-ace.git ${SELFDIR}/deps/dtnma-ace
 fi
 pip3 install ${SELFDIR}/deps/dtnma-ace
 
 if [[ ! -d ${SELFDIR}/deps/dtnma-tools ]]
 then
-    git clone --branch apl-fy24 https://github.com/JHUAPL-DTNMA/dtnma-tools.git ${SELFDIR}/deps/dtnma-tools
+    git clone --branch main https://github.com/JHUAPL-DTNMA/dtnma-tools.git ${SELFDIR}/deps/dtnma-tools
     pushd ${SELFDIR}/deps/dtnma-tools
     git submodule update --init --recursive
     popd

@@ -74,9 +74,9 @@ source .venv/bin/activate
 ```
 If you wish to deactivate your venv, simply run `deactivate`.
 
-Because CAmp utilizes ACE to run properly, one must install and set up ACE first before attempting to install and run CAmp. Set-up instructions for ACE can be found in the README [here](https://github.com/JHUAPL-DTNMA/dtnma-ace/tree/main). To install ACE via pip and point to a specific repo and branch (in this case, the apl-fy24 development branch) like so: 
+Because CAmp utilizes ACE to run properly, one must install and set up ACE first before attempting to install and run CAmp. Set-up instructions for ACE can be found in the README [here](https://github.com/JHUAPL-DTNMA/dtnma-ace/tree/main). To install ACE via pip and point to a specific repo and branch (in this case, the main branch) like so: 
 ```
-pip install git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@apl-fy24
+pip install git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@main
 ```
 To install development and test dependencies for this project, run from the root directory (possibly under sudo if installing to the system path):
 ```sh
