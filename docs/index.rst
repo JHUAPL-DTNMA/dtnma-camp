@@ -1,8 +1,10 @@
 
-Welcome to CAmp's documentation!
+Welcome to CAMP's documentation!
 ================================
+This is the Code generator for AMP (CAMP) for the DTN Management Architecture (DTNMA).
+It is part of the larger Asynchronous Network Managment System (ANMS) managed for `NASA AMMOS <https://ammos.nasa.gov/>`_.
 
-The main CLI access to CAmp is the :doc:`command <camp>` :command:`camp`, which is also available via the API in :mod:`camp.tools.camp`.
+The main CLI access to CAMP is the :doc:`command <camp>` :command:`camp`, which is also available via the API in :mod:`camp.tools.camp`.
 
 
 .. toctree::

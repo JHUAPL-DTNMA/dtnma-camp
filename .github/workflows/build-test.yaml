@@ -20,8 +20,16 @@
 ## under the prime contract 80NM0018D0004 between the Caltech and NASA under
 ## subcontract 1658085.
 ##
-name: Build and run tests
-on: [push]
+name: Build and run unit tests
+
+on:
+  push:
+    branches:
+      - main
+      - 'apl-fy[0-9][0-9]'
+  pull_request: {} # any target
+  schedule:
+    - cron: '0 0 * * 0'
 
 env:
   ACE_REPO: "git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@main"
