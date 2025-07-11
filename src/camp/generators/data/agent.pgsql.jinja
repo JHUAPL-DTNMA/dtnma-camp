@@ -1,0 +1,270 @@
+{%- macro gen_params(obj) -%}
+{%- set d = dict() -%}
+{%- set count = 0 -%}
+{%- set params  = [] -%}
+{%- for param in obj.parameters.items -%}
+{%- set count = count + 1  -%}
+{%- set curr_param = ""-%}
+
+{%- if param.typeobj is instance(typing.TypeUse) -%}
+{%- set curr_param = param.typeobj.type_text~'/' -%}
+{%- elif param.typeobj is instance(typing.UniformList) -%}
+{%- set curr_param = param.typeobj.base.type_text~'/' -%}
+{%- elif param.typeobj is instance(typing.TypeUnion) -%}
+{%- set curr_param = []-%}
+{%- for choice in param.typeobj.types -%}
+{%- set curr_param =  curr_param.append(choice.type_text)-%}
+{%- endfor -%}
+{%- set curr_param = curr_param|join('|')~'/' -%}
+{%- else -%}
+{%- set curr_param = 'unhandledType/' -%}
+{%- endif %}
+{%- set params = params.append(curr_param~param.name) -%}
+{% endfor %}
+CALL SP__insert_formal_parmspec( {{obj.parameters.items|length}}, 'formal parameters for {{obj.name}}', '{{params|join(',')}}',fp_spec_id);
+{%- endmacro %}
+{%- macro gen_metadata(enum, obj) %}
+{%- set status = 'null' %}
+{%- if obj.status %}
+{%- set status = obj.status| sql_string %}
+{%- endif %}
+{%- set reference = 'null' %}
+{%- if obj.reference %}
+{%- set reference = obj.reference| sql_string %}
+{%- endif %}
+{%- set description = 'null' %}
+{%- if obj.description  %}
+{%- set description = obj.description | sql_string %}
+{%- endif %}
+CALL SP__insert_obj_metadata({{enum}}, '{{obj.name}}', r_data_model_id, {{obj.enum}}, {{status}}, {{reference}}, {{description}}, {{obj | sql_var_name}}_oid);
+{%- endmacro %}
+
+{%- macro gen_obj_variables(part) %}
+{%- for obj in part%}
+{{obj | sql_var_name }}_oid INTEGER;
+{{obj | sql_var_name }}_fid INTEGER;
+{{obj | sql_var_name }}_aid INTEGER;
+{%- endfor %}
+{%- endmacro %}
+-- -------------------------------------------------------------------
+--
+-- File Name: {{adm.name}}.sql
+--
+-- Description: auto generated postgressql for {{adm.name}} 
+--
+-- Notes: TODO
+--
+-- Assumptions: TODO
+--
+-- Modification History:
+-- YYYY-MM-DD    AUTHOR          DESCRIPTION
+-- ----------    --------------  ------------------------------------
+--     AUTO            Auto-generated SQL file
+--
+-- ------------------------------------------------------------------
+
+DO
+$do$
+DECLARE
+ap_spec_id INTEGER;
+fp_spec_id INTEGER;
+r_data_model_id INTEGER;
+
+{%- if adm.ident %}
+{{gen_obj_variables(adm.ident)}}
+{%- endif %}
+
+{%- if adm.const %}
+{{gen_obj_variables(adm.const)}}
+{%- endif %}
+
+{%- if adm.ctrl %}
+{{gen_obj_variables(adm.ctrl)}}
+{%- endif %}
+
+{%- if adm.edd %}
+{{gen_obj_variables(adm.edd)}}
+{%- endif %}
+
+{%- if adm.oper %}
+{{gen_obj_variables(adm.oper)}}
+{%- endif %}
+
+{%- if adm.sbr %}
+{{gen_obj_variables(adm.sbr)}}
+{%- endif %}
+
+{%- if adm.tbr %}
+{{gen_obj_variables(adm.tbr)}}
+{%- endif %}
+
+{%- if adm.var %}
+{{gen_obj_variables(adm.var)}}
+{%- endif %}
+
+{%- if adm.typedef %}
+{{gen_obj_variables(adm.typedef)}}
+{%- endif %}
+BEGIN
+
+{%- set null_string = 'null' %}
+--namespace 
+--{{adm.ns_model_enum}}
+CALL SP__insert_data_model('ADM', '{{adm.ns_model_name}}', {{adm.ns_model_enum if adm.ns_model_enum is defined else -1}}, {{"'"~adm.ns_org_name~"'" if adm.ns_org_name else null_string }}, {{"'"~adm.latest_revision_date~"'" if adm.latest_revision_date else null_string}} , {{"'"~adm.revisions[-1].description~"'" if adm.revisions[-1].description else null_string}}, r_data_model_id);
+
+{%- if adm.ident %}
+{%- for obj in adm.ident %}
+{{gen_metadata(-1, obj)}}
+{%- if obj.parameters.items|length > 0 %}
+{{ gen_params(obj) }}
+CALL SP__insert_ident_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, fp_spec_id, {{obj | sql_var_name}}_fid);
+{%- else %}
+CALL SP__insert_ident_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, NULL, {{obj | sql_var_name}}_fid);
+CALL SP__insert_ident_actual_definition({{obj | sql_var_name}}_oid, 'The singleton value for {{obj.name}}', NULL, {{obj | sql_var_name}}_aid);
+{%- endif %}
+
+{%- endfor %}
+{%- endif %}
+
+{%- if adm.const %}
+
+-- const
+{%- for obj in adm.const %}
+{{gen_metadata(-2, obj)}}
+CALL SP__insert_const_actual_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, '{{obj.init_ari.type_id}}', '{{obj.init_value}}', {{obj | sql_var_name}}_aid);
+{%- endfor %}
+
+{%- endif %}
+{%- if adm.ctrl %}
+
+-- ctrl
+{%- for obj in adm.ctrl %}
+{{gen_metadata(-3, obj)}}
+{% set result = "" %}
+{%- if obj.result is defined %}
+{% set result =  obj.result.name %}
+{%- if obj.result.typeobj is defined %}
+{% set result = obj.result.typeobj.type_text ~ "." ~obj.result.name %}
+{%- endif %}
+{%- endif %}
+{%- if obj.parameters.items|length > 0 %}
+{{ gen_params(obj)}}
+CALL SP__insert_control_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, fp_spec_id, '{{result}}', {{obj | sql_var_name}}_fid);
+{%- else %}
+CALL SP__insert_control_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, NULL, '{{result}}', {{obj | sql_var_name}}_fid);
+CALL SP__insert_control_actual_definition({{obj | sql_var_name}}_oid, 'The singleton value for {{obj.name}}', NULL, {{obj | sql_var_name}}_aid);
+{%- endif %}
+
+{%- endfor %}
+{%- endif %}
+
+{%- if adm.edd %}
+
+-- edd 
+{%- for obj in adm.edd %}
+{{gen_metadata(-4, obj)}}
+{%- if obj.parameters.items|length > 0 %}
+{{ gen_params(obj) }}
+CALL SP__insert_edd_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, fp_spec_id, '{{obj.typeobj.type_text}}', {{obj | sql_var_name}}_fid);
+{%- else %}
+CALL SP__insert_edd_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, null, '{{obj.typeobj.type_text}}', {{obj | sql_var_name}}_fid);
+CALL SP__insert_edd_actual_definition({{obj | sql_var_name}}_oid, 'The singleton value for {{obj.name}}', null, {{obj | sql_var_name}}_aid);
+{%- endif %}
+
+{%- endfor %}
+{%- endif %}
+
+{%- if adm.oper %}
+
+-- oper 
+{%- for obj in adm.oper %}
+{{gen_metadata(-6, obj)}}
+{% set opers = [] %}
+{% set num_operands = 0 %}
+{%- if obj.operands %}
+{%- for operand in obj.operands.items %}
+{%- set opers = opers.append( operand.type~"."~operand.name ) -%}
+{%- endfor %}
+{%- set num_operands = obj.operands.items|length  -%}
+{%- endif %}
+{%- if obj.parameters.items|length > 0 %}
+{{ gen_params(obj) }}
+CALL SP__insert_operator_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, fp_spec_id, {{num_operands}},  '{{opers|join(', ')}}', '{{obj.result.name}}', '{{obj.result.default_ari}}', {{obj | sql_var_name}}_fid);
+{%- else %}
+CALL SP__insert_operator_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, null, {{num_operands}}, '{{opers|join(', ')}}', '{{obj.result.name}}', '{{obj.result.default_ari}}', {{obj | sql_var_name}}_fid);
+CALL SP__insert_operator_actual_definition({{obj | sql_var_name}}_oid, 'The singleton value for {{obj.name}}', null, {{obj | sql_var_name}}_aid);
+{%- endif %}
+{%- endfor %}
+
+{%- endif %}
+
+{#
+{%- if adm.sbr %}
+{%- for obj in adm.sbr %}
+{% set min_interval = 0 %}
+{%- if obj."min-interval" %}
+{% set min_interval = obj."min-interval" %}
+{%- endif%}
+{% set max_count = 0 %}
+{%- if obj."max-count" %}
+{% set max_count = obj."max-count" %}
+{%- endif%}
+{{gen_metadata(-8, obj)}}
+CALL SP__insert_sbr_actual_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, {{obj.condition}}, {{obj.action}},{{min_interval}}, {{max_count}}, {{obj | sql_var_name}}_aid);
+{%- endfor %}
+{%- endif %}
+{%- if adm.tbr %}
+{%- for obj in adm.tbr %}
+{% set period = 0 %}
+{%- if obj.period %}
+{% set period = obj.period %}
+{%- endif%}
+{% set max_count = 0 %}
+{%- if obj."max-count" %}
+{% set max_count = obj."max-count" %}
+{%- endif%}
+{% set start = 0 %}
+{%- if obj.start %}
+{% set start = obj.start %}
+{%- endif%}
+{{gen_metadata(-10, obj)}}
+CALL SP__insert_tbr_actual_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, {{period}}, {{max_count}},{{start}}, {{obj.action}}, {{obj | sql_var_name}}_aid);
+{%- endfor %}
+{%- endif %}
+#}
+
+{%- if adm.var %}
+
+-- var
+{%- for obj in adm.var %}
+{{gen_metadata(-11, obj)}}
+{%- set init_value = " " %}
+{%- if obj.init_value is defined %}
+{%- set init_value = obj.init_value %}
+{%-endif %}
+{%- set type = "NULL" %}
+{%- if obj.init_ari is defined %}
+{%- if obj.init_ari.typeobj is defined %}
+{%- set type =  obj.init_ari.typeobj %}
+{%-endif %}
+{%-endif %}
+
+{%- set expr = "expr to do" %}
+{#TODO {%- if obj.init-expr 	is defined %}
+# {%- set expr = obj.init-expr %}
+# {%-endif %}
+#}
+{%- if obj.parameters.items %}
+{{ gen_params(obj) }}
+CALL SP__insert_variable_formal_definition({{obj | sql_var_name}}_oid, '{{obj.description | replace('\n', ' ')}}', fp_spec_id, '{{type}}', '{{expr}}', '{{init_value}}',{{obj | sql_var_name}}_fid);
+{%- else %}
+CALL SP__insert_variable_formal_definition({{obj | sql_var_name}}_oid, '{{obj.description | replace('\n', ' ')}}', {{null_string}}, '{{type}}', '{{expr}}', '{{init_value}}', {{obj | sql_var_name}}_fid);
+CALL SP__insert_variable_actual_definition({{obj | sql_var_name}}_oid, 'The singleton value for {{obj.name}}', {{null_string}}, {{obj | sql_var_name}}_aid);
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+end
+$do$
+
+
+

@@ -1,0 +1,138 @@
+
+-- -------------------------------------------------------------------
+--
+-- File Name: test-adm.sql
+--
+-- Description: auto generated postgressql for test-adm 
+--
+-- Notes: TODO
+--
+-- Assumptions: TODO
+--
+-- Modification History:
+-- YYYY-MM-DD    AUTHOR          DESCRIPTION
+-- ----------    --------------  ------------------------------------
+--     AUTO            Auto-generated SQL file
+--
+-- -------------------------------------------------------------------
+
+DO
+$do$
+DECLARE
+ap_spec_id INTEGER;
+fp_spec_id INTEGER;
+r_data_model_id INTEGER;
+const1_oid INTEGER;
+const1_fid INTEGER;
+const1_aid INTEGER;
+showall_oid INTEGER;
+showall_fid INTEGER;
+showall_aid INTEGER;
+get_oid INTEGER;
+get_fid INTEGER;
+get_aid INTEGER;
+set_oid INTEGER;
+set_fid INTEGER;
+set_aid INTEGER;
+edd_uvast_oid INTEGER;
+edd_uvast_fid INTEGER;
+edd_uvast_aid INTEGER;
+edd_uvast_param_oid INTEGER;
+edd_uvast_param_fid INTEGER;
+edd_uvast_param_aid INTEGER;
+edd_tp_oid INTEGER;
+edd_tp_fid INTEGER;
+edd_tp_aid INTEGER;
+endpoint_active_oid INTEGER;
+endpoint_active_fid INTEGER;
+endpoint_active_aid INTEGER;
+add_oid INTEGER;
+add_fid INTEGER;
+add_aid INTEGER;
+var_uvast_val_oid INTEGER;
+var_uvast_val_fid INTEGER;
+var_uvast_val_aid INTEGER;
+counter32_oid INTEGER;
+counter32_fid INTEGER;
+counter32_aid INTEGER;
+gauge32_oid INTEGER;
+gauge32_fid INTEGER;
+gauge32_aid INTEGER;
+counter64_oid INTEGER;
+counter64_fid INTEGER;
+counter64_aid INTEGER;
+gauge64_oid INTEGER;
+gauge64_fid INTEGER;
+gauge64_aid INTEGER;
+BEGIN
+
+
+--namespace 
+CALL SP__insert_data_model('ADM', 'test-adm', 9999, null , null, r_data_model_id);
+
+-- const
+
+CALL SP__insert_obj_metadata(-2, 'const1', r_data_model_id, 0, null, null, 'Example value.', const1_oid);
+CALL SP__insert_const_actual_definition(const1_oid, 'Example value.', 'None', '31', const1_aid);
+
+CALL SP__insert_obj_metadata(-2, 'showall', r_data_model_id, 1, null, null, 'None', showall_oid);
+CALL SP__insert_const_actual_definition(showall_oid, 'None', '17', '/AC/(./CONST/const1)', showall_aid);
+
+-- ctrl
+
+CALL SP__insert_obj_metadata(-3, 'get', r_data_model_id, 2, null, null, 'Get a single MIB value from the agent.', get_oid);
+
+
+
+CALL SP__insert_formal_parmspec( 1, 'formal parameters for get', '/ARITYPE/OBJECT.object',fp_spec_id);
+CALL SP__insert_control_formal_definition(get_oid, 'Get a single MIB value from the agent.', fp_spec_id, '/ARITYPE/BYTESTR.data', get_fid);
+
+CALL SP__insert_obj_metadata(-3, 'set', r_data_model_id, 3, null, null, 'Set a single MIB value in the agent.', set_oid);
+
+
+
+CALL SP__insert_formal_parmspec( 2, 'formal parameters for set', '/ARITYPE/OBJECT.object, /ARITYPE/BYTESTR.data',fp_spec_id);
+CALL SP__insert_control_formal_definition(set_oid, 'Set a single MIB value in the agent.', fp_spec_id, '/ARITYPE/BYTE.errorcode', set_fid);
+
+-- edd
+
+CALL SP__insert_obj_metadata(-4, 'edd_uvast', r_data_model_id, 0, null, null, 'Example UVAST EDD.', edd_uvast_oid);
+CALL SP__insert_edd_formal_definition(edd_uvast_oid, 'Example UVAST EDD.', null, '/ARITYPE/UVAST', edd_uvast_fid);
+CALL SP__insert_edd_actual_definition(edd_uvast_oid, 'The singleton value for edd_uvast', null, edd_uvast_aid);
+
+CALL SP__insert_obj_metadata(-4, 'edd_uvast_param', r_data_model_id, 1, null, null, 'Example UVAST EDD with parameters.', edd_uvast_param_oid);
+
+CALL SP__insert_formal_parmspec( 1, 'formal parameters for edd_uvast_param', '/ARITYPE/UVAST.other',fp_spec_id);
+CALL SP__insert_edd_formal_definition(edd_uvast_param_oid, 'Example UVAST EDD with parameters.', fp_spec_id, '/ARITYPE/UVAST', edd_uvast_param_fid);
+
+CALL SP__insert_obj_metadata(-4, 'edd_tp', r_data_model_id, 2, null, null, 'Example TP EDD: current system time.', edd_tp_oid);
+CALL SP__insert_edd_formal_definition(edd_tp_oid, 'Example TP EDD: current system time.', null, '/ARITYPE/TP', edd_tp_fid);
+CALL SP__insert_edd_actual_definition(edd_tp_oid, 'The singleton value for edd_tp', null, edd_tp_aid);
+
+CALL SP__insert_obj_metadata(-4, 'endpoint_active', r_data_model_id, 3, null, null, 'Is the given endpoint active? (0=no)', endpoint_active_oid);
+
+CALL SP__insert_formal_parmspec( 1, 'formal parameters for endpoint_active', '/ARITYPE/TEXTSTR.endpoint_name',fp_spec_id);
+CALL SP__insert_edd_formal_definition(endpoint_active_oid, 'Is the given endpoint active? (0=no)', fp_spec_id, '/ARITYPE/UVAST', endpoint_active_fid);
+
+-- oper
+
+CALL SP__insert_obj_metadata(-6, 'add', r_data_model_id, 0, null, null, 'Add two uvast values.The operands are cast to the least compatible numeric typebefore the arithmetic.', add_oid);
+
+
+CALL SP__insert_operator_formal_definition(add_oid, 'Add two uvast values.The operands are cast to the least compatible numeric typebefore the arithmetic.', null, 2, '.left, .right', 'result', 'None', add_fid);
+CALL SP__insert_operator_actual_definition(add_oid, 'The singleton value for add', null, add_aid);
+
+
+
+-- var
+
+CALL SP__insert_obj_metadata(-11, 'var_uvast_val', r_data_model_id, 0, null, null, 'Example UVAST VAR with initialized value.', var_uvast_val_oid);
+
+CALL SP__insert_variable_formal_definition(var_uvast_val_oid, 'Example UVAST VAR with initialized value.', null, 'NULL', 'expr to do', '34', var_uvast_val_fid);
+CALL SP__insert_variable_actual_definition(var_uvast_val_oid, 'The singleton value for var_uvast_val', null, var_uvast_val_aid);
+
+end
+$do$
+
+
+

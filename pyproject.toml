@@ -1,16 +1,17 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "anms-CAmp"
-version = "2.1.0"
+name = "dtnma-camp"
+version = "2.0.0"
 authors = [
   { name="JHU/APL", email="dtnma-support@jhuapl.edu" },
 ]
-description = "C code generator for the Asychronous Management Protocol"
+description = "C code generator for DTNMA tools"
 readme = "README.md"
-requires-python = ">=3.7"
+license = { text="Apache-2.0" }
+requires-python = ">=3.10"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "License :: OSI Approved :: Apache Software License",
@@ -19,10 +20,9 @@ classifiers = [
 ]
 
 dependencies = [
-  "anms-ace",
-  "cbor2",
-  "configobj",
-  "xdg",
+  "dtnma-ace",
+  "setuptools",
+  "jinja2",
 ]
 
 [project.optional-dependencies]
@@ -31,6 +31,7 @@ test = [
   "pytest",
   "pytest-cov",
   "coverage",
+  "psycopg2-binary"
 ]
 pylint = [
   "pylint",
@@ -47,6 +48,17 @@ docs = [
   "sphinx-argparse",
 ]
 
+[tool.pytest.ini_options]
+addopts = [
+    "--log-cli-level=warning",
+    "--import-mode=importlib",
+]
+testpaths = [
+    "test",
+    "integration-test",
+]
+norecursedirs = "deps"
+
 [tool.pylint.MAIN]
 load-plugins="pylint_junit"
 suggestion-mode="no"
@@ -62,5 +74,5 @@ max-line-length=100
 camp = "camp.tools.camp:main"
 
 [project.urls]
-"Homepage" = "https://github.com/NASA-AMMOS/anms-camp"
-"Bug Tracker" = "https://github.com/NASA-AMMOS/anms-camp/issues"
+"Homepage" = "https://github.com/JHUAPL-DTNMA/dtnma-camp"
+"Bug Tracker" = "https://github.com/JHUAPL-DTNMA/dtnma-camp/issues"

@@ -1,0 +1,200 @@
+module example-test {
+  yang-version 1.1;
+  namespace "ari://example/test/";
+  prefix test;
+
+  import ietf-amm {
+    prefix amm;
+  }
+
+  organization
+    "Example Org." {
+    amm:enum 65535;
+  }
+  contact
+    "WG Web: <http://tools.ietf.org/wg/dtn/>
+     WG List: <mailto:dtn@ietf.org>
+
+     Author: Jenny Cao
+             <mailto:jenny.cao@jhuapl.edu>";
+  description
+    "Test module.";
+
+  revision 2024-11-21 {
+    description
+      "First YANG test ADM";
+    reference
+      "draft-ietf-dtn-adm-yang";
+  }
+
+  feature example {
+    description
+      "some feature";
+  }
+
+  amm:enum 9999;
+  amm:typedef counter32 {
+    amm:enum 26;
+    description
+      "32-bit counter";
+    amm:type "/ARITYPE/UINT";
+  }
+  amm:typedef gauge32 {
+    amm:enum 27;
+    description
+      "32-bit gauge";
+    amm:type "/ARITYPE/INT";
+  }
+  amm:typedef counter64 {
+    amm:enum 28;
+    description
+      "64-bit counter";
+    amm:type "/ARITYPE/UVAST";
+  }
+  amm:typedef gauge64 {
+    amm:enum 29;
+    description
+      "64-bit gauge";
+    amm:type "/ARITYPE/VAST";
+  }
+  amm:edd edd_uvast {
+    amm:enum 0;
+    description
+      "Example UVAST EDD.";
+    amm:type "/ARITYPE/UVAST";
+  }
+  amm:edd edd_uvast_param {
+    amm:enum 1;
+    description
+      "Example UVAST EDD with parameters.";
+    amm:type "/ARITYPE/UVAST";
+    amm:parameter other {
+      description
+        "Example parameter.";
+      amm:type "/ARITYPE/UVAST";
+    }
+  }
+  amm:edd edd_tp {
+    amm:enum 2;
+    description
+      "Example TP EDD: current system time.";
+    amm:type "/ARITYPE/TP";
+  }
+  amm:edd endpoint_active {
+    amm:enum 3;
+    description
+      "Is the given endpoint active? (0=no)";
+    amm:type "/ARITYPE/UVAST";
+    amm:parameter endpoint_name {
+      description
+        "Endpoint name.";
+      amm:type "/ARITYPE/TEXTSTR";
+    }
+  }
+  amm:var var_uvast_val {
+    amm:enum 0;
+    description
+      "Example UVAST VAR with initialized value.";
+    amm:init-value "34";
+    amm:type "/ARITYPE/UVAST";
+  }
+  amm:const const1 {
+    if-feature "example";
+    amm:enum 0;
+    description
+      "Example value.";
+    amm:init-value "31";
+    amm:type "/ARITYPE/UVAST";
+  }
+  amm:const showall {
+    amm:enum 1;
+    description
+      "Some constant list";
+    amm:init-value "/AC/(./CONST/const1)";
+    amm:type "/ARITYPE/AC";
+  }
+  amm:ctrl get {
+    amm:enum 2;
+    description
+      "Get a single MIB value from the agent.";
+    amm:parameter object {
+      description
+        "Identity of the object to retrieve.";
+      amm:default "hello";
+      amm:type "/ARITYPE/OBJECT";
+    }
+    amm:result data {
+      description
+        "Encoded value of the object.";
+      amm:type "/ARITYPE/BYTESTR";
+    }
+  }
+  amm:ctrl set {
+    amm:enum 3;
+    description
+      "Set a single MIB value in the agent.";
+    amm:parameter object {
+      description
+        "Identify the value to retrieve.";
+      amm:type "/ARITYPE/OBJECT";
+    }
+    amm:parameter data {
+      description
+        "Endcoded value used to write the object";
+      amm:type "/ARITYPE/BYTESTR";
+    }
+    amm:result errorcode {
+      description
+        "If non-zero, an indicator of an error.";
+      amm:type "/ARITYPE/BYTE";
+    }
+  }
+  amm:oper add {
+    amm:enum 0;
+    description
+      "Add two uvast values.
+       The operands are cast to the least compatible numeric type
+       before the arithmetic.";
+    amm:operand left {
+      description
+        "The left-side operand.";
+      amm:type "/ARITYPE/UVAST";
+    }
+    amm:operand right {
+      description
+        "The left-side operand.";
+      amm:type "/ARITYPE/UVAST";
+    }
+    amm:result result {
+      description
+        "The single value.";
+      amm:type "/ARITYPE/UVAST";
+    }
+  }
+  amm:sbr sbr1 {
+    amm:enum 8;
+    description
+      "";
+    amm:action "/AC/(./CTRL/first,./CTRL/second)";
+    amm:condition "/AC/(./EDD/sensor,./VAR/min_threshold,./OPER/compare_lt)";
+    amm:min-interval "/TD/PT30S";
+    amm:init-enabled false;
+    amm:max-count 10;
+  }
+
+  amm:sbr sbr2 {
+    amm:enum 9;
+    description
+      "";
+    amm:action "/AC/(./CTRL/first,./CTRL/second)";
+    amm:condition "/AC/(./EDD/sensor,./VAR/min_threshold,./OPER/compare_lt)";
+  }
+  amm:tbr tbr_rule {
+    amm:enum 30;
+    description
+      "Generate telemetry reports.";
+    amm:action "/AC/(./CTRL/first,./CTRL/other)";
+    amm:period "/TD/PT30S";
+    amm:start "/TP/20.5";
+  }
+}
