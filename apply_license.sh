@@ -1,6 +1,6 @@
 #!/bin/bash
 ##
-## Copyright (c) 2020-2024 The Johns Hopkins University Applied Physics
+## Copyright (c) 2020-2025 The Johns Hopkins University Applied Physics
 ## Laboratory LLC.
 ##
 ## This file is part of the C code generator for AMP (CAMP) under the
@@ -27,7 +27,7 @@
 # Requires installation of:
 #  pip3 install licenseheaders
 # Run as:
-#  ./apply_license.sh {--dry} {-vv}
+#  ./apply_license.sh {specific dir}
 #
 set -e
 
@@ -36,7 +36,7 @@ SELFDIR=$(realpath $(dirname "${BASH_SOURCE[0]}"))
 LICENSEOPTS="${LICENSEOPTS} --tmpl ${SELFDIR}/apply_license.tmpl"
 LICENSEOPTS="${LICENSEOPTS} --years 2020-$(date +%Y)"
 # Excludes only apply to directory (--dir) mode and not file mode
-#LICENSEOPTS="${LICENSEOPTS} --exclude *.yml *.yaml *.min. "
+LICENSEOPTS="${LICENSEOPTS} --exclude integration-test/deps/** "
 
 
 # Specific paths
