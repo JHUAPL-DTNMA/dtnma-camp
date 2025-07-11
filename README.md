@@ -49,6 +49,7 @@ generate code for various purposes. CAmp generates:
 - SQL code for usage by the ANMS manager
 - ACE input files, for usage with the ARI CBOR Encoder (ACE) Tool
 
+Additional generators may be added to account for use cases outside of the reference DTNMA Agent.
 Please contact the developers for more information or suggestions. The
 Architecture Section also provides some explanation of the components of CAmp,
 and how to incorporate additional generators.
