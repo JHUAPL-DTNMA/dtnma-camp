@@ -59,7 +59,7 @@ class BaseTest(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
         logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
-        self._dir = TmpDir(delete=False)
+        self._dir = TmpDir()
         LOGGER.info('Working in %s', self._dir)
         self._admset = AdmSet()
 
