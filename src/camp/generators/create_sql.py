@@ -22,27 +22,25 @@
 #
 ''' This module creates the sqlc file for the implementation version of the ADM.
 '''
-
+import logging
 import os
 import jinja2
 from typing import TextIO
 from camp.generators.lib.campch import yang_to_c, update_jinja_env
-from camp.generators.lib.campch_roundtrip import C_Scraper
 from camp.generators.base import AbstractWriter, CHelperMixin
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Writer(AbstractWriter, CHelperMixin):
     ''' The common header file writer.
     '''
 
-    def __init__(self, admset, adm, out_path, scrape: bool, dialect: 'pgsql', ):
+    def __init__(self, admset, adm, out_path, dialect: 'pgsql',):
         super().__init__(admset, adm, out_path)
 
         self.c_norm_name = yang_to_c(self.adm.norm_name)
         self.dialect = dialect
-        full_path = self.file_path()
-        scrape_src = full_path if scrape and os.path.exists(full_path) else None
-        self._scraper = C_Scraper(scrape_src)
 
     def file_path(self) -> str:
         # Interface for AbstractWriter
@@ -60,10 +58,10 @@ class Writer(AbstractWriter, CHelperMixin):
 
         keys = dict(
             adm=self.adm,
-            scraper=self._scraper,
         )
         try:
             tmpl = self._tmpl_env.get_template(f'agent.{self.dialect}.jinja')
         except Exception as err:
+            LOGGER.exception('Failed to load template')
             raise RuntimeError(f'Failed to load template "agent.{self.dialect}.jinja"') from err
         tmpl.stream(**keys).dump(outfile)

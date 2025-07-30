@@ -29,8 +29,7 @@ import math
 import textwrap
 from typing import Union, Optional
 import ace
-from ace.typing import BUILTINS
-from ace import models, ari, ari_text
+from ace import models, ari, ari_text, typing
 from ace.lookup import dereference, ORM_TYPE
 from datetime import datetime, timedelta, timezone
 
@@ -145,12 +144,15 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         '''
         return prefix.join(textwrap.wrap(value))
 
-    def as_text(ari:ari.ARI) -> str:
-        ''' Encode an ARI as text form URI.
+    def as_text(val: Union[ari.ARI, typing.BaseType]) -> str:
+        ''' Encode an ARI or as text form URI.
         '''
+        if isinstance(val, typing.BaseType):
+            val = val.ari_name()
+
         enc = ari_text.Encoder()
         buf = io.StringIO()
-        enc.encode(ari, buf)
+        enc.encode(val, buf)
         return buf.getvalue()
 
     def as_timepoint(value:datetime) -> str:
@@ -176,7 +178,7 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         return dereference(ari, admset.db_session())
 
     def ari_builtin(ari:ari.ARI, typename:str) -> bool:
-        typeobj = BUILTINS[typename]
+        typeobj = typing.BUILTINS[typename]
         got = typeobj.get(ari)
         return got is not None
 

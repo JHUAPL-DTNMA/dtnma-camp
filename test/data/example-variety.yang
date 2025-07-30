@@ -46,8 +46,8 @@ module example-variety {
         "constrained text param";
       amm:default "%22%5C%5C%22value%5C%27%3f%07%08%0c%0a%0d%09%0b%22";
       amm:type "/ARITYPE/TEXTSTR" {
+        pattern '*value*';
         length "0..20";
-        pattern "*value*";
       }
     }
     amm:parameter ulist {
@@ -55,12 +55,12 @@ module example-variety {
         "ulist param";
       amm:default "/AC/(0,1)";
       amm:ulist {
-        amm:type "/ARITYPE/UINT" {
-          range "0..9";
-          units "digits";
-        }
         min-elements 1;
         max-elements 2;
+        amm:type "/ARITYPE/UINT" {
+          units "digits";
+          range "0..9";
+        }
       }
     }
     amm:parameter dlist {
@@ -70,12 +70,12 @@ module example-variety {
       amm:dlist {
         amm:type "/ARITYPE/TEXTSTR";
         amm:seq {
-          amm:type "/ARITYPE/UINT" {
-          range "0..9";
-          units "digits";
-        }
           min-elements 1;
           max-elements 5;
+          amm:type "/ARITYPE/UINT" {
+            units "digits";
+            range "0..9";
+          }
         }
         amm:type "/ARITYPE/TEXTSTR";
       }

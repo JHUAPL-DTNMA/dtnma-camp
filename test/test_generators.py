@@ -63,9 +63,6 @@ class BaseTest(unittest.TestCase):
         LOGGER.info('Working in %s', self._dir)
         self._admset = AdmSet()
 
-    def tearDown(self):
-        del self._dir
-
     def _get_adm(self, file_name):
         ''' Read an ADM file from the 'tests/data' directory.
         '''
@@ -84,23 +81,26 @@ class BaseTest(unittest.TestCase):
 
 class TestCreateSql(BaseTest):
 
-    @unittest.expectedFailure
     def test_create_sql(self):
         adm = self._get_adm('example-test.yang')
         outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
 
         writer = create_sql.Writer(self._admset, adm, outdir, dialect='pgsql')
+        out_path = writer.file_path()
         self.assertEqual(
-            os.path.join(outdir, 'amp-sql', 'Agent_Scripts', 'adm_test_adm.sql'),
-            writer.file_path()
+            os.path.join(outdir, 'example_test.sql'),
+            out_path
         )
 
-        buf = io.StringIO()
+        os.makedirs(os.path.dirname(out_path))
+        buf = open(out_path, 'w+')
         writer.write(buf)
+        self.assertLess(0, buf.tell())
+        buf.seek(0)
 
-        tmpl = self._tmpl_env.get_template('test_adm.pgsql.sql.jinja')
+        tmpl = self._tmpl_env.get_template('pgsql/example_test.sql.jinja')
         content = tmpl.render(datestamp=self._today_datestamp())
-        self.assertEqual(content, buf.getvalue())
+        self.assertEqual(content, buf.read())
 
 
 class TestCreateCH(BaseTest):
@@ -111,31 +111,39 @@ class TestCreateCH(BaseTest):
         LOGGER.info('Writing to %s', outdir)
 
         writer = create_impl_h.Writer(self._admset, adm, outdir, H_Scraper(None))
+        out_path = writer.file_path()
         self.assertEqual(
             os.path.join(outdir, 'example_test.h'),
-            writer.file_path()
+            out_path
         )
 
-        buf = io.StringIO()
+        os.makedirs(os.path.dirname(out_path))
+        buf = open(out_path, 'w+')
         writer.write(buf)
+        self.assertLess(0, buf.tell())
+        buf.seek(0)
 
         tmpl = self._tmpl_env.get_template('gen_ch/example_test.h.jinja')
         content = tmpl.render(datestamp=self._today_datestamp())
-        self.assertEqual(content, buf.getvalue())
+        self.assertEqual(content, buf.read())
 
     def test_create_impl_c_noscrape(self):
         adm = self._get_adm('example-test.yang')
         outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
 
         writer = create_impl_c.Writer(self._admset, adm, outdir, C_Scraper(None))
+        out_path = writer.file_path()
         self.assertEqual(
             os.path.join(outdir, 'example_test.c'),
-            writer.file_path()
+            out_path
         )
 
-        buf = io.StringIO()
+        os.makedirs(os.path.dirname(out_path))
+        buf = open(out_path, 'w+')
         writer.write(buf)
+        self.assertLess(0, buf.tell())
+        buf.seek(0)
 
         tmpl = self._tmpl_env.get_template('gen_ch/example_test.c.jinja')
         content = tmpl.render(datestamp=self._today_datestamp())
-        self.assertEqual(content, buf.getvalue())
+        self.assertEqual(content, buf.read())
