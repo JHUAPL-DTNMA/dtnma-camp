@@ -89,10 +89,10 @@ CALL SP__insert_data_model('ADM', 'test', 9999, 'example', '2024-11-21' , 'First
 -- const
 
 CALL SP__insert_obj_metadata(-2, 'const1', r_data_model_id, 0, null, null, 'Example value.', const_const1_oid);
-CALL SP__insert_const_actual_definition(const_const1_oid, 'Example value.', 'None', '31', const_const1_aid);
+CALL SP__insert_const_actual_definition(const_const1_oid, 'Example value.', '/ARITYPE/UVAST', '31', const_const1_aid);
 
 CALL SP__insert_obj_metadata(-2, 'showall', r_data_model_id, 1, null, null, 'Some constant list', const_showall_oid);
-CALL SP__insert_const_actual_definition(const_showall_oid, 'Some constant list', '17', '/AC/(./CONST/const1)', const_showall_aid);
+CALL SP__insert_const_actual_definition(const_showall_oid, 'Some constant list', '/ARITYPE/AC', '/AC/(./CONST/const1)', const_showall_aid);
 
 -- ctrl
 
@@ -101,7 +101,7 @@ CALL SP__insert_obj_metadata(-3, 'get', r_data_model_id, 2, null, null, 'Get a s
 
 
 
-CALL SP__insert_formal_parmspec( 1, 'formal parameters for get', '/ARITYPE/OBJECT/object',fp_spec_id);
+CALL SP__insert_formal_parmspec( 1, 'formal parameters for get', '/ARITYPE/OBJECT/object', fp_spec_id);
 CALL SP__insert_control_formal_definition(ctrl_get_oid, 'Get a single MIB value from the agent.', fp_spec_id, '/ARITYPE/BYTESTR.data', ctrl_get_fid);
 
 CALL SP__insert_obj_metadata(-3, 'set', r_data_model_id, 3, null, null, 'Set a single MIB value in the agent.', ctrl_set_oid);
@@ -109,7 +109,7 @@ CALL SP__insert_obj_metadata(-3, 'set', r_data_model_id, 3, null, null, 'Set a s
 
 
 
-CALL SP__insert_formal_parmspec( 2, 'formal parameters for set', '/ARITYPE/OBJECT/object,/ARITYPE/BYTESTR/data',fp_spec_id);
+CALL SP__insert_formal_parmspec( 2, 'formal parameters for set', '/ARITYPE/OBJECT/object,/ARITYPE/BYTESTR/data', fp_spec_id);
 CALL SP__insert_control_formal_definition(ctrl_set_oid, 'Set a single MIB value in the agent.', fp_spec_id, '/ARITYPE/BYTE.errorcode', ctrl_set_fid);
 
 -- edd
@@ -120,7 +120,7 @@ CALL SP__insert_edd_actual_definition(edd_edd_uvast_oid, 'The singleton value fo
 
 CALL SP__insert_obj_metadata(-4, 'edd_uvast_param', r_data_model_id, 1, null, null, 'Example UVAST EDD with parameters.', edd_edd_uvast_param_oid);
 
-CALL SP__insert_formal_parmspec( 1, 'formal parameters for edd_uvast_param', '/ARITYPE/UVAST/other',fp_spec_id);
+CALL SP__insert_formal_parmspec( 1, 'formal parameters for edd_uvast_param', '/ARITYPE/UVAST/other', fp_spec_id);
 CALL SP__insert_edd_formal_definition(edd_edd_uvast_param_oid, 'Example UVAST EDD with parameters.', fp_spec_id, '/ARITYPE/UVAST', edd_edd_uvast_param_fid);
 
 CALL SP__insert_obj_metadata(-4, 'edd_tp', r_data_model_id, 2, null, null, 'Example TP EDD: current system time.', edd_edd_tp_oid);
@@ -129,7 +129,7 @@ CALL SP__insert_edd_actual_definition(edd_edd_tp_oid, 'The singleton value for e
 
 CALL SP__insert_obj_metadata(-4, 'endpoint_active', r_data_model_id, 3, null, null, 'Is the given endpoint active? (0=no)', edd_endpoint_active_oid);
 
-CALL SP__insert_formal_parmspec( 1, 'formal parameters for endpoint_active', '/ARITYPE/TEXTSTR/endpoint_name',fp_spec_id);
+CALL SP__insert_formal_parmspec( 1, 'formal parameters for endpoint_active', '/ARITYPE/TEXTSTR/endpoint_name', fp_spec_id);
 CALL SP__insert_edd_formal_definition(edd_endpoint_active_oid, 'Is the given endpoint active? (0=no)', fp_spec_id, '/ARITYPE/UVAST', edd_endpoint_active_fid);
 
 -- oper
@@ -137,7 +137,7 @@ CALL SP__insert_edd_formal_definition(edd_endpoint_active_oid, 'Is the given end
 CALL SP__insert_obj_metadata(-6, 'add', r_data_model_id, 0, null, null, 'Add two uvast values. The operands are cast to the least compatible numeric type before the arithmetic.', oper_add_oid);
 
 
-CALL SP__insert_operator_formal_definition(oper_add_oid, 'Add two uvast values. The operands are cast to the least compatible numeric type before the arithmetic.', null, 2, '.left, .right', 'result', 'None', oper_add_fid);
+CALL SP__insert_operator_formal_definition(oper_add_oid, 'Add two uvast values. The operands are cast to the least compatible numeric type before the arithmetic.', null, 2, '.left, .right', 'result', '', oper_add_fid);
 CALL SP__insert_operator_actual_definition(oper_add_oid, 'The singleton value for add', null, oper_add_aid);
 
 
