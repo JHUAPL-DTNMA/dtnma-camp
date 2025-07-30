@@ -3,13 +3,18 @@
 use of {{typeobj.type_ari | as_text}}
 {%- elif typeobj is instance(typing.UniformList) -%}
 ulist of {{type_summary(typeobj.base)}}
+{%- elif typeobj is instance(typing.DiverseList) -%}
+dlist of {{typeobj.parts | count}} parts:
+{%- for part in typeobj.parts %}
+  - {{type_summary(part) | indent(4)}}
+{%- endfor %}
+{%- elif typeobj is instance(typing.Sequence) -%}
+sequence of {{type_summary(typeobj.base)}}
 {%- elif typeobj is instance(typing.TableTemplate) -%}
-TBLT with {{typeobj.columns | count}} columns (
-{%- for col in typeobj.columns -%}
-{{- ', ' if loop.index0 != 0 -}}
-{{type_summary(col.base)}}
-{%- endfor -%}
-)
+TBLT with {{typeobj.columns | count}} columns:
+{%- for col in typeobj.columns %}
+  - Name "{{col.name}}", type {{type_summary(col.base) | indent(4)}}
+{%- endfor %}
 {%- elif typeobj is instance(typing.TypeUnion) -%}
 union of {{typeobj.types | count}} types (
 {%- for choice in typeobj.types -%}
@@ -36,8 +41,7 @@ Description MISSING
 {% if obj.parameters.items %}
 Parameters list:
 {%- for param in obj.parameters.items %}
- * Index {{loop.index0}}, name "{{param.name}}", type: {{type_summary(param.typeobj)}}
-
+  - Index {{loop.index0}}, name "{{param.name}}", type {{type_summary(param.typeobj) | indent(4)}}
 {%- endfor %}
 {%- else %}
 Parameters: none
@@ -46,7 +50,7 @@ Parameters: none
 
 {%- if obj.result is defined %}
 {% if obj.result.typeobj is defined %}
-Result name "{{obj.result.name}}", type: {{type_summary(obj.result.typeobj)}}
+Result name "{{obj.result.name}}", type {{type_summary(obj.result.typeobj)}}
 {%- else %}
 Result: none
 {%- endif %}
@@ -161,12 +165,14 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
 {%- macro amm_type_set(ptrname, typeobj) %}
 {%- if typeobj is instance(typing.TypeUse) -%}
 {
-    cace_ari_t name = CACE_ARI_INIT_UNDEFINED;
-    {{ ari_set_value('&name', typeobj.type_ari) | indent(4)}}
-    cace_amm_type_set_use_ref_move({{ptrname}}, &name);
+    // use of {{typeobj.type_ari | as_text}}
+    cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
+    {{ ari_set_value('&typeref', typeobj.type_ari) | indent(4)}}
+    cace_amm_type_set_use_ref_move({{ptrname}}, &typeref);
 }
 {%- elif typeobj is instance(typing.UniformList) -%}
 {
+    // uniform list
     cace_amm_semtype_ulist_t *semtype = cace_amm_type_set_ulist({{ptrname}});
     {{amm_type_set('&(semtype->item_type)', typeobj.base) | indent(4)}}
     {%- if typeobj.min_elements %}
@@ -175,6 +181,22 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
     {%- if typeobj.max_elements %}
     cace_amm_range_intvl_size_set_max(&(semtype->size), {{typeobj.max_elements | c_int}});
     {%- endif %}
+}
+{%- elif typeobj is instance(typing.DiverseList) -%}
+{
+    // diverse list
+    cace_amm_semtype_dlist_t *semtype = cace_amm_type_set_dlist({{ptrname}}, {{typeobj.parts | count}});
+    {%- for part in typeobj.parts %}
+    {
+        cace_amm_type_t *part = cace_amm_type_array_get(semtype->types, {{loop.index0}});
+        {{amm_type_set('part', part) | indent(8) }}
+    }
+    {%- endfor %}
+}
+{%- elif typeobj is instance(typing.Sequence) -%}
+{
+    cace_amm_semtype_seq_t *semtype = cace_amm_type_set_seq({{ptrname}});
+    {{ amm_type_set('&(semtype->item_type)', typeobj.base) | indent(4)}}
 }
 {%- elif typeobj is instance(typing.TableTemplate) -%}
 {
@@ -312,7 +334,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
         { // For {{obj | ref_text}}
             refda_amm_typedef_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_typedef_desc_t));
             refda_amm_typedef_desc_init(objdata);
-            // named type:
+            // named semantic type:
             {{ amm_type_set('&(objdata->typeobj)', obj.typeobj) | indent(12) }}
 
             obj = refda_register_typedef(adm, cace_amm_idseg_ref_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);

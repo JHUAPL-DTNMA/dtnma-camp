@@ -22,12 +22,14 @@
 #
 ''' This module creates the sqlc file for the implementation version of the ADM.
 '''
-
+import logging
 import os
 import jinja2
 from typing import TextIO
 from camp.generators.lib.campch import yang_to_c, update_jinja_env
 from camp.generators.base import AbstractWriter, CHelperMixin
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Writer(AbstractWriter, CHelperMixin):
@@ -60,5 +62,6 @@ class Writer(AbstractWriter, CHelperMixin):
         try:
             tmpl = self._tmpl_env.get_template(f'agent.{self.dialect}.jinja')
         except Exception as err:
+            LOGGER.exception('Failed to load template')
             raise RuntimeError(f'Failed to load template "agent.{self.dialect}.jinja"') from err
         tmpl.stream(**keys).dump(outfile)
