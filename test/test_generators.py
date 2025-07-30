@@ -98,7 +98,7 @@ class TestCreateSql(BaseTest):
         self.assertLess(0, buf.tell())
         buf.seek(0)
 
-        tmpl = self._tmpl_env.get_template('test_adm.pgsql.sql.jinja')
+        tmpl = self._tmpl_env.get_template('pgsql/example_test.sql.jinja')
         content = tmpl.render(datestamp=self._today_datestamp())
         self.assertEqual(content, buf.read())
 

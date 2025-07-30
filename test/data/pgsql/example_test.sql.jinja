@@ -89,10 +89,10 @@ CALL SP__insert_data_model('ADM', 'test', 9999, 'example', '2024-11-21' , 'First
 -- const
 
 CALL SP__insert_obj_metadata(-2, 'const1', r_data_model_id, 0, null, null, 'Example value.', const_const1_oid);
-CALL SP__insert_const_actual_definition(const_const1_oid, 'Example value.', '/ARITYPE/UVAST', '31', const_const1_aid);
+CALL SP__insert_const_actual_definition(const_const1_oid, 'Example value.', 'ari://ietf/amm-semtype/IDENT/use(name=/ARITYPE/UVAST)', '31', const_const1_aid);
 
 CALL SP__insert_obj_metadata(-2, 'showall', r_data_model_id, 1, null, null, 'Some constant list', const_showall_oid);
-CALL SP__insert_const_actual_definition(const_showall_oid, 'Some constant list', '/ARITYPE/AC', '/AC/(./CONST/const1)', const_showall_aid);
+CALL SP__insert_const_actual_definition(const_showall_oid, 'Some constant list', 'ari://ietf/amm-semtype/IDENT/use(name=/ARITYPE/AC)', '/AC/(./CONST/const1)', const_showall_aid);
 
 -- ctrl
 
@@ -115,22 +115,22 @@ CALL SP__insert_control_formal_definition(ctrl_set_oid, 'Set a single MIB value 
 -- edd
 
 CALL SP__insert_obj_metadata(-4, 'edd_uvast', r_data_model_id, 0, null, null, 'Example UVAST EDD.', edd_edd_uvast_oid);
-CALL SP__insert_edd_formal_definition(edd_edd_uvast_oid, 'Example UVAST EDD.', null, '/ARITYPE/UVAST', edd_edd_uvast_fid);
+CALL SP__insert_edd_formal_definition(edd_edd_uvast_oid, 'Example UVAST EDD.', null, 'ari://ietf/amm-semtype/IDENT/use(name=/ARITYPE/UVAST)', edd_edd_uvast_fid);
 CALL SP__insert_edd_actual_definition(edd_edd_uvast_oid, 'The singleton value for edd_uvast', null, edd_edd_uvast_aid);
 
 CALL SP__insert_obj_metadata(-4, 'edd_uvast_param', r_data_model_id, 1, null, null, 'Example UVAST EDD with parameters.', edd_edd_uvast_param_oid);
 
 CALL SP__insert_formal_parmspec( 1, 'formal parameters for edd_uvast_param', '/ARITYPE/UVAST/other', fp_spec_id);
-CALL SP__insert_edd_formal_definition(edd_edd_uvast_param_oid, 'Example UVAST EDD with parameters.', fp_spec_id, '/ARITYPE/UVAST', edd_edd_uvast_param_fid);
+CALL SP__insert_edd_formal_definition(edd_edd_uvast_param_oid, 'Example UVAST EDD with parameters.', fp_spec_id, 'ari://ietf/amm-semtype/IDENT/use(name=/ARITYPE/UVAST)', edd_edd_uvast_param_fid);
 
 CALL SP__insert_obj_metadata(-4, 'edd_tp', r_data_model_id, 2, null, null, 'Example TP EDD: current system time.', edd_edd_tp_oid);
-CALL SP__insert_edd_formal_definition(edd_edd_tp_oid, 'Example TP EDD: current system time.', null, '/ARITYPE/TP', edd_edd_tp_fid);
+CALL SP__insert_edd_formal_definition(edd_edd_tp_oid, 'Example TP EDD: current system time.', null, 'ari://ietf/amm-semtype/IDENT/use(name=/ARITYPE/TP)', edd_edd_tp_fid);
 CALL SP__insert_edd_actual_definition(edd_edd_tp_oid, 'The singleton value for edd_tp', null, edd_edd_tp_aid);
 
 CALL SP__insert_obj_metadata(-4, 'endpoint_active', r_data_model_id, 3, null, null, 'Is the given endpoint active? (0=no)', edd_endpoint_active_oid);
 
 CALL SP__insert_formal_parmspec( 1, 'formal parameters for endpoint_active', '/ARITYPE/TEXTSTR/endpoint_name', fp_spec_id);
-CALL SP__insert_edd_formal_definition(edd_endpoint_active_oid, 'Is the given endpoint active? (0=no)', fp_spec_id, '/ARITYPE/UVAST', edd_endpoint_active_fid);
+CALL SP__insert_edd_formal_definition(edd_endpoint_active_oid, 'Is the given endpoint active? (0=no)', fp_spec_id, 'ari://ietf/amm-semtype/IDENT/use(name=/ARITYPE/UVAST)', edd_endpoint_active_fid);
 
 -- oper
 

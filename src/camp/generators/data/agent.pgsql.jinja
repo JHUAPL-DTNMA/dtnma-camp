@@ -131,7 +131,7 @@ CALL SP__insert_ident_actual_definition({{obj | sql_var_name}}_oid, 'The singlet
 -- const
 {%- for obj in adm.const %}
 {{gen_metadata(-2, obj)}}
-CALL SP__insert_const_actual_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, {{obj.typeobj.type_text | sql_string}}, {{obj.init_value | sql_string}}, {{obj | sql_var_name}}_aid);
+CALL SP__insert_const_actual_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, {{obj.typeobj | as_text | sql_string}}, {{obj.init_value | sql_string}}, {{obj | sql_var_name}}_aid);
 {%- endfor %}
 
 {%- endif %}
@@ -165,9 +165,9 @@ CALL SP__insert_control_actual_definition({{obj | sql_var_name}}_oid, 'The singl
 {{gen_metadata(-4, obj)}}
 {%- if obj.parameters.items|length > 0 %}
 {{ gen_params(obj) }}
-CALL SP__insert_edd_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, fp_spec_id, {{obj.typeobj.type_text | sql_string}}, {{obj | sql_var_name}}_fid);
+CALL SP__insert_edd_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, fp_spec_id, {{obj.typeobj | as_text | sql_string}}, {{obj | sql_var_name}}_fid);
 {%- else %}
-CALL SP__insert_edd_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, null, {{obj.typeobj.type_text | sql_string}}, {{obj | sql_var_name}}_fid);
+CALL SP__insert_edd_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, null, {{obj.typeobj | as_text | sql_string}}, {{obj | sql_var_name}}_fid);
 CALL SP__insert_edd_actual_definition({{obj | sql_var_name}}_oid, 'The singleton value for {{obj.name}}', null, {{obj | sql_var_name}}_aid);
 {%- endif %}
 
