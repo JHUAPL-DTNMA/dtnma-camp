@@ -26,6 +26,7 @@ import logging
 import ace.models
 import jinja2
 import math
+import numpy
 import textwrap
 from typing import Union, Optional
 import ace
@@ -157,13 +158,15 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
 
     def as_timepoint(value:datetime) -> str:
         diff = value - ari.DTN_EPOCH
-        tv_sec = diff.seconds + 24 * 60 * 60 * diff.days
-        tv_nsec = 1000 * diff.microseconds  # Convert to nanoseconds
+        tv_sec = diff // numpy.timedelta64(1, 's')
+        diff -= tv_sec * numpy.timedelta64(1, 's')
+        tv_nsec = diff // numpy.timedelta64(1, 'ns')
         return f"{{{tv_sec}, {tv_nsec}}}"
 
     def as_timedelta(value:timedelta) -> str:
-        tv_sec = value.seconds + 24 * 60 * 60 * value.days
-        tv_nsec = 1000 * value.microseconds  # Convert to nanoseconds
+        tv_sec = value // numpy.timedelta64(1, 's')
+        value -= tv_sec * numpy.timedelta64(1, 's')
+        tv_nsec = value // numpy.timedelta64(1, 'ns')
         return f"{{{tv_sec}, {tv_nsec}}}"
 
     def ref_text(obj:models.AdmObjMixin) -> str:
