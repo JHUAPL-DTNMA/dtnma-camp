@@ -20,7 +20,7 @@ classifiers = [
 ]
 
 dependencies = [
-  "dtnma-ace ~= 1.0",
+  "dtnma-ace ~= 2.0",
   "setuptools",
   "jinja2 ~= 3.1",
 ]
