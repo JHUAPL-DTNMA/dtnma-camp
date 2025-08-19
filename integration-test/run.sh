@@ -54,7 +54,7 @@ pip3 install ${SELFDIR}/deps/dtnma-ace
 
 if [[ ! -d ${SELFDIR}/deps/dtnma-tools ]]
 then
-    git clone --branch fix-camp-compatibility https://github.com/JHUAPL-DTNMA/dtnma-tools.git ${SELFDIR}/deps/dtnma-tools
+    git clone --branch main https://github.com/JHUAPL-DTNMA/dtnma-tools.git ${SELFDIR}/deps/dtnma-tools
     pushd ${SELFDIR}/deps/dtnma-tools
     git submodule update --init --recursive
     popd
