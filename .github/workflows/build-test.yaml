@@ -32,7 +32,7 @@ on:
     - cron: '0 0 * * 0'
 
 env:
-  ACE_REPO: "git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@python-version-envelope"
+  ACE_REPO: "git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@main"
 
 jobs:
   build:
