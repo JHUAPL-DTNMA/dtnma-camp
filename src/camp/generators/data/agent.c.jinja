@@ -162,7 +162,8 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
 {%- endif %}
 {%- endmacro -%}
 
-{%- macro amm_type_set(ptrname, typeobj) %}
+{%- macro amm_type_set(ptrname, typeobj, depth = 0) %}
+{%- set semtype_varname = "semtype" + (depth|string) %}
 {%- if typeobj is instance(typing.TypeUse) -%}
 {
     // use of {{typeobj.type_ari | as_text}}
@@ -173,51 +174,53 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
 {%- elif typeobj is instance(typing.UniformList) -%}
 {
     // uniform list
-    cace_amm_semtype_ulist_t *semtype = cace_amm_type_set_ulist({{ptrname}});
-    {{amm_type_set('&(semtype->item_type)', typeobj.base) | indent(4)}}
+    cace_amm_semtype_ulist_t *{{semtype_varname}} = cace_amm_type_set_ulist({{ptrname}});
+    {{amm_type_set('&('+semtype_varname+'->item_type)', typeobj.base, depth+1) | indent(4)}}
     {%- if typeobj.min_elements %}
-    cace_amm_range_intvl_size_set_min(&(semtype->size), {{typeobj.min_elements | c_int}});
+    cace_amm_range_intvl_size_set_min(&({{semtype_varname}}->size), {{typeobj.min_elements | c_int}});
     {%- endif %}
     {%- if typeobj.max_elements %}
-    cace_amm_range_intvl_size_set_max(&(semtype->size), {{typeobj.max_elements | c_int}});
+    cace_amm_range_intvl_size_set_max(&({{semtype_varname}}->size), {{typeobj.max_elements | c_int}});
     {%- endif %}
 }
 {%- elif typeobj is instance(typing.DiverseList) -%}
 {
     // diverse list
-    cace_amm_semtype_dlist_t *semtype = cace_amm_type_set_dlist({{ptrname}}, {{typeobj.parts | count}});
+    cace_amm_semtype_dlist_t *{{semtype_varname}} = cace_amm_type_set_dlist({{ptrname}}, {{typeobj.parts | count}});
+    {%- set part_varname = "part" + (depth|string) %}
     {%- for part in typeobj.parts %}
     {
-        cace_amm_type_t *part = cace_amm_type_array_get(semtype->types, {{loop.index0}});
-        {{amm_type_set('part', part) | indent(8) }}
+        cace_amm_type_t *{{part_varname}} = cace_amm_type_array_get({{semtype_varname}}->types, {{loop.index0}});
+        {{amm_type_set(part_varname, part, depth+1) | indent(8) }}
     }
     {%- endfor %}
 }
 {%- elif typeobj is instance(typing.Sequence) -%}
 {
-    cace_amm_semtype_seq_t *semtype = cace_amm_type_set_seq({{ptrname}});
-    {{ amm_type_set('&(semtype->item_type)', typeobj.base) | indent(4)}}
+    cace_amm_semtype_seq_t *{{semtype_varname}} = cace_amm_type_set_seq({{ptrname}});
+    {{ amm_type_set('&('+semtype_varname+'->item_type)', typeobj.base, depth+1) | indent(4)}}
 }
 {%- elif typeobj is instance(typing.TableTemplate) -%}
 {
     // table template
-    cace_amm_semtype_tblt_t *semtype = cace_amm_type_set_tblt_size({{ptrname}}, {{typeobj.columns | count}});
+    cace_amm_semtype_tblt_t *{{semtype_varname}} = cace_amm_type_set_tblt_size({{ptrname}}, {{typeobj.columns | count}});
     {%- for col in typeobj.columns %}
     {
-        cace_amm_named_type_t *col = cace_amm_named_type_array_get(semtype->columns, {{loop.index0}});
+        cace_amm_named_type_t *col = cace_amm_named_type_array_get({{semtype_varname}}->columns, {{loop.index0}});
         m_string_set_cstr(col->name, {{col.name | c_str}});
-        {{amm_type_set('&(col->typeobj)', col.base) | indent(8) }}
+        {{amm_type_set('&(col->typeobj)', col.base, depth+1) | indent(8) }}
     }
     {%- endfor %}
 }
 {%- elif typeobj is instance(typing.TypeUnion) -%}
 {
     // union
-    cace_amm_semtype_union_t *semtype = cace_amm_type_set_union_size({{ptrname}}, {{typeobj.types | count}});
+    cace_amm_semtype_union_t *{{semtype_varname}} = cace_amm_type_set_union_size({{ptrname}}, {{typeobj.types | count}});
+    {%- set choice_varname = "choice" + (depth|string) %}
     {%- for choice in typeobj.types %}
     {
-        cace_amm_type_t *choice = cace_amm_type_array_get(semtype->choices, {{loop.index0}});
-        {{amm_type_set('choice', choice) | indent(8) }}
+        cace_amm_type_t *{{choice_varname}} = cace_amm_type_array_get({{semtype_varname}}->choices, {{loop.index0}});
+        {{amm_type_set(choice_varname, choice, depth+1) | indent(8) }}
     }
     {%- endfor %}
 }
