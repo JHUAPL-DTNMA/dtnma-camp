@@ -81,7 +81,7 @@ def get_parser() -> argparse.ArgumentParser:
 # d_name is the path to the output directory
 #
 def set_up_outputdir(d_name):
-    if(not os.path.isdir(d_name)):
+    if (not os.path.isdir(d_name)):
         try:
             os.makedirs(d_name)
         except OSError as e:
