@@ -22,6 +22,7 @@
 #
 import logging
 import re
+from typing import List
 
 LOGGER = logging.getLogger(__name__)
 
@@ -59,18 +60,18 @@ class Scraper(object):
     # NOTICE: since this is treating lines as a queue, it will evaluate lines in
     # reverse order (popping off the end of the list).
     #
-    def _find_custom_includes_in_queue(self, lines):
+    def _find_custom_includes_in_queue(self, lines: List[str]):
         includes = []
         line = ""
 
         start, end = self._make_custom_includes_markers()
 
         # find the start
-        while (len(lines) != 0 and line.strip() != start):
+        while lines and line.strip() != start:
             line = lines.pop()
 
         # Append until we find the end
-        while (len(lines) != 0):
+        while lines:
             line = lines.pop()
             if (line.strip() == end):
                 break
@@ -96,11 +97,11 @@ class Scraper(object):
         start, end = self._make_custom_functions_markers()
 
         # find the start
-        while (len(lines) != 0 and line.strip() != start):
+        while lines and line.strip() != start:
             line = lines.pop()
 
         # Append until we find the end
-        while (len(lines) != 0):
+        while lines:
             line = lines.pop()
             if (line.strip() == end):
                 break
@@ -176,41 +177,41 @@ class C_Scraper(Scraper):
     # NOTICE: since this is treating lines as a queue, it will evaluate lines in
     # reverse order (popping off the end of the list).
     #
-    def _find_func_custom_body_in_queue(self, lines):
+    def _find_func_custom_body_in_queue(self, lines: List[str]):
         func_bods = {}
         func = None
 
         indicator, start_re, end_re = self._get_custom_body_re_markers()
 
         # While lines remain in the queue, pop one off and evaluate it
-        while len(lines) != 0:
+        while lines:
             line = lines.pop()
             clean_line = line.strip()
 
             # If we're inside one of the custom function bodies
             # keep appending until end
-            if (func is not None):
+            if func is not None:
 
                 # Append to this function's dictionary entry until you reach
                 # another indicator with an end tag
-                if (clean_line == indicator):
+                if clean_line == indicator:
                     line = lines.pop()
                     clean_line = line.strip()
 
-                    if (re.match(end_re, clean_line) != None):
+                    if re.match(end_re, clean_line) is not None:
                         func_bods[func].pop()
                         func = None
                     else:
                         continue
                 else:
-                    if (not func in func_bods):
+                    if func not in func_bods:
                         func_bods[func] = []
                     func_bods[func].append(line)
 
             # Check if this line is the start of a new custom function body
             else:
                 s = re.search(start_re, clean_line)
-                if s != None:
+                if s is not None:
                     func = s.group(1)
 
         LOGGER.info('Collected bodies from functions: %s', ' '.join(func_bods.keys()))

@@ -49,7 +49,6 @@ def setup():
         user=os.environ["PGUSER"],
         password=os.environ["PGPASSWORD"]
     )
-    cursor = conn.cursor()
 
     # reusable objects that the tests will need
     yield conn,
