@@ -11,7 +11,6 @@
 #include "refda/edd_prod_ctx.h"
 #include "refda/ctrl_exec_ctx.h"
 #include "refda/oper_eval_ctx.h"
-#include "refda/reporting.h"
 #include <cace/amm/semtype.h>
 #include <cace/ari/text.h>
 #include <cace/util/logging.h>
@@ -204,6 +203,7 @@ int refda_adm_example_test_init(refda_agent_t *agent)
     if (adm)
     {
         cace_amm_obj_desc_t *obj;
+        (void)obj;
 
         /**
          * Register TYPEDEF objects
