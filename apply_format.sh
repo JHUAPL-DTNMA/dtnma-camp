@@ -3,7 +3,7 @@
 ## Copyright (c) 2020-2025 The Johns Hopkins University Applied Physics
 ## Laboratory LLC.
 ##
-## This file is part of the AMM CODEC Engine (ACE) under the
+## This file is part of the C code generator for AMP (CAMP) under the
 ## DTN Management Architecture (DTNMA) reference implementaton set from APL.
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
