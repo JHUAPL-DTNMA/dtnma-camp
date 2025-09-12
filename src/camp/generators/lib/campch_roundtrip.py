@@ -32,7 +32,7 @@ LOGGER = logging.getLogger(__name__)
 #
 class Scraper(object):
 
-    ################## HELPER FUNCTIONS TO MAKE \CUSTOM\ TAGS FOR FILE #############
+    # HELPER FUNCTIONS TO MAKE \CUSTOM\ TAGS FOR FILE #
 
     #
     # Returns a tuple of the custom includes start and end markers
@@ -46,7 +46,7 @@ class Scraper(object):
     def _make_custom_functions_markers(self):
         return "/*   START CUSTOM FUNCTIONS HERE */", "/*   STOP CUSTOM FUNCTIONS HERE  */"
 
-    ######## HELPER FUNCTIONS FOR PARSING INTERNAL DATA STRUCT FOR CUSTOM CODE ##########
+    # HELPER FUNCTIONS FOR PARSING INTERNAL DATA STRUCT FOR CUSTOM CODE #
 
     #
     # Pops items off of the passed queue (list) structure, searching
@@ -108,7 +108,7 @@ class Scraper(object):
 
         return custom_func, lines
 
-    ############ FUNCTIONS TO WRITE SCRAPED CUSTOM CODE TO FILE, WITH SURROUNDING TAGS ###########
+    # FUNCTIONS TO WRITE SCRAPED CUSTOM CODE TO FILE, WITH SURROUNDING TAGS #
 
     #
     # Write the standard 'CUSTOM' tag for the includes at the top of a file
@@ -134,8 +134,6 @@ class Scraper(object):
         start, end = self._make_custom_functions_markers()
 
         return start + "\n" + ''.join(self.functions) + end
-
-####################### CHILD CLASSES FOR H- or C-files ############################
 
 
 #
