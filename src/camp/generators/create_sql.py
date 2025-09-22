@@ -36,7 +36,7 @@ class Writer(AbstractWriter, CHelperMixin):
     ''' The common header file writer.
     '''
 
-    def __init__(self, admset, adm, out_path, dialect: 'pgsql',):
+    def __init__(self, admset, adm, out_path, dialect: 'pgsql'):
         super().__init__(admset, adm, out_path)
 
         self.c_norm_name = yang_to_c(self.adm.norm_name)
