@@ -125,12 +125,12 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
     def c_int(value) -> str:
         ''' Enforce an integer value in C source.
         '''
-        return f'{int(value): d}'
+        return '{0:d}'.format(int(value))
 
     def c_float(value) -> str:
         ''' Enforce an floating point value in C source.
         '''
-        return f'{float(value): e}'
+        return '{0:e}'.format(float(value))
 
     def c_str(value: str) -> str:
         ''' Enforce an escaped text string in C source.

@@ -158,7 +158,7 @@ cace_ari_set_aritype({{ptrname}}, {{value.value | cpp_enum}});
 // reference to {{value | as_text}}
 cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int}}, {{refdobj.module.ns_model_enum | c_int}}, {{value.ident.type_id | cpp_enum}}, {{refdobj.enum | c_int}});
 {%- else -%}
-// FIXME reference to unknown object
+// FIXME reference to unknown object {{value | as_text}}
 {%- endif %}
 {%- endif %}
 {%- endmacro -%}

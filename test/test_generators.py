@@ -100,7 +100,7 @@ class TestCreateSql(BaseTest):
 
         tmpl = self._tmpl_env.get_template('pgsql/example_test.sql.jinja')
         content = tmpl.render(datestamp=self._today_datestamp())
-        self.assertEqual(content, buf.read())
+        self.assertMultiLineEqual(content, buf.read())
 
 
 class TestCreateCH(BaseTest):
@@ -125,7 +125,7 @@ class TestCreateCH(BaseTest):
 
         tmpl = self._tmpl_env.get_template('gen_ch/example_test.h.jinja')
         content = tmpl.render(datestamp=self._today_datestamp())
-        self.assertEqual(content, buf.read())
+        self.assertMultiLineEqual(content, buf.read())
 
     def test_create_impl_c_noscrape(self):
         adm = self._get_adm('example-test.yang')
@@ -146,4 +146,4 @@ class TestCreateCH(BaseTest):
 
         tmpl = self._tmpl_env.get_template('gen_ch/example_test.c.jinja')
         content = tmpl.render(datestamp=self._today_datestamp())
-        self.assertEqual(content, buf.read())
+        self.assertMultiLineEqual(content, buf.read())
