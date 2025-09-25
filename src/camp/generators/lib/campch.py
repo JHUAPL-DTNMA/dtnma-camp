@@ -54,27 +54,27 @@ def yang_to_sql(identifier):
     return ""
 
 
-def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
+def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
     ''' Set state of a jinja environment for ADM implementation
     source generation.
     '''
     REVERSE_MAP = {val: key for key, val in ORM_TYPE.items()}
 
-    def amm_obj_type(obj:models.AdmObjMixin) -> ari.StructType:
+    def amm_obj_type(obj: models.AdmObjMixin) -> ari.StructType:
         return REVERSE_MAP[type(obj)]
 
-    def cpp_header(adm:models.AdmModule) -> str:
+    def cpp_header(adm: models.AdmModule) -> str:
         ''' Get the header name for a module.
         The symbol prefix is not part of the file name.
         '''
         return yang_to_c(adm.module_name).lower() + '.h'
 
-    def cpp_guard(adm:models.AdmModule) -> str:
+    def cpp_guard(adm: models.AdmModule) -> str:
         ''' Get the header guard for a module.
         '''
         return '_'.join([sym_prefix, yang_to_c(adm.module_name), 'H_']).upper()
 
-    def cpp_enum(value:AdmEntity) -> str:
+    def cpp_enum(value: AdmEntity) -> str:
         ''' Map from ORM and YANG names into C preprocessor define name.
         '''
         if isinstance(value, ari.StructType):
@@ -87,7 +87,12 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
             parts = ['objid', amm_obj_type(value).name, yang_to_c(value.name)]
         return '_'.join([sym_prefix, yang_to_c(module.module_name), 'enum'] + parts).upper()
 
-    def c_func(value:AdmEntity, suffix:Optional[str]=None) -> str:
+    def c_depth(name: str, depth: int) -> str:
+        if depth == 0:
+            return name
+        return name + f"_d{depth}"
+
+    def c_func(value: AdmEntity, suffix: Optional[str]=None) -> str:
         ''' Map from ORM and YANG names into C function symbol name.
         '''
         if isinstance(value, models.AdmModule):
@@ -98,7 +103,7 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
             parts.append(suffix)
         return '_'.join([sym_prefix] + parts).lower()
 
-    def c_comment(value:str) -> str:
+    def c_comment(value: str) -> str:
         ''' Wrap a multi-line text value as a C multiline comment.
         Indentation outside or inside is done with a separate filter.
         '''
@@ -120,27 +125,27 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
     def c_int(value) -> str:
         ''' Enforce an integer value in C source.
         '''
-        return f'{int(value):d}'
+        return f'{int(value): d}'
 
     def c_float(value) -> str:
         ''' Enforce an floating point value in C source.
         '''
-        return f'{float(value):e}'
+        return f'{float(value): e}'
 
-    def c_str(value:str) -> str:
+    def c_str(value: str) -> str:
         ''' Enforce an escaped text string in C source.
         '''
         return '"' + str(value).replace('\\', '\\\\').replace('"', '\\"').replace("'", "\\'") \
             .replace("\a", "\\a").replace("\b", "\\b").replace("\f", "\\f").replace("\n", "\\n") \
             .replace("\r", "\\r").replace("\t", "\\t").replace("\v", "\\v") + '"'
 
-    def c_bytes_init(value:bytes) -> str:
+    def c_bytes_init(value: bytes) -> str:
         ''' Encode a byte string as a sequence of uint8_t values
         within an array initializer.
         '''
         return '{' + ', '.join([hex(part) for part in value]) + '}'
 
-    def rewrap(value:str, prefix:str='\n'):
+    def rewrap(value: str, prefix: str='\n'):
         ''' Unwrap and re-wrap text along word bounaries.
         '''
         return prefix.join(textwrap.wrap(value))
@@ -156,52 +161,52 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         enc.encode(val, buf)
         return buf.getvalue()
 
-    def as_timepoint(value:datetime) -> str:
+    def as_timepoint(value: datetime) -> str:
         diff = value - ari.DTN_EPOCH
         tv_sec = diff // numpy.timedelta64(1, 's')
         diff -= tv_sec * numpy.timedelta64(1, 's')
         tv_nsec = diff // numpy.timedelta64(1, 'ns')
         return f"{{{tv_sec}, {tv_nsec}}}"
 
-    def as_timedelta(value:timedelta) -> str:
+    def as_timedelta(value: timedelta) -> str:
         tv_sec = value // numpy.timedelta64(1, 's')
         value -= tv_sec * numpy.timedelta64(1, 's')
         tv_nsec = value // numpy.timedelta64(1, 'ns')
         return f"{{{tv_sec}, {tv_nsec}}}"
 
-    def ref_text(obj:models.AdmObjMixin) -> str:
+    def ref_text(obj: models.AdmObjMixin) -> str:
         ''' Create a text reference for an AMM object.
         '''
         return f'./{amm_obj_type(obj).name}/{obj.norm_name}'
 
-    def deref(ari:ari.ARI) -> models.AdmObjMixin:
+    def deref(ari: ari.ARI) -> models.AdmObjMixin:
         ''' Dereference an ARI into an AMM object.
         '''
         LOGGER.debug('deref from %s', ari)
         return dereference(ari, admset.db_session())
 
-    def ari_builtin(ari:ari.ARI, typename:str) -> bool:
+    def ari_builtin(ari: ari.ARI, typename: str) -> bool:
         typeobj = typing.BUILTINS[typename]
         got = typeobj.get(ari)
         return got is not None
 
-    def sql_name(value:str) -> str:
+    def sql_name(value: str) -> str:
         ''' valid sql name
         '''
-        return  yang_to_sql(value).lower()
+        return yang_to_sql(value).lower()
 
-    def sql_var_name(obj:ace.models.AdmObjMixin) -> str:
+    def sql_var_name(obj: ace.models.AdmObjMixin) -> str:
         ''' formatting a name to be a sql variable
         '''
         if obj:
             return yang_to_sql(obj.__tablename__).lower() + "_" + yang_to_sql(obj.name).lower()
         return "None"
 
-    def sql_string(value:str) -> str:
+    def sql_string(value: str) -> str:
         ''' escape string and add quotes for sql
         '''
         if value:
-            return  '\'' + value.replace('\\', '\\\\').replace("'", ' `').replace('\n', ' ') + '\''
+            return '\'' + value.replace('\\', '\\\\').replace("'", ' `').replace('\n', ' ') + '\''
         else:
             return '\'\''
 
@@ -213,6 +218,7 @@ def update_jinja_env(env:jinja2.Environment, admset, sym_prefix:str):
         'cpp_header': cpp_header,
         'cpp_guard': cpp_guard,
         'cpp_enum': cpp_enum,
+        'c_depth': c_depth,
         'c_func': c_func,
         'c_comment': c_comment,
         'c_bool': c_bool,
