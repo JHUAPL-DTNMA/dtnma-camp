@@ -24,11 +24,9 @@
 '''
 import argparse
 import datetime
-import io
 import jinja2
 import logging
 import os
-import sys
 from typing import List
 import unittest
 import camp.tools.camp

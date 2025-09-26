@@ -32,6 +32,7 @@ class AbstractWriter:
     :ivar adm: The specific ADM to generate for.
     :ivar out_path: The output parent path to be used.
     '''
+
     def __init__(self, admset, adm, out_path, **kwargs):
         self.admset = admset
         self.adm = adm

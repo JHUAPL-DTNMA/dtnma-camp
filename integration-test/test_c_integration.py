@@ -23,7 +23,6 @@
 import logging
 import os
 import pytest
-import shutil
 import subprocess
 import ace
 from camp.generators.lib.campch import yang_to_c

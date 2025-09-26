@@ -22,12 +22,9 @@
 #
 ''' Verify behavior of the "camp" command tool.
 '''
-import argparse
 import datetime
-import io
 import logging
 import os
-import sys
 import unittest
 import jinja2
 from ace import AdmSet, Checker
