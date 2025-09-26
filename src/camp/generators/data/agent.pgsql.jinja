@@ -152,7 +152,7 @@ CALL SP__insert_const_actual_definition({{obj | sql_var_name}}_oid, {{obj.descri
 CALL SP__insert_control_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, fp_spec_id, {{result | sql_string}}, {{obj | sql_var_name}}_fid);
 {%- else %}
 CALL SP__insert_control_formal_definition({{obj | sql_var_name}}_oid, {{obj.description | sql_string}}, NULL, {{result | sql_string}}, {{obj | sql_var_name}}_fid);
-CALL SP__insert_control_actual_definition({{obj | sql_var_name}}_oid, 'The singleton value for {{obj.name}}', NULL, {{obj | sql_var_name}}_aid);
+CALL SP__insert_control_actual_definition({{obj | sql_var_name}}_oid, NULL, 'The singleton value for {{obj.name}}', {{obj | sql_var_name}}_aid);
 {%- endif %}
 
 {%- endfor %}
