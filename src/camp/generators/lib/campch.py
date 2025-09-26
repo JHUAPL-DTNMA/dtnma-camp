@@ -25,14 +25,12 @@ import io
 import logging
 import ace.models
 import jinja2
-import math
 import numpy
 import textwrap
 from typing import Union, Optional
 import ace
 from ace import models, ari, ari_text, typing
 from ace.lookup import dereference, ORM_TYPE
-from datetime import datetime, timedelta, timezone
 
 LOGGER = logging.getLogger(__name__)
 
@@ -92,7 +90,7 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
             return name
         return name + f"_d{depth}"
 
-    def c_func(value: AdmEntity, suffix: Optional[str]=None) -> str:
+    def c_func(value: AdmEntity, suffix: Optional[str] = None) -> str:
         ''' Map from ORM and YANG names into C function symbol name.
         '''
         if isinstance(value, models.AdmModule):
@@ -145,7 +143,7 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
         '''
         return '{' + ', '.join([hex(part) for part in value]) + '}'
 
-    def rewrap(value: str, prefix: str='\n'):
+    def rewrap(value: str, prefix: str = '\n'):
         ''' Unwrap and re-wrap text along word bounaries.
         '''
         return prefix.join(textwrap.wrap(value))
@@ -161,14 +159,14 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
         enc.encode(val, buf)
         return buf.getvalue()
 
-    def as_timepoint(value: datetime) -> str:
+    def as_timepoint(value: numpy.datetime64) -> str:
         diff = value - ari.DTN_EPOCH
         tv_sec = diff // numpy.timedelta64(1, 's')
         diff -= tv_sec * numpy.timedelta64(1, 's')
         tv_nsec = diff // numpy.timedelta64(1, 'ns')
         return f"{{{tv_sec}, {tv_nsec}}}"
 
-    def as_timedelta(value: timedelta) -> str:
+    def as_timedelta(value: numpy.timedelta64) -> str:
         tv_sec = value // numpy.timedelta64(1, 's')
         value -= tv_sec * numpy.timedelta64(1, 's')
         tv_nsec = value // numpy.timedelta64(1, 'ns')

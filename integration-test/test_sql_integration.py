@@ -44,12 +44,11 @@ def setup():
 
     # setup: connect to ANMS library
     conn = psycopg2.connect(
-            host=os.environ["PGHOST"],
-            port=int(os.environ.get("PGPORT", 5432)),
-            user=os.environ["PGUSER"],
-            password=os.environ["PGPASSWORD"]
+        host=os.environ["PGHOST"],
+        port=int(os.environ.get("PGPORT", 5432)),
+        user=os.environ["PGUSER"],
+        password=os.environ["PGPASSWORD"]
     )
-    cursor = conn.cursor()
 
     # reusable objects that the tests will need
     yield conn,
