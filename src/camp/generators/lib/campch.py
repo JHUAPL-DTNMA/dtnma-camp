@@ -85,6 +85,11 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
             parts = ['objid', amm_obj_type(value).name, yang_to_c(value.name)]
         return '_'.join([sym_prefix, yang_to_c(module.module_name), 'enum'] + parts).upper()
 
+    def c_depth(name: str, depth: int) -> str:
+        if depth == 0:
+            return name
+        return name + f"_d{depth}"
+
     def c_func(value: AdmEntity, suffix: Optional[str] = None) -> str:
         ''' Map from ORM and YANG names into C function symbol name.
         '''
@@ -118,12 +123,12 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
     def c_int(value) -> str:
         ''' Enforce an integer value in C source.
         '''
-        return f'{int(value):d}'
+        return '{0:d}'.format(int(value))
 
     def c_float(value) -> str:
         ''' Enforce an floating point value in C source.
         '''
-        return f'{float(value):e}'
+        return '{0:e}'.format(float(value))
 
     def c_str(value: str) -> str:
         ''' Enforce an escaped text string in C source.
@@ -211,6 +216,7 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
         'cpp_header': cpp_header,
         'cpp_guard': cpp_guard,
         'cpp_enum': cpp_enum,
+        'c_depth': c_depth,
         'c_func': c_func,
         'c_comment': c_comment,
         'c_bool': c_bool,
