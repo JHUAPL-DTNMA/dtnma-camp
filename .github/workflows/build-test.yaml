@@ -36,11 +36,13 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     strategy:
       max-parallel: 4
       matrix:
         python-version: ["3.9", "3.10", "3.12"]
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -59,11 +61,13 @@ jobs:
 
   unit-test:
     needs: [build]
-    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     strategy:
       max-parallel: 4
       matrix:
         python-version: ["3.9", "3.10", "3.12"]
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -82,12 +86,13 @@ jobs:
 
   test-integration-sql:
     needs: [build]
-    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
     strategy:
       max-parallel: 4
       matrix:
         python-version: ["3.10"]
-
+    runs-on: ubuntu-22.04
     env:
       PGHOST: postgres
       PGUSER: postgres
@@ -112,12 +117,13 @@ jobs:
 
   test-integration-c:
     needs: [build]
-    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
     strategy:
       max-parallel: 4
       matrix:
         python-version: ["3.10"]
-
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
