@@ -314,7 +314,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             // IDENT bases:
 {%- for base in obj.bases %}
             {
-                refda_amm_ident_base_t *base = refda_amm_ident_base_list_push_back_new(objdata->bases);
+                refda_amm_ident_base_t *base = refda_amm_ident_base_list_push_new(objdata->bases);
                 {{ ari_set_value('&(base->name)', base.base_ari) | indent(16) }}
             }
 {%- endfor %}
