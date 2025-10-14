@@ -442,7 +442,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {%- for operand in obj.operands.items %}
             {
                 cace_amm_named_type_t *operand = cace_amm_named_type_array_get(objdata->operand_types, {{loop.index0}});
-                string_set_str(operand->name, {{operand.name | c_str}});
+                m_string_set_cstr(operand->name, {{operand.name | c_str}});
                 {{ amm_type_set('&(operand->typeobj)', operand.typeobj) | indent(16) }}
             }
 {%- endfor %}
