@@ -112,7 +112,7 @@ jobs:
           sudo rm /var/lib/man-db/auto-update
           sudo apt-get update
           sudo apt-get install -y \
-              postgresql-client-14
+              postgresql-client-16
       - name: Test
         run: ./integration-test/run.sh sql
 
