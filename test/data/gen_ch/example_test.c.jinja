@@ -476,7 +476,7 @@ int refda_adm_example_test_init(refda_agent_t *agent)
             cace_amm_named_type_array_resize(objdata->operand_types, 2);
             {
                 cace_amm_named_type_t *operand = cace_amm_named_type_array_get(objdata->operand_types, 0);
-                string_set_str(operand->name, "left");
+                m_string_set_cstr(operand->name, "left");
                 {
                     cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                     // use of ari:/ARITYPE/UVAST
@@ -486,7 +486,7 @@ int refda_adm_example_test_init(refda_agent_t *agent)
             }
             {
                 cace_amm_named_type_t *operand = cace_amm_named_type_array_get(objdata->operand_types, 1);
-                string_set_str(operand->name, "right");
+                m_string_set_cstr(operand->name, "right");
                 {
                     cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                     // use of ari:/ARITYPE/UVAST
