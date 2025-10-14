@@ -36,11 +36,13 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     strategy:
       max-parallel: 4
       matrix:
         python-version: ["3.9", "3.10", "3.12"]
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -59,11 +61,13 @@ jobs:
 
   unit-test:
     needs: [build]
-    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     strategy:
       max-parallel: 4
       matrix:
         python-version: ["3.9", "3.10", "3.12"]
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -82,12 +86,13 @@ jobs:
 
   test-integration-sql:
     needs: [build]
-    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
     strategy:
       max-parallel: 4
       matrix:
         python-version: ["3.10"]
-
+    runs-on: ubuntu-24.04
     env:
       PGHOST: postgres
       PGUSER: postgres
@@ -104,20 +109,22 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
+          sudo rm /var/lib/man-db/auto-update
           sudo apt-get update
           sudo apt-get install -y \
-              postgresql-client-14
+              postgresql-client-16
       - name: Test
         run: ./integration-test/run.sh sql
 
   test-integration-c:
     needs: [build]
-    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
     strategy:
       max-parallel: 4
       matrix:
         python-version: ["3.10"]
-
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -129,6 +136,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install build dependencies
         run: |
+          sudo rm /var/lib/man-db/auto-update
           sudo apt-get update
           sudo apt-get install -y \
               cmake ninja-build ruby build-essential autoconf libtool \

@@ -13,7 +13,7 @@ sequence of {{type_summary(typeobj.base)}}
 {%- elif typeobj is instance(typing.TableTemplate) -%}
 TBLT with {{typeobj.columns | count}} columns:
 {%- for col in typeobj.columns %}
-  - Name "{{col.name}}", type {{type_summary(col.base) | indent(4)}}
+  - Index {{loop.index0}}, name "{{col.name}}", type {{type_summary(col.base) | indent(4)}}
 {%- endfor %}
 {%- elif typeobj is instance(typing.TypeUnion) -%}
 union of {{typeobj.types | count}} types (
@@ -119,11 +119,12 @@ cace_ari_set_tstr({{ptrname}}, {{value.value | c_str}}, true);
 }
 {#- Non-primitive types #}
 {%- elif value is ari_builtin('aritype') -%}
+// use of {{value | as_text}}
 cace_ari_set_aritype({{ptrname}}, {{value.value | cpp_enum}});
 {%- elif value is ari_builtin('ac') -%}
 {
-    {%- set c_varname = "acinit" + (depth|string) %}
-    {%- set i_varname = "item" + (depth|string) %}
+    {%- set c_varname = "acinit" | c_depth(depth) %}
+    {%- set i_varname = "item" | c_depth(depth) %}
     cace_ari_ac_t {{c_varname}};
     cace_ari_ac_init(&{{c_varname}});
 {%- for item in value.value %}
@@ -136,8 +137,8 @@ cace_ari_set_aritype({{ptrname}}, {{value.value | cpp_enum}});
 }
 {%- elif value is ari_builtin('am') -%}
 {
-    {%- set c_varname = "aminit" + (depth|string) %}
-    {%- set i_varname = "item" + (depth|string) %}
+    {%- set c_varname = "aminit" | c_depth(depth) %}
+    {%- set i_varname = "item" | c_depth(depth) %}
     ari_am_t {{c_varname}};
     ari_am_init(&{{c_varname}});
 {%- for key, item in value.value.items() %}
@@ -152,21 +153,20 @@ cace_ari_set_aritype({{ptrname}}, {{value.value | cpp_enum}});
 // FIXME unhandled value {{value}}
 {% endif %}
 {%- elif value is instance(ari.ReferenceARI) -%}
-// {{value | as_text}}
 {% set refdobj = value | deref -%}
 {%- if refdobj -%}
+// reference to {{value | as_text}}
 cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int}}, {{refdobj.module.ns_model_enum | c_int}}, {{value.ident.type_id | cpp_enum}}, {{refdobj.enum | c_int}});
 {%- else -%}
-// FIXME reference to unknown object
+// FIXME reference to unknown object {{value | as_text}}
 {%- endif %}
 {%- endif %}
 {%- endmacro -%}
 
 {%- macro amm_type_set(ptrname, typeobj, depth = 0) %}
-{%- set semtype_varname = "semtype" + (depth|string) %}
+{%- set semtype_varname = "semtype" | c_depth(depth) %}
 {%- if typeobj is instance(typing.TypeUse) -%}
 {
-    // use of {{typeobj.type_ari | as_text}}
     cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
     {{ ari_set_value('&typeref', typeobj.type_ari) | indent(4)}}
     cace_amm_type_set_use_ref_move({{ptrname}}, &typeref);
@@ -187,7 +187,7 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
 {
     // diverse list
     cace_amm_semtype_dlist_t *{{semtype_varname}} = cace_amm_type_set_dlist({{ptrname}}, {{typeobj.parts | count}});
-    {%- set part_varname = "part" + (depth|string) %}
+    {%- set part_varname = "part" | c_depth(depth) %}
     {%- for part in typeobj.parts %}
     {
         cace_amm_type_t *{{part_varname}} = cace_amm_type_array_get({{semtype_varname}}->types, {{loop.index0}});
@@ -216,7 +216,7 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
 {
     // union
     cace_amm_semtype_union_t *{{semtype_varname}} = cace_amm_type_set_union_size({{ptrname}}, {{typeobj.types | count}});
-    {%- set choice_varname = "choice" + (depth|string) %}
+    {%- set choice_varname = "choice" | c_depth(depth) %}
     {%- for choice in typeobj.types %}
     {
         cace_amm_type_t *{{choice_varname}} = cace_amm_type_array_get({{semtype_varname}}->choices, {{loop.index0}});
@@ -314,7 +314,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             // IDENT bases:
 {%- for base in obj.bases %}
             {
-                refda_amm_ident_base_t *base = refda_amm_ident_base_list_push_back_new(objdata->bases);
+                refda_amm_ident_base_t *base = refda_amm_ident_base_list_push_new(objdata->bases);
                 {{ ari_set_value('&(base->name)', base.base_ari) | indent(16) }}
             }
 {%- endfor %}
@@ -442,7 +442,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {%- for operand in obj.operands.items %}
             {
                 cace_amm_named_type_t *operand = cace_amm_named_type_array_get(objdata->operand_types, {{loop.index0}});
-                string_set_str(operand->name, {{operand.name | c_str}});
+                m_string_set_cstr(operand->name, {{operand.name | c_str}});
                 {{ amm_type_set('&(operand->typeobj)', operand.typeobj) | indent(16) }}
             }
 {%- endfor %}
