@@ -29,7 +29,7 @@ import numpy
 import textwrap
 from typing import Union, Optional
 import ace
-from ace import models, ari, ari_text, typing
+from ace import models, ari, ari_text, typing, type_constraint
 from ace.lookup import dereference, ORM_TYPE
 
 LOGGER = logging.getLogger(__name__)
@@ -211,6 +211,7 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
     env.globals |= {
         'ari': ace.ari,
         'typing': ace.typing,
+        'type_constraint': ace.type_constraint
     }
     env.filters |= {
         'cpp_header': cpp_header,

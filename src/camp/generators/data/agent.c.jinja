@@ -170,6 +170,27 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
     cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
     {{ ari_set_value('&typeref', typeobj.type_ari) | indent(4)}}
     cace_amm_type_set_use_ref_move({{ptrname}}, &typeref);
+{%- if typeobj.constraints %}
+
+    cace_amm_semtype_cnst_t *cnst;
+{%- for cnst in typeobj.constraints %}
+    {
+        // Constraint: {{cnst}}
+        cnst = cace_amm_semtype_cnst_array_push_new(((cace_amm_semtype_use_t *)({{ptrname}})->as_semtype)->constraints);
+        cace_amm_semtype_cnst_init(cnst);
+        {%- if cnst is instance(type_constraint.StringLength)%}
+        cace_amm_range_size_t *range = cace_amm_semtype_cnst_set_strlen(cnst);
+        {%- for rg in cnst.ranges %}
+        {
+            cace_amm_range_intvl_size_t intvl;
+            cace_amm_range_intvl_size_set_finite(&intvl, {{rg.lower}}, {{rg.upper}});
+            cace_amm_range_intvl_size_seq_push(range->intvls, intvl);
+        }
+        {%- endfor %}
+        {%- endif %}
+    }
+{%- endfor %}
+{%- endif %}
 }
 {%- elif typeobj is instance(typing.UniformList) -%}
 {
