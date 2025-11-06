@@ -183,7 +183,13 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
         {%- for rg in cnst.ranges %}
         {
             cace_amm_range_intvl_size_t intvl;
-            cace_amm_range_intvl_size_set_finite(&intvl, {{rg.lower}}, {{rg.upper}});
+            cace_amm_range_intvl_size_set_infinite(&intvl);
+            {%-if rg.lower != -inf %}
+            cace_amm_range_intvl_size_set_min(&intvl, {{rg.lower}});
+            {%- endif %}
+            {%-if rg.upper != inf %}
+            cace_amm_range_intvl_size_set_max(&intvl, {{rg.upper}});
+            {%- endif %}
             cace_amm_range_intvl_size_seq_push(range->intvls, intvl);
         }
         {%- endfor %}
