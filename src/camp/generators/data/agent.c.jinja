@@ -178,7 +178,7 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
         // Constraint: {{cnst}}
         cnst = cace_amm_semtype_cnst_array_push_new(((cace_amm_semtype_use_t *)({{ptrname}})->as_semtype)->constraints);
         cace_amm_semtype_cnst_init(cnst);
-        {%- if cnst is instance(type_constraint.StringLength)%}
+        {%- if cnst is instance(type_constraint.StringLength) or in%}
         cace_amm_range_size_t *range = cace_amm_semtype_cnst_set_strlen(cnst);
         {%- for rg in cnst.ranges %}
         {
@@ -193,6 +193,27 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
             cace_amm_range_intvl_size_seq_push(range->intvls, intvl);
         }
         {%- endfor %}
+        {%- elif cnst is instance(type_constraint.NumericRange) %}
+        cace_amm_range_size_t *range = cace_amm_semtype_cnst_set_range_int64(cnst);
+        {%- for rg in cnst.ranges %}
+        {
+            cace_amm_range_intvl_int64_t intvl;
+            cace_amm_range_intvl_int64_set_infinite(&intvl);
+            {%-if rg.lower != -inf %}
+            cace_amm_range_intvl_int64_set_min(&intvl, {{rg.lower}});
+            {%- endif %}
+            {%-if rg.upper != inf %}
+            cace_amm_range_intvl_int64_set_max(&intvl, {{rg.upper}});
+            {%- endif %}
+            cace_amm_range_intvl_int64_seq_push(range->intvls, intvl);
+        }
+        {%- endfor %}
+        {%- elif cnst is instance(type_constraint.TextPattern) %}
+        cace_amm_semtype_cnst_t cnst;
+        cace_amm_semtype_cnst_init(&cnst);
+        cace_amm_semtype_cnst_set_textpat(&cnst, "{{cnst.pattern}}");
+        {%- else %}
+        // FIXME unhandled constraint {{cnst}}
         {%- endif %}
     }
 {%- endfor %}
