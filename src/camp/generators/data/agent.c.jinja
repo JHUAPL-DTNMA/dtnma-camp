@@ -209,9 +209,7 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
         }
         {%- endfor %}
         {%- elif cnst is instance(type_constraint.TextPattern) %}
-        cace_amm_semtype_cnst_t cnst;
-        cace_amm_semtype_cnst_init(&cnst);
-        cace_amm_semtype_cnst_set_textpat(&cnst, "{{cnst.pattern | c_str}}");
+        cace_amm_semtype_cnst_set_textpat(&cnst, {{cnst.pattern | c_str}});
         {%- else %}
         // FIXME unhandled constraint {{cnst}}
         {%- endif %}
