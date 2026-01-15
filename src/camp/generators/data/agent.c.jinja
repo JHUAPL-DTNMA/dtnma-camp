@@ -177,7 +177,6 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
     {
         // Constraint: {{cnst}}
         cnst = cace_amm_semtype_cnst_array_push_new(((cace_amm_semtype_use_t *)({{ptrname}})->as_semtype)->constraints);
-        cace_amm_semtype_cnst_init(cnst);
         {%- if cnst is instance(type_constraint.StringLength) or in%}
         cace_amm_range_size_t *range = cace_amm_semtype_cnst_set_strlen(cnst);
         {%- for rg in cnst.ranges %}
@@ -209,7 +208,7 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
         }
         {%- endfor %}
         {%- elif cnst is instance(type_constraint.TextPattern) %}
-        cace_amm_semtype_cnst_set_textpat(&cnst, {{cnst.pattern | c_str}});
+        cace_amm_semtype_cnst_set_textpat(cnst, {{cnst.pattern | c_str}});
         {%- else %}
         // FIXME unhandled constraint {{cnst}}
         {%- endif %}
