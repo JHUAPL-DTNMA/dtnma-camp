@@ -1,6 +1,6 @@
 
 #
-# Copyright (c) 2020-2025 The Johns Hopkins University Applied Physics
+# Copyright (c) 2020-2026 The Johns Hopkins University Applied Physics
 # Laboratory LLC.
 #
 # This file is part of the C code generator for AMP (CAMP) under the
@@ -211,6 +211,8 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
     env.globals |= {
         'ari': ace.ari,
         'typing': ace.typing,
+        'type_constraint': ace.type_constraint,
+        'inf': float('inf')
     }
     env.filters |= {
         'cpp_header': cpp_header,

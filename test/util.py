@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020-2025 The Johns Hopkins University Applied Physics
+# Copyright (c) 2020-2026 The Johns Hopkins University Applied Physics
 # Laboratory LLC.
 #
 # This file is part of the C code generator for AMP (CAMP) under the
