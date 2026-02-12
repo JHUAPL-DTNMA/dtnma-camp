@@ -355,6 +355,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
         { // For {{obj | ref_text}}
             refda_amm_ident_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_ident_desc_t));
             refda_amm_ident_desc_init(objdata);
+            objdata->abstract = {{obj.abstract | c_bool}};
 {%- if obj.bases %}
             // IDENT bases:
 {%- for base in obj.bases %}
