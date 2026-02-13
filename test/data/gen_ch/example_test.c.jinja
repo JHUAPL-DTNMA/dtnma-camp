@@ -292,7 +292,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                 // use of ari:/ARITYPE/UINT
                 cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UINT);
-                cace_amm_type_set_use_ref_move(&(objdata->typeobj), &typeref);
+                cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(objdata->typeobj), &typeref);
+                // no constraints
+                (void)semtype;
             }
 
             obj = refda_register_typedef(adm, cace_amm_idseg_ref_withenum("counter32", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_TYPEDEF_COUNTER32), objdata);
@@ -306,7 +308,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                 // use of ari:/ARITYPE/INT
                 cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_INT);
-                cace_amm_type_set_use_ref_move(&(objdata->typeobj), &typeref);
+                cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(objdata->typeobj), &typeref);
+                // no constraints
+                (void)semtype;
             }
 
             obj = refda_register_typedef(adm, cace_amm_idseg_ref_withenum("gauge32", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_TYPEDEF_GAUGE32), objdata);
@@ -320,7 +324,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                 // use of ari:/ARITYPE/UVAST
                 cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
-                cace_amm_type_set_use_ref_move(&(objdata->typeobj), &typeref);
+                cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(objdata->typeobj), &typeref);
+                // no constraints
+                (void)semtype;
             }
 
             obj = refda_register_typedef(adm, cace_amm_idseg_ref_withenum("counter64", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_TYPEDEF_COUNTER64), objdata);
@@ -334,7 +340,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                 // use of ari:/ARITYPE/VAST
                 cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_VAST);
-                cace_amm_type_set_use_ref_move(&(objdata->typeobj), &typeref);
+                cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(objdata->typeobj), &typeref);
+                // no constraints
+                (void)semtype;
             }
 
             obj = refda_register_typedef(adm, cace_amm_idseg_ref_withenum("gauge64", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_TYPEDEF_GAUGE64), objdata);
@@ -381,7 +389,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                 // use of ari:/ARITYPE/UVAST
                 cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
-                cace_amm_type_set_use_ref_move(&(objdata->val_type), &typeref);
+                cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(objdata->val_type), &typeref);
+                // no constraints
+                (void)semtype;
             }
             // initial value:
             cace_ari_set_int(&(objdata->value), 34);
@@ -401,7 +411,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                 // use of ari:/ARITYPE/UVAST
                 cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
-                cace_amm_type_set_use_ref_move(&(objdata->prod_type), &typeref);
+                cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(objdata->prod_type), &typeref);
+                // no constraints
+                (void)semtype;
             }
             // callback:
             objdata->produce = refda_adm_example_test_edd_edd__uvast;
@@ -417,7 +429,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                 // use of ari:/ARITYPE/UVAST
                 cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
-                cace_amm_type_set_use_ref_move(&(objdata->prod_type), &typeref);
+                cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(objdata->prod_type), &typeref);
+                // no constraints
+                (void)semtype;
             }
             // callback:
             objdata->produce = refda_adm_example_test_edd_edd__uvast__param;
@@ -430,7 +444,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                     cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                     // use of ari:/ARITYPE/UVAST
                     cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
-                    cace_amm_type_set_use_ref_move(&(fparam->typeobj), &typeref);
+                    cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(fparam->typeobj), &typeref);
+                    // no constraints
+                    (void)semtype;
                 }
             }
         }
@@ -442,7 +458,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                 // use of ari:/ARITYPE/UVAST
                 cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
-                cace_amm_type_set_use_ref_move(&(objdata->prod_type), &typeref);
+                cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(objdata->prod_type), &typeref);
+                // no constraints
+                (void)semtype;
             }
             // callback:
             objdata->produce = refda_adm_example_test_edd_edd__ac__param;
@@ -458,7 +476,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                         cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                         // use of ari:/ARITYPE/INT
                         cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_INT);
-                        cace_amm_type_set_use_ref_move(&(semtype->item_type), &typeref);
+                        cace_amm_semtype_use_t *semtype_d1 = cace_amm_type_set_use_ref_move(&(semtype->item_type), &typeref);
+                        // no constraints
+                        (void)semtype_d1;
                     }
                 }
                 {
@@ -486,7 +506,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                 // use of ari:/ARITYPE/UVAST
                 cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
-                cace_amm_type_set_use_ref_move(&(objdata->prod_type), &typeref);
+                cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(objdata->prod_type), &typeref);
+                // no constraints
+                (void)semtype;
             }
             // callback:
             objdata->produce = refda_adm_example_test_edd_edd__am__param;
@@ -502,13 +524,17 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                         cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                         // use of ari:/ARITYPE/INT
                         cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_INT);
-                        cace_amm_type_set_use_ref_move(&(semtype->key_type), &typeref);
+                        cace_amm_semtype_use_t *semtype_d1 = cace_amm_type_set_use_ref_move(&(semtype->key_type), &typeref);
+                        // no constraints
+                        (void)semtype_d1;
                     }
                     {
                         cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                         // use of ari:/ARITYPE/TEXTSTR
                         cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_TEXTSTR);
-                        cace_amm_type_set_use_ref_move(&(semtype->val_type), &typeref);
+                        cace_amm_semtype_use_t *semtype_d1 = cace_amm_type_set_use_ref_move(&(semtype->val_type), &typeref);
+                        // no constraints
+                        (void)semtype_d1;
                     }
                 }
                 {
@@ -532,7 +558,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                 // use of ari:/ARITYPE/UVAST
                 cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
-                cace_amm_type_set_use_ref_move(&(objdata->prod_type), &typeref);
+                cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(objdata->prod_type), &typeref);
+                // no constraints
+                (void)semtype;
             }
             // callback:
             objdata->produce = refda_adm_example_test_edd_edd__tbl__param;
@@ -551,7 +579,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                             cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                             // use of ari:/ARITYPE/INT
                             cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_INT);
-                            cace_amm_type_set_use_ref_move(&(col->typeobj), &typeref);
+                            cace_amm_semtype_use_t *semtype_d1 = cace_amm_type_set_use_ref_move(&(col->typeobj), &typeref);
+                            // no constraints
+                            (void)semtype_d1;
                         }
                     }
                     {
@@ -561,7 +591,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                             cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                             // use of ari:/ARITYPE/TEXTSTR
                             cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_TEXTSTR);
-                            cace_amm_type_set_use_ref_move(&(col->typeobj), &typeref);
+                            cace_amm_semtype_use_t *semtype_d1 = cace_amm_type_set_use_ref_move(&(col->typeobj), &typeref);
+                            // no constraints
+                            (void)semtype_d1;
                         }
                     }
                 }
@@ -597,7 +629,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                 // use of ari:/ARITYPE/TP
                 cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_TP);
-                cace_amm_type_set_use_ref_move(&(objdata->prod_type), &typeref);
+                cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(objdata->prod_type), &typeref);
+                // no constraints
+                (void)semtype;
             }
             // callback:
             objdata->produce = refda_adm_example_test_edd_edd__tp;
@@ -613,7 +647,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                 // use of ari:/ARITYPE/UVAST
                 cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
-                cace_amm_type_set_use_ref_move(&(objdata->prod_type), &typeref);
+                cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(objdata->prod_type), &typeref);
+                // no constraints
+                (void)semtype;
             }
             // callback:
             objdata->produce = refda_adm_example_test_edd_endpoint__active;
@@ -626,7 +662,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                     cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                     // use of ari:/ARITYPE/TEXTSTR
                     cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_TEXTSTR);
-                    cace_amm_type_set_use_ref_move(&(fparam->typeobj), &typeref);
+                    cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(fparam->typeobj), &typeref);
+                    // no constraints
+                    (void)semtype;
                 }
             }
         }
@@ -642,7 +680,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                 // use of ari:/ARITYPE/BYTESTR
                 cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_BYTESTR);
-                cace_amm_type_set_use_ref_move(&(objdata->res_type), &typeref);
+                cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(objdata->res_type), &typeref);
+                // no constraints
+                (void)semtype;
             }
             // callback:
             objdata->execute = refda_adm_example_test_ctrl_get;
@@ -655,7 +695,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                     cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                     // use of ari:/ARITYPE/OBJECT
                     cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_OBJECT);
-                    cace_amm_type_set_use_ref_move(&(fparam->typeobj), &typeref);
+                    cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(fparam->typeobj), &typeref);
+                    // no constraints
+                    (void)semtype;
                 }
                 cace_ari_set_tstr(&(fparam->defval), "hello", true);
             }
@@ -668,7 +710,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                 // use of ari:/ARITYPE/BYTE
                 cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_BYTE);
-                cace_amm_type_set_use_ref_move(&(objdata->res_type), &typeref);
+                cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(objdata->res_type), &typeref);
+                // no constraints
+                (void)semtype;
             }
             // callback:
             objdata->execute = refda_adm_example_test_ctrl_set;
@@ -681,7 +725,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                     cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                     // use of ari:/ARITYPE/OBJECT
                     cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_OBJECT);
-                    cace_amm_type_set_use_ref_move(&(fparam->typeobj), &typeref);
+                    cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(fparam->typeobj), &typeref);
+                    // no constraints
+                    (void)semtype;
                 }
             }
             {
@@ -690,7 +736,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                     cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                     // use of ari:/ARITYPE/BYTESTR
                     cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_BYTESTR);
-                    cace_amm_type_set_use_ref_move(&(fparam->typeobj), &typeref);
+                    cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(fparam->typeobj), &typeref);
+                    // no constraints
+                    (void)semtype;
                 }
             }
         }
@@ -710,7 +758,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                     cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                     // use of ari:/ARITYPE/UVAST
                     cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
-                    cace_amm_type_set_use_ref_move(&(operand->typeobj), &typeref);
+                    cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(operand->typeobj), &typeref);
+                    // no constraints
+                    (void)semtype;
                 }
             }
             {
@@ -720,7 +770,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                     cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                     // use of ari:/ARITYPE/UVAST
                     cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
-                    cace_amm_type_set_use_ref_move(&(operand->typeobj), &typeref);
+                    cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(operand->typeobj), &typeref);
+                    // no constraints
+                    (void)semtype;
                 }
             }
             // result type:
@@ -728,7 +780,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
                 // use of ari:/ARITYPE/UVAST
                 cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
-                cace_amm_type_set_use_ref_move(&(objdata->res_type), &typeref);
+                cace_amm_semtype_use_t *semtype = cace_amm_type_set_use_ref_move(&(objdata->res_type), &typeref);
+                // no constraints
+                (void)semtype;
             }
             // callback:
             objdata->evaluate = refda_adm_example_test_oper_add;
