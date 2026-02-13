@@ -10,6 +10,10 @@ dlist of {{typeobj.parts | count}} parts:
 {%- endfor %}
 {%- elif typeobj is instance(typing.Sequence) -%}
 sequence of {{type_summary(typeobj.base)}}
+{%- elif typeobj is instance(typing.UniformMap) -%}
+umap with:
+  - Keys as {{type_summary(typeobj.kbase)}}
+  - Values as {{type_summary(typeobj.vbase)}}
 {%- elif typeobj is instance(typing.TableTemplate) -%}
 TBLT with {{typeobj.columns | count}} columns:
 {%- for col in typeobj.columns %}
@@ -270,6 +274,13 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
 {
     cace_amm_semtype_seq_t *{{semtype_varname}} = cace_amm_type_set_seq({{ptrname}});
     {{ amm_type_set('&('+semtype_varname+'->item_type)', typeobj.base, depth+1) | indent(4)}}
+}
+{%- elif typeobj is instance(typing.UniformMap) -%}
+{
+    // uniform map
+    cace_amm_semtype_umap_t *{{semtype_varname}} = cace_amm_type_set_umap({{ptrname}});
+    {{amm_type_set('&('+semtype_varname+'->key_type)', typeobj.kbase, depth+1) | indent(4)}}
+    {{amm_type_set('&('+semtype_varname+'->val_type)', typeobj.vbase, depth+1) | indent(4)}}
 }
 {%- elif typeobj is instance(typing.TableTemplate) -%}
 {

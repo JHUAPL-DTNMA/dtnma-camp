@@ -83,16 +83,16 @@ static void refda_adm_example_test_edd_edd__uvast__param(refda_edd_prod_ctx_t *c
  */
 static void refda_adm_example_test_edd_edd__ac__param(refda_edd_prod_ctx_t *ctx)
 {
-      /*
-       * +-------------------------------------------------------------------------+
-       * |START CUSTOM FUNCTION refda_adm_example_test_edd_edd__ac__param BODY
-       * +-------------------------------------------------------------------------+
-       */
-      /*
-       * +-------------------------------------------------------------------------+
-       * |STOP CUSTOM FUNCTION refda_adm_example_test_edd_edd__ac__param BODY
-       * +-------------------------------------------------------------------------+
-       */
+	/*
+	 * +-------------------------------------------------------------------------+
+	 * |START CUSTOM FUNCTION refda_adm_example_test_edd_edd__ac__param BODY
+	 * +-------------------------------------------------------------------------+
+	 */
+	/*
+	 * +-------------------------------------------------------------------------+
+	 * |STOP CUSTOM FUNCTION refda_adm_example_test_edd_edd__ac__param BODY
+	 * +-------------------------------------------------------------------------+
+	 */
 }
 
 
@@ -101,22 +101,24 @@ static void refda_adm_example_test_edd_edd__ac__param(refda_edd_prod_ctx_t *ctx)
  *   Example UVAST EDD with parameters.
  *
  * Parameters list:
- *   - Index 0, name "other", type FIXME unhandled type UniformMap(kbase=TypeUse(type_text='/aritype/int', type_ari=LiteralARI(value=<StructType.INT: 4>, type_id=<StructType.ARITYPE: 16>), base=None, units=None, constraints=[]), vbase=TypeUse(type_text='/aritype/textstr', type_ari=LiteralARI(value=<StructType.TEXTSTR: 10>, type_id=<StructType.ARITYPE: 16>), base=None, units=None, constraints=[]))
+ *   - Index 0, name "other", type umap with:
+ *       - Keys as use of ari:/ARITYPE/INT
+ *       - Values as use of ari:/ARITYPE/TEXTSTR
  *
  * Produced type: use of ari:/ARITYPE/UVAST
  */
 static void refda_adm_example_test_edd_edd__am__param(refda_edd_prod_ctx_t *ctx)
 {
-      /*
-       * +-------------------------------------------------------------------------+
-       * |START CUSTOM FUNCTION refda_adm_example_test_edd_edd__am__param BODY
-       * +-------------------------------------------------------------------------+
-       */
-      /*
-       * +-------------------------------------------------------------------------+
-       * |STOP CUSTOM FUNCTION refda_adm_example_test_edd_edd__am__param BODY
-       * +-------------------------------------------------------------------------+
-       */
+	/*
+	 * +-------------------------------------------------------------------------+
+	 * |START CUSTOM FUNCTION refda_adm_example_test_edd_edd__am__param BODY
+	 * +-------------------------------------------------------------------------+
+	 */
+	/*
+	 * +-------------------------------------------------------------------------+
+	 * |STOP CUSTOM FUNCTION refda_adm_example_test_edd_edd__am__param BODY
+	 * +-------------------------------------------------------------------------+
+	 */
 }
 
 
@@ -133,16 +135,16 @@ static void refda_adm_example_test_edd_edd__am__param(refda_edd_prod_ctx_t *ctx)
  */
 static void refda_adm_example_test_edd_edd__tbl__param(refda_edd_prod_ctx_t *ctx)
 {
-      /*
-       * +-------------------------------------------------------------------------+
-       * |START CUSTOM FUNCTION refda_adm_example_test_edd_edd__tbl__param BODY
-       * +-------------------------------------------------------------------------+
-       */
-      /*
-       * +-------------------------------------------------------------------------+
-       * |STOP CUSTOM FUNCTION refda_adm_example_test_edd_edd__tbl__param BODY
-       * +-------------------------------------------------------------------------+
-       */
+	/*
+	 * +-------------------------------------------------------------------------+
+	 * |START CUSTOM FUNCTION refda_adm_example_test_edd_edd__tbl__param BODY
+	 * +-------------------------------------------------------------------------+
+	 */
+	/*
+	 * +-------------------------------------------------------------------------+
+	 * |STOP CUSTOM FUNCTION refda_adm_example_test_edd_edd__tbl__param BODY
+	 * +-------------------------------------------------------------------------+
+	 */
 }
 
 
@@ -493,8 +495,22 @@ int refda_adm_example_test_init(refda_agent_t *agent)
             // parameters:
             {
                 cace_amm_formal_param_t *fparam = refda_register_add_param(obj, "other");
-                
-                // FIXME unhandled type UniformMap(kbase=TypeUse(type_text='/aritype/int', type_ari=LiteralARI(value=<StructType.INT: 4>, type_id=<StructType.ARITYPE: 16>), base=None, units=None, constraints=[]), vbase=TypeUse(type_text='/aritype/textstr', type_ari=LiteralARI(value=<StructType.TEXTSTR: 10>, type_id=<StructType.ARITYPE: 16>), base=None, units=None, constraints=[]))
+                {
+                    // uniform map
+                    cace_amm_semtype_umap_t *semtype = cace_amm_type_set_umap(&(fparam->typeobj));
+                    {
+                        cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
+                        // use of ari:/ARITYPE/INT
+                        cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_INT);
+                        cace_amm_type_set_use_ref_move(&(semtype->key_type), &typeref);
+                    }
+                    {
+                        cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
+                        // use of ari:/ARITYPE/TEXTSTR
+                        cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_TEXTSTR);
+                        cace_amm_type_set_use_ref_move(&(semtype->val_type), &typeref);
+                    }
+                }
                 {
                     cace_ari_am_t *aminit = cace_ari_set_am(&(fparam->defval), NULL);
                     {
