@@ -10,6 +10,10 @@ dlist of {{typeobj.parts | count}} parts:
 {%- endfor %}
 {%- elif typeobj is instance(typing.Sequence) -%}
 sequence of {{type_summary(typeobj.base)}}
+{%- elif typeobj is instance(typing.UniformMap) -%}
+umap with:
+  - Keys as {{type_summary(typeobj.kbase)}}
+  - Values as {{type_summary(typeobj.vbase)}}
 {%- elif typeobj is instance(typing.TableTemplate) -%}
 TBLT with {{typeobj.columns | count}} columns:
 {%- for col in typeobj.columns %}
@@ -125,29 +129,55 @@ cace_ari_set_aritype({{ptrname}}, {{value.value | cpp_enum}});
 {
     {%- set c_varname = "acinit" | c_depth(depth) %}
     {%- set i_varname = "item" | c_depth(depth) %}
-    cace_ari_ac_t {{c_varname}};
-    cace_ari_ac_init(&{{c_varname}});
+    cace_ari_ac_t *{{c_varname}} = cace_ari_set_ac({{ptrname}}, NULL);
+{%- if not value.value %}
+    // AC is empty
+    (void){{c_varname}};
+{%- endif %}
 {%- for item in value.value %}
     {
-        cace_ari_t *{{i_varname}} = cace_ari_list_push_back_new({{c_varname}}.items);
+        cace_ari_t *{{i_varname}} = cace_ari_list_push_back_new({{c_varname}}->items);
         {{ ari_set_value(i_varname, item, depth+1) | indent(8) }}
     }
 {%- endfor %}
-    cace_ari_set_ac({{ptrname}}, &{{c_varname}});
 }
 {%- elif value is ari_builtin('am') -%}
 {
     {%- set c_varname = "aminit" | c_depth(depth) %}
     {%- set i_varname = "item" | c_depth(depth) %}
-    ari_am_t {{c_varname}};
-    ari_am_init(&{{c_varname}});
+    cace_ari_am_t *{{c_varname}} = cace_ari_set_am({{ptrname}}, NULL);
+{%- if not value.value %}
+    // AM is empty
+    (void){{c_varname}};
+{%- endif %}
 {%- for key, item in value.value.items() %}
     {
-        ari_t *{{i_varname}} = ari_tree_safe_get({{c_varname}}.items, key)
+        cace_ari_t *{{i_varname}} = cace_ari_tree_safe_get({{c_varname}}->items, key)
         {{ ari_set_value(i_varname, item, depth+1) | indent(8) }}
     }
 {%- endfor %}
-    ari_set_am({{ptrname}}, &{{c_varname}});
+}
+{%- elif value is ari_builtin('tbl') -%}
+{
+    {%- set c_varname = "tblinit" | c_depth(depth) %}
+    {%- set i_varname = "item" | c_depth(depth) %}
+    {%- set nrows = value.value.shape[0] %}
+    {%- set ncols = value.value.shape[1] %}
+    cace_ari_tbl_t *{{c_varname}} = cace_ari_set_tbl({{ptrname}}, NULL);
+    cace_ari_tbl_reset({{c_varname}}, {{nrows | c_int}}, {{ncols | c_int}});
+{%- if value.value.size == 0 %}
+    // TBL is empty
+{%- endif %}
+{%- for row in value.value %}
+{%- set row_ix = loop.index0 %}
+    // Row {{row_ix}} items:
+{%- for item in row %}
+    {
+        cace_ari_t *{{i_varname}} = cace_ari_array_get({{c_varname}}->items, {{row_ix * ncols + loop.index0}});
+        {{ ari_set_value(i_varname, item, depth+1) | indent(8) }}
+    }
+{%- endfor %}
+{%- endfor %}
 }
 {%- else %}
 // FIXME unhandled value {{value}}
@@ -244,6 +274,13 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
 {
     cace_amm_semtype_seq_t *{{semtype_varname}} = cace_amm_type_set_seq({{ptrname}});
     {{ amm_type_set('&('+semtype_varname+'->item_type)', typeobj.base, depth+1) | indent(4)}}
+}
+{%- elif typeobj is instance(typing.UniformMap) -%}
+{
+    // uniform map
+    cace_amm_semtype_umap_t *{{semtype_varname}} = cace_amm_type_set_umap({{ptrname}});
+    {{amm_type_set('&('+semtype_varname+'->key_type)', typeobj.kbase, depth+1) | indent(4)}}
+    {{amm_type_set('&('+semtype_varname+'->val_type)', typeobj.vbase, depth+1) | indent(4)}}
 }
 {%- elif typeobj is instance(typing.TableTemplate) -%}
 {
