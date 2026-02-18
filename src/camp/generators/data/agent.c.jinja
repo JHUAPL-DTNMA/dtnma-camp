@@ -169,30 +169,17 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
 {
     cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
     {{ ari_set_value('&typeref', typeobj.type_ari) | indent(4)}}
+{%- if not typeobj.constraints %}
+    cace_amm_type_set_use_ref_move({{ptrname}}, &typeref);
+{%- else %}
     cace_amm_semtype_use_t *{{semtype_varname}} = cace_amm_type_set_use_ref_move({{ptrname}}, &typeref);
-{%- if typeobj.constraints %}
 
     cace_amm_semtype_cnst_t *cnst;
 {%- for cnst in typeobj.constraints %}
     {
         // Constraint: {{cnst}}
         cnst = cace_amm_semtype_cnst_array_push_new({{semtype_varname}}->constraints);
-        {%- if cnst is instance(type_constraint.StringLength) or in%}
-        cace_amm_range_size_t *range = cace_amm_semtype_cnst_set_strlen(cnst);
-        {%- for rg in cnst.ranges %}
-        {
-            cace_amm_range_intvl_size_t intvl;
-            cace_amm_range_intvl_size_set_infinite(&intvl);
-            {%-if rg.lower != -inf %}
-            cace_amm_range_intvl_size_set_min(&intvl, {{rg.lower}});
-            {%- endif %}
-            {%-if rg.upper != inf %}
-            cace_amm_range_intvl_size_set_max(&intvl, {{rg.upper}});
-            {%- endif %}
-            cace_amm_range_intvl_size_seq_push(range->intvls, intvl);
-        }
-        {%- endfor %}
-        {%- elif cnst is instance(type_constraint.NumericRange) %}
+        {%- if cnst is instance(type_constraint.NumericRange) %}
         cace_amm_range_int64_t *range = cace_amm_semtype_cnst_set_range_int64(cnst);
         {%- for rg in cnst.ranges %}
         {
@@ -207,6 +194,39 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
             cace_amm_range_intvl_int64_seq_push(range->intvls, intvl);
         }
         {%- endfor %}
+        {%- elif cnst is instance(type_constraint.IntegerEnums) %}
+        cace_amm_range_int64_t *range = cace_amm_semtype_cnst_set_range_int64(cnst);
+        {%- for intvl in cnst.as_value_range() %}
+        {
+            cace_amm_range_intvl_int64_t intvl;
+            cace_amm_range_intvl_int64_set_infinite(&intvl);
+            {%-if intvl.lower != -inf %}
+            cace_amm_range_intvl_int64_set_min(&intvl, {{intvl.lower}});
+            {%- endif %}
+            {%-if intvl.upper != inf %}
+            cace_amm_range_intvl_int64_set_max(&intvl, {{intvl.upper}});
+            {%- endif %}
+            cace_amm_range_intvl_int64_seq_push(range->intvls, intvl);
+        }
+        {%- endfor %}
+        {%- elif cnst is instance(type_constraint.IntegerBits) %}
+        uint64_t *mask = cace_amm_semtype_cnst_set_int_bits(cnst);
+        *mask = {{"{:016x}".format(cnst.mask)}}
+        {%- elif cnst is instance(type_constraint.StringLength) %}
+        cace_amm_range_size_t *range = cace_amm_semtype_cnst_set_strlen(cnst);
+        {%- for intvl in cnst.ranges %}
+        {
+            cace_amm_range_intvl_size_t intvl;
+            cace_amm_range_intvl_size_set_infinite(&intvl);
+            {%-if intvl.lower != -inf %}
+            cace_amm_range_intvl_size_set_min(&intvl, {{intvl.lower}});
+            {%- endif %}
+            {%-if intvl.upper != inf %}
+            cace_amm_range_intvl_size_set_max(&intvl, {{intvl.upper}});
+            {%- endif %}
+            cace_amm_range_intvl_size_seq_push(range->intvls, intvl);
+        }
+        {%- endfor %}
         {%- elif cnst is instance(type_constraint.TextPattern) %}
         cace_amm_semtype_cnst_set_textpat(cnst, {{cnst.pattern | c_str}});
         {%- else %}
@@ -214,9 +234,6 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
         {%- endif %}
     }
 {%- endfor %}
-{%- else %}
-    // no constraints
-    (void){{semtype_varname}};
 {%- endif %}
 }
 {%- elif typeobj is instance(typing.UniformList) -%}
