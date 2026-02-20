@@ -43,6 +43,15 @@ edd_edd_uvast_aid INTEGER;
 edd_edd_uvast_param_oid INTEGER;
 edd_edd_uvast_param_fid INTEGER;
 edd_edd_uvast_param_aid INTEGER;
+edd_edd_ac_param_oid INTEGER;
+edd_edd_ac_param_fid INTEGER;
+edd_edd_ac_param_aid INTEGER;
+edd_edd_am_param_oid INTEGER;
+edd_edd_am_param_fid INTEGER;
+edd_edd_am_param_aid INTEGER;
+edd_edd_tbl_param_oid INTEGER;
+edd_edd_tbl_param_fid INTEGER;
+edd_edd_tbl_param_aid INTEGER;
 edd_edd_tp_oid INTEGER;
 edd_edd_tp_fid INTEGER;
 edd_edd_tp_aid INTEGER;
@@ -122,6 +131,21 @@ CALL SP__insert_obj_metadata(-4, 'edd_uvast_param', r_data_model_id, 1, null, nu
 
 CALL SP__insert_formal_parmspec( 1, 'formal parameters for edd_uvast_param', '/ARITYPE/UVAST/other', fp_spec_id);
 CALL SP__insert_edd_formal_definition(edd_edd_uvast_param_oid, 'Example UVAST EDD with parameters.', fp_spec_id, 'ari://ietf/amm-semtype/IDENT/use(name=/ARITYPE/UVAST)', edd_edd_uvast_param_fid);
+
+CALL SP__insert_obj_metadata(-4, 'edd_ac_param', r_data_model_id, 4, null, null, 'Example UVAST EDD with parameters.', edd_edd_ac_param_oid);
+
+CALL SP__insert_formal_parmspec( 1, 'formal parameters for edd_ac_param', '/aritype/int/other', fp_spec_id);
+CALL SP__insert_edd_formal_definition(edd_edd_ac_param_oid, 'Example UVAST EDD with parameters.', fp_spec_id, 'ari://ietf/amm-semtype/IDENT/use(name=/ARITYPE/UVAST)', edd_edd_ac_param_fid);
+
+CALL SP__insert_obj_metadata(-4, 'edd_am_param', r_data_model_id, 5, null, null, 'Example UVAST EDD with parameters.', edd_edd_am_param_oid);
+
+CALL SP__insert_formal_parmspec( 1, 'formal parameters for edd_am_param', 'unhandledType/other', fp_spec_id);
+CALL SP__insert_edd_formal_definition(edd_edd_am_param_oid, 'Example UVAST EDD with parameters.', fp_spec_id, 'ari://ietf/amm-semtype/IDENT/use(name=/ARITYPE/UVAST)', edd_edd_am_param_fid);
+
+CALL SP__insert_obj_metadata(-4, 'edd_tbl_param', r_data_model_id, 6, null, null, 'Example UVAST EDD with parameters.', edd_edd_tbl_param_oid);
+
+CALL SP__insert_formal_parmspec( 1, 'formal parameters for edd_tbl_param', 'unhandledType/other', fp_spec_id);
+CALL SP__insert_edd_formal_definition(edd_edd_tbl_param_oid, 'Example UVAST EDD with parameters.', fp_spec_id, 'ari://ietf/amm-semtype/IDENT/use(name=/ARITYPE/UVAST)', edd_edd_tbl_param_fid);
 
 CALL SP__insert_obj_metadata(-4, 'edd_tp', r_data_model_id, 2, null, null, 'Example TP EDD: current system time.', edd_edd_tp_oid);
 CALL SP__insert_edd_formal_definition(edd_edd_tp_oid, 'Example TP EDD: current system time.', null, 'ari://ietf/amm-semtype/IDENT/use(name=/ARITYPE/TP)', edd_edd_tp_fid);

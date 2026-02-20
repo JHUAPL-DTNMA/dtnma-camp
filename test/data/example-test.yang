@@ -74,6 +74,58 @@ module example-test {
       amm:type "/ARITYPE/UVAST";
     }
   }
+  amm:edd edd_ac_param {
+    amm:enum 4;
+    description
+      "Example UVAST EDD with parameters.";
+    amm:type "/ARITYPE/UVAST";
+    amm:parameter other {
+      description
+        "Example parameter.";
+      amm:default "/ac/(1,2,3)";
+      amm:ulist {
+        amm:type "/aritype/int";
+      }
+    }
+  }
+  amm:edd edd_am_param {
+    amm:enum 5;
+    description
+      "Example UVAST EDD with parameters.";
+    amm:type "/ARITYPE/UVAST";
+    amm:parameter other {
+      description
+        "Example parameter.";
+      amm:default "/am/(1=one,3=three)";
+      amm:umap {
+        amm:keys {
+          amm:type "/aritype/int";
+        }
+        amm:values {
+          amm:type "/aritype/textstr";
+        }
+      }
+    }
+  }
+  amm:edd edd_tbl_param {
+    amm:enum 6;
+    description
+      "Example UVAST EDD with parameters.";
+    amm:type "/ARITYPE/UVAST";
+    amm:parameter other {
+      description
+        "Example parameter.";
+      amm:default "/tbl/c=2;(10,ten)(15,fifteen)";
+      amm:tblt {
+        amm:column one {
+          amm:type "/aritype/int";
+        }
+        amm:column two {
+          amm:type "/aritype/textstr";
+        }
+      }
+    }
+  }
   amm:edd edd_tp {
     amm:enum 2;
     description
