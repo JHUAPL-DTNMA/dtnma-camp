@@ -209,52 +209,61 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
     {
         // Constraint: {{cnst}}
         cnst = cace_amm_semtype_cnst_array_push_new({{semtype_varname}}->constraints);
-        {%- if cnst is instance(type_constraint.NumericRange) %}
-        cace_amm_range_int64_t *range = cace_amm_semtype_cnst_set_range_int64(cnst);
-        {%- for rg in cnst.ranges %}
+        {% if cnst is instance(type_constraint.NumericRange) %}
+        cace_util_range_int64_t *range = cace_amm_semtype_cnst_set_range_int64(cnst);
+        {%- for intvl in cnst.ranges %}
         {
-            cace_amm_range_intvl_int64_t intvl;
-            cace_amm_range_intvl_int64_set_infinite(&intvl);
-            {%-if rg.lower != -inf %}
-            cace_amm_range_intvl_int64_set_min(&intvl, {{rg.lower}});
+            cace_util_range_intvl_int64_t intvl;
+            {%-if intvl.lower != -inf %}
+            cace_util_range_intvl_int64_set_min(&intvl, {{intvl.lower}});
+            {%- else %}
+            cace_util_range_intvl_int64_clear_min(&intvl);
             {%- endif %}
-            {%-if rg.upper != inf %}
-            cace_amm_range_intvl_int64_set_max(&intvl, {{rg.upper}});
+            {%-if intvl.upper != inf %}
+            cace_util_range_intvl_int64_set_max(&intvl, {{intvl.upper}});
+            {%- else %}
+            cace_util_range_intvl_int64_clear_max(&intvl);
             {%- endif %}
-            cace_amm_range_intvl_int64_seq_push(range->intvls, intvl);
+            cace_util_range_int64_push(*range, intvl);
         }
         {%- endfor %}
         {%- elif cnst is instance(type_constraint.IntegerEnums) %}
-        cace_amm_range_int64_t *range = cace_amm_semtype_cnst_set_range_int64(cnst);
+        cace_util_range_int64_t *range = cace_amm_semtype_cnst_set_range_int64(cnst);
         {%- for intvl in cnst.as_value_range() %}
         {
-            cace_amm_range_intvl_int64_t intvl;
-            cace_amm_range_intvl_int64_set_infinite(&intvl);
+            cace_util_range_intvl_int64_t intvl;
             {%-if intvl.lower != -inf %}
-            cace_amm_range_intvl_int64_set_min(&intvl, {{intvl.lower}});
+            cace_util_range_intvl_int64_set_min(&intvl, {{intvl.lower}});
+            {%- else %}
+            cace_util_range_intvl_int64_clear_min(&intvl);
             {%- endif %}
             {%-if intvl.upper != inf %}
-            cace_amm_range_intvl_int64_set_max(&intvl, {{intvl.upper}});
+            cace_util_range_intvl_int64_set_max(&intvl, {{intvl.upper}});
+            {%- else %}
+            cace_util_range_intvl_int64_clear_max(&intvl);
             {%- endif %}
-            cace_amm_range_intvl_int64_seq_push(range->intvls, intvl);
+            cace_util_range_int64_push(*range, intvl);
         }
         {%- endfor %}
         {%- elif cnst is instance(type_constraint.IntegerBits) %}
         uint64_t *mask = cace_amm_semtype_cnst_set_int_bits(cnst);
         *mask = {{"{:016x}".format(cnst.mask)}}
         {%- elif cnst is instance(type_constraint.StringLength) %}
-        cace_amm_range_size_t *range = cace_amm_semtype_cnst_set_strlen(cnst);
+        cace_util_range_size_t *range = cace_amm_semtype_cnst_set_strlen(cnst);
         {%- for intvl in cnst.ranges %}
         {
-            cace_amm_range_intvl_size_t intvl;
-            cace_amm_range_intvl_size_set_infinite(&intvl);
+            cace_util_range_intvl_size_t intvl;
             {%-if intvl.lower != -inf %}
-            cace_amm_range_intvl_size_set_min(&intvl, {{intvl.lower}});
+            cace_util_range_intvl_size_set_min(&intvl, {{intvl.lower}});
+            {%- else %}
+            cace_util_range_intvl_size_clear_min(&intvl);
             {%- endif %}
             {%-if intvl.upper != inf %}
-            cace_amm_range_intvl_size_set_max(&intvl, {{intvl.upper}});
+            cace_util_range_intvl_size_set_max(&intvl, {{intvl.upper}});
+            {%- else %}
+            cace_util_range_intvl_size_clear_max(&intvl);
             {%- endif %}
-            cace_amm_range_intvl_size_seq_push(range->intvls, intvl);
+            cace_util_range_intvl_size_seq_push(*range, intvl);
         }
         {%- endfor %}
         {%- elif cnst is instance(type_constraint.TextPattern) %}
@@ -272,10 +281,10 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
     cace_amm_semtype_ulist_t *{{semtype_varname}} = cace_amm_type_set_ulist({{ptrname}});
     {{amm_type_set('&('+semtype_varname+'->item_type)', typeobj.base, depth+1) | indent(4)}}
     {%- if typeobj.min_elements %}
-    cace_amm_range_intvl_size_set_min(&({{semtype_varname}}->size), {{typeobj.min_elements | c_int}});
+    cace_util_range_intvl_size_set_min(&({{semtype_varname}}->size), {{typeobj.min_elements | c_int}});
     {%- endif %}
     {%- if typeobj.max_elements %}
-    cace_amm_range_intvl_size_set_max(&({{semtype_varname}}->size), {{typeobj.max_elements | c_int}});
+    cace_util_range_intvl_size_set_max(&({{semtype_varname}}->size), {{typeobj.max_elements | c_int}});
     {%- endif %}
 }
 {%- elif typeobj is instance(typing.DiverseList) -%}
