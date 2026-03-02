@@ -72,6 +72,82 @@ static void refda_adm_example_test_edd_edd__uvast__param(refda_edd_prod_ctx_t *c
 }
 
 
+/* Name: edd_ac_param
+ * Description:
+ *   Example UVAST EDD with parameters.
+ *
+ * Parameters list:
+ *   - Index 0, name "other", type ulist of use of ari:/ARITYPE/INT
+ *
+ * Produced type: use of ari:/ARITYPE/UVAST
+ */
+static void refda_adm_example_test_edd_edd__ac__param(refda_edd_prod_ctx_t *ctx)
+{
+	/*
+	 * +-------------------------------------------------------------------------+
+	 * |START CUSTOM FUNCTION refda_adm_example_test_edd_edd__ac__param BODY
+	 * +-------------------------------------------------------------------------+
+	 */
+	/*
+	 * +-------------------------------------------------------------------------+
+	 * |STOP CUSTOM FUNCTION refda_adm_example_test_edd_edd__ac__param BODY
+	 * +-------------------------------------------------------------------------+
+	 */
+}
+
+
+/* Name: edd_am_param
+ * Description:
+ *   Example UVAST EDD with parameters.
+ *
+ * Parameters list:
+ *   - Index 0, name "other", type umap with:
+ *       - Keys as use of ari:/ARITYPE/INT
+ *       - Values as use of ari:/ARITYPE/TEXTSTR
+ *
+ * Produced type: use of ari:/ARITYPE/UVAST
+ */
+static void refda_adm_example_test_edd_edd__am__param(refda_edd_prod_ctx_t *ctx)
+{
+	/*
+	 * +-------------------------------------------------------------------------+
+	 * |START CUSTOM FUNCTION refda_adm_example_test_edd_edd__am__param BODY
+	 * +-------------------------------------------------------------------------+
+	 */
+	/*
+	 * +-------------------------------------------------------------------------+
+	 * |STOP CUSTOM FUNCTION refda_adm_example_test_edd_edd__am__param BODY
+	 * +-------------------------------------------------------------------------+
+	 */
+}
+
+
+/* Name: edd_tbl_param
+ * Description:
+ *   Example UVAST EDD with parameters.
+ *
+ * Parameters list:
+ *   - Index 0, name "other", type TBLT with 2 columns:
+ *       - Index 0, name "one", type use of ari:/ARITYPE/INT
+ *       - Index 1, name "two", type use of ari:/ARITYPE/TEXTSTR
+ *
+ * Produced type: use of ari:/ARITYPE/UVAST
+ */
+static void refda_adm_example_test_edd_edd__tbl__param(refda_edd_prod_ctx_t *ctx)
+{
+	/*
+	 * +-------------------------------------------------------------------------+
+	 * |START CUSTOM FUNCTION refda_adm_example_test_edd_edd__tbl__param BODY
+	 * +-------------------------------------------------------------------------+
+	 */
+	/*
+	 * +-------------------------------------------------------------------------+
+	 * |STOP CUSTOM FUNCTION refda_adm_example_test_edd_edd__tbl__param BODY
+	 * +-------------------------------------------------------------------------+
+	 */
+}
+
+
 /* Name: edd_tp
  * Description:
  *   Example TP EDD: current system time.
@@ -282,14 +358,12 @@ int refda_adm_example_test_init(refda_agent_t *agent)
             refda_amm_const_desc_init(objdata);
             // constant value:
             {
-                cace_ari_ac_t acinit;
-                cace_ari_ac_init(&acinit);
+                cace_ari_ac_t *acinit = cace_ari_set_ac(&(objdata->value), NULL);
                 {
-                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
                     // reference to ari://example/test/CONST/const1
                     cace_ari_set_objref_path_intid(item, 65535, 9999, CACE_ARI_TYPE_CONST, 0);
                 }
-                cace_ari_set_ac(&(objdata->value), &acinit);
             }
 
             obj = refda_register_const(adm, cace_amm_idseg_ref_withenum("showall", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_CONST_SHOWALL), objdata);
@@ -357,6 +431,161 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                     // use of ari:/ARITYPE/UVAST
                     cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
                     cace_amm_type_set_use_ref_move(&(fparam->typeobj), &typeref);
+                }
+            }
+        }
+        { // For ./EDD/edd_ac_param
+            refda_amm_edd_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_edd_desc_t));
+            refda_amm_edd_desc_init(objdata);
+            // produced type
+            {
+                cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
+                // use of ari:/ARITYPE/UVAST
+                cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
+                cace_amm_type_set_use_ref_move(&(objdata->prod_type), &typeref);
+            }
+            // callback:
+            objdata->produce = refda_adm_example_test_edd_edd__ac__param;
+
+            obj = refda_register_edd(adm, cace_amm_idseg_ref_withenum("edd_ac_param", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_EDD_EDD__AC__PARAM), objdata);
+            // parameters:
+            {
+                cace_amm_formal_param_t *fparam = refda_register_add_param(obj, "other");
+                {
+                    // uniform list
+                    cace_amm_semtype_ulist_t *semtype = cace_amm_type_set_ulist(&(fparam->typeobj));
+                    {
+                        cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
+                        // use of ari:/ARITYPE/INT
+                        cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_INT);
+                        cace_amm_type_set_use_ref_move(&(semtype->item_type), &typeref);
+                    }
+                }
+                {
+                    cace_ari_ac_t *acinit = cace_ari_set_ac(&(fparam->defval), NULL);
+                    {
+                        cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
+                        cace_ari_set_int(item, 1);
+                    }
+                    {
+                        cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
+                        cace_ari_set_int(item, 2);
+                    }
+                    {
+                        cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
+                        cace_ari_set_int(item, 3);
+                    }
+                }
+            }
+        }
+        { // For ./EDD/edd_am_param
+            refda_amm_edd_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_edd_desc_t));
+            refda_amm_edd_desc_init(objdata);
+            // produced type
+            {
+                cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
+                // use of ari:/ARITYPE/UVAST
+                cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
+                cace_amm_type_set_use_ref_move(&(objdata->prod_type), &typeref);
+            }
+            // callback:
+            objdata->produce = refda_adm_example_test_edd_edd__am__param;
+
+            obj = refda_register_edd(adm, cace_amm_idseg_ref_withenum("edd_am_param", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_EDD_EDD__AM__PARAM), objdata);
+            // parameters:
+            {
+                cace_amm_formal_param_t *fparam = refda_register_add_param(obj, "other");
+                {
+                    // uniform map
+                    cace_amm_semtype_umap_t *semtype = cace_amm_type_set_umap(&(fparam->typeobj));
+                    {
+                        cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
+                        // use of ari:/ARITYPE/INT
+                        cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_INT);
+                        cace_amm_type_set_use_ref_move(&(semtype->key_type), &typeref);
+                    }
+                    {
+                        cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
+                        // use of ari:/ARITYPE/TEXTSTR
+                        cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_TEXTSTR);
+                        cace_amm_type_set_use_ref_move(&(semtype->val_type), &typeref);
+                    }
+                }
+                {
+                    cace_ari_am_t *aminit = cace_ari_set_am(&(fparam->defval), NULL);
+                    {
+                        cace_ari_t *item = cace_ari_tree_safe_get(aminit->items, key)
+                        cace_ari_set_tstr(item, "one", true);
+                    }
+                    {
+                        cace_ari_t *item = cace_ari_tree_safe_get(aminit->items, key)
+                        cace_ari_set_tstr(item, "three", true);
+                    }
+                }
+            }
+        }
+        { // For ./EDD/edd_tbl_param
+            refda_amm_edd_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_edd_desc_t));
+            refda_amm_edd_desc_init(objdata);
+            // produced type
+            {
+                cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
+                // use of ari:/ARITYPE/UVAST
+                cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
+                cace_amm_type_set_use_ref_move(&(objdata->prod_type), &typeref);
+            }
+            // callback:
+            objdata->produce = refda_adm_example_test_edd_edd__tbl__param;
+
+            obj = refda_register_edd(adm, cace_amm_idseg_ref_withenum("edd_tbl_param", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_EDD_EDD__TBL__PARAM), objdata);
+            // parameters:
+            {
+                cace_amm_formal_param_t *fparam = refda_register_add_param(obj, "other");
+                {
+                    // table template
+                    cace_amm_semtype_tblt_t *semtype = cace_amm_type_set_tblt_size(&(fparam->typeobj), 2);
+                    {
+                        cace_amm_named_type_t *col = cace_amm_named_type_array_get(semtype->columns, 0);
+                        m_string_set_cstr(col->name, "one");
+                        {
+                            cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
+                            // use of ari:/ARITYPE/INT
+                            cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_INT);
+                            cace_amm_type_set_use_ref_move(&(col->typeobj), &typeref);
+                        }
+                    }
+                    {
+                        cace_amm_named_type_t *col = cace_amm_named_type_array_get(semtype->columns, 1);
+                        m_string_set_cstr(col->name, "two");
+                        {
+                            cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
+                            // use of ari:/ARITYPE/TEXTSTR
+                            cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_TEXTSTR);
+                            cace_amm_type_set_use_ref_move(&(col->typeobj), &typeref);
+                        }
+                    }
+                }
+                {
+                    cace_ari_tbl_t *tblinit = cace_ari_set_tbl(&(fparam->defval), NULL);
+                    cace_ari_tbl_reset(tblinit, 2, 2);
+                    // Row 0 items:
+                    {
+                        cace_ari_t *item = cace_ari_array_get(tblinit->items, 0);
+                        cace_ari_set_int(item, 10);
+                    }
+                    {
+                        cace_ari_t *item = cace_ari_array_get(tblinit->items, 1);
+                        cace_ari_set_tstr(item, "ten", true);
+                    }
+                    // Row 1 items:
+                    {
+                        cace_ari_t *item = cace_ari_array_get(tblinit->items, 2);
+                        cace_ari_set_int(item, 15);
+                    }
+                    {
+                        cace_ari_t *item = cace_ari_array_get(tblinit->items, 3);
+                        cace_ari_set_tstr(item, "fifteen", true);
+                    }
                 }
             }
         }
@@ -516,35 +745,31 @@ int refda_adm_example_test_init(refda_agent_t *agent)
             refda_amm_sbr_desc_init(objdata);
             // action
             {
-                cace_ari_ac_t acinit;
-                cace_ari_ac_init(&acinit);
+                cace_ari_ac_t *acinit = cace_ari_set_ac(&(objdata->action), NULL);
                 {
-                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
                     // FIXME reference to unknown object ari://example/test/CTRL/first
                 }
                 {
-                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
                     // FIXME reference to unknown object ari://example/test/CTRL/second
                 }
-                cace_ari_set_ac(&(objdata->action), &acinit);
             }
             // condition
             {
-                cace_ari_ac_t acinit;
-                cace_ari_ac_init(&acinit);
+                cace_ari_ac_t *acinit = cace_ari_set_ac(&(objdata->condition), NULL);
                 {
-                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
                     // FIXME reference to unknown object ari://example/test/EDD/sensor
                 }
                 {
-                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
                     // FIXME reference to unknown object ari://example/test/VAR/min_threshold
                 }
                 {
-                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
                     // FIXME reference to unknown object ari://example/test/OPER/compare_lt
                 }
-                cace_ari_set_ac(&(objdata->condition), &acinit);
             }
             // min_interval
             {
@@ -563,35 +788,31 @@ int refda_adm_example_test_init(refda_agent_t *agent)
             refda_amm_sbr_desc_init(objdata);
             // action
             {
-                cace_ari_ac_t acinit;
-                cace_ari_ac_init(&acinit);
+                cace_ari_ac_t *acinit = cace_ari_set_ac(&(objdata->action), NULL);
                 {
-                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
                     // FIXME reference to unknown object ari://example/test/CTRL/first
                 }
                 {
-                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
                     // FIXME reference to unknown object ari://example/test/CTRL/second
                 }
-                cace_ari_set_ac(&(objdata->action), &acinit);
             }
             // condition
             {
-                cace_ari_ac_t acinit;
-                cace_ari_ac_init(&acinit);
+                cace_ari_ac_t *acinit = cace_ari_set_ac(&(objdata->condition), NULL);
                 {
-                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
                     // FIXME reference to unknown object ari://example/test/EDD/sensor
                 }
                 {
-                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
                     // FIXME reference to unknown object ari://example/test/VAR/min_threshold
                 }
                 {
-                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
                     // FIXME reference to unknown object ari://example/test/OPER/compare_lt
                 }
-                cace_ari_set_ac(&(objdata->condition), &acinit);
             }
             // min_interval
             {
@@ -614,17 +835,15 @@ int refda_adm_example_test_init(refda_agent_t *agent)
             refda_amm_tbr_desc_init(objdata);
             // action
             {
-                cace_ari_ac_t acinit;
-                cace_ari_ac_init(&acinit);
+                cace_ari_ac_t *acinit = cace_ari_set_ac(&(objdata->action), NULL);
                 {
-                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
                     // FIXME reference to unknown object ari://example/test/CTRL/first
                 }
                 {
-                    cace_ari_t *item = cace_ari_list_push_back_new(acinit.items);
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
                     // FIXME reference to unknown object ari://example/test/CTRL/other
                 }
-                cace_ari_set_ac(&(objdata->action), &acinit);
             }
             // period
             {
