@@ -46,7 +46,7 @@ module example-variety {
         "constrained text param";
       amm:default "%22%5C%5C%22value%5C%27%3f%07%08%0c%0a%0d%09%0b%22";
       amm:type "/ARITYPE/TEXTSTR" {
-        pattern '*value*';
+        pattern '.*value.*';
         length "0..20";
       }
     }
@@ -66,7 +66,7 @@ module example-variety {
     amm:parameter dlist {
       description
         "dlist param";
-      amm:default "/AC/(start, 0, 5, end)";
+      amm:default "/AC/(start,0,5,end)";
       amm:dlist {
         amm:type "/ARITYPE/TEXTSTR";
         amm:seq {
