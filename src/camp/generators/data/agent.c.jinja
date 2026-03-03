@@ -266,6 +266,24 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
             cace_util_range_intvl_size_seq_push(*range, intvl);
         }
         {%- endfor %}
+        {%- elif cnst is instance(type_constraint.IntegerBits) %}
+        uint64_t *mask = cace_amm_semtype_cnst_set_int_bits(cnst);
+        *mask = {{"{:016x}".format(cnst.mask)}}
+        {%- elif cnst is instance(type_constraint.StringLength) %}
+        cace_amm_range_size_t *range = cace_amm_semtype_cnst_set_strlen(cnst);
+        {%- for intvl in cnst.ranges %}
+        {
+            cace_amm_range_intvl_size_t intvl;
+            cace_amm_range_intvl_size_set_infinite(&intvl);
+            {%-if intvl.lower != -inf %}
+            cace_amm_range_intvl_size_set_min(&intvl, {{intvl.lower}});
+            {%- endif %}
+            {%-if intvl.upper != inf %}
+            cace_amm_range_intvl_size_set_max(&intvl, {{intvl.upper}});
+            {%- endif %}
+            cace_amm_range_intvl_size_seq_push(range->intvls, intvl);
+        }
+        {%- endfor %}
         {%- elif cnst is instance(type_constraint.TextPattern) %}
         cace_amm_semtype_cnst_set_textpat(cnst, {{cnst.pattern | c_str}});
         {%- else %}
