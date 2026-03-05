@@ -263,7 +263,7 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
             {%- else %}
             cace_util_range_intvl_size_clear_max(&intvl);
             {%- endif %}
-            cace_util_range_intvl_size_seq_push(*range, intvl);
+            cace_util_range_size_push(*range, intvl);
         }
         {%- endfor %}
         {%- elif cnst is instance(type_constraint.TextPattern) %}
