@@ -39,7 +39,7 @@ class Scraper(object):
     # Returns a tuple of the custom includes start and end markers
     #
     def _make_custom_includes_markers(self):
-        return "/*   START CUSTOM INCLUDES HERE  */", "/*   STOP CUSTOM INCLUDES HERE   */"
+        return "/*   START CUSTOM INCLUDES HERE  */", "/*   STOP CUSTOM INCLUDES HERE  */"
 
     #
     # Returns a tuple of the custom functions start and end markers
@@ -274,7 +274,7 @@ class C_Scraper(Scraper):
 
         LOGGER.info("Scraping source from %s", self.filename)
 
-        c = []
+        c: List[str] = []
         # Insert each line into a queue
         # NOTE: this results in the first line of the file being last in c
         # (find_* functions appropriately pop off the end of c).
@@ -311,7 +311,7 @@ class H_Scraper(Scraper):
         self.includes: List[str] = ["/*             NONE              */\n"]
         self.functions: List[str] = ["/*             NONE              */\n"]
 
-        h = []
+        h: List[str] = []
 
         if self.filename is None:
             return
