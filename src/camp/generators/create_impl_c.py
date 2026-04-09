@@ -70,3 +70,7 @@ class Writer(AbstractWriter, CHelperMixin):
             LOGGER.exception('Failed to load template')
             raise RuntimeError('Failed to load template "agent.c.jinja"') from err
         tmpl.stream(**keys).dump(outfile)
+
+        funcs_unused = self._scraper.funcs_unused()
+        if funcs_unused:
+            LOGGER.warning('Unused function bodies for: %s', ' '.join(funcs_unused))

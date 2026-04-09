@@ -22,7 +22,7 @@
 #
 import logging
 import re
-from typing import List
+from typing import Dict, List, Set
 
 LOGGER = logging.getLogger(__name__)
 
@@ -242,11 +242,18 @@ class C_Scraper(Scraper):
     # custom: array of lines to add as custom function body content (from scraping)
     # if custom is empty, will just write the tags for custom content to the file
     #
-    def write_custom_body(self, function):
+    def write_custom_body(self, function: str) -> str:
         custom = self.func_bods.get(function, [])
+        self.func_bods_used.add(function)
+
         start, end = self._make_custom_body_markers(function)
 
         return start + ''.join(custom) + end
+
+    def funcs_unused(self) -> Set[str]:
+        ''' Get a set of function names which were scraped but not written.
+        '''
+        return set(self.func_bods.keys()) - self.func_bods_used
 
     #
     # Constructor for the C_Scraper Class
@@ -257,9 +264,10 @@ class C_Scraper(Scraper):
     #
     def __init__(self, f):
         self.filename = f
-        self.includes = ["/*             TODO              */\n"]
-        self.functions = ["/*             TODO              */\n"]
-        self.func_bods = {}
+        self.includes: List[str] = ["/*             NONE              */\n"]
+        self.functions: List[str] = ["/*             NONE              */\n"]
+        self.func_bods: Dict[str, str] = dict()
+        self.func_bods_used: Set[str] = set()
 
         if self.filename is None:
             return
