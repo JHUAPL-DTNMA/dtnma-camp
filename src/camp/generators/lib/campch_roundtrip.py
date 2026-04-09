@@ -39,7 +39,7 @@ class Scraper(object):
     # Returns a tuple of the custom includes start and end markers
     #
     def _make_custom_includes_markers(self):
-        return "/*   START CUSTOM INCLUDES HERE  */", "/*   STOP CUSTOM INCLUDES HERE  */"
+        return "/*   START CUSTOM INCLUDES HERE  */", "/*   STOP CUSTOM INCLUDES HERE   */"
 
     #
     # Returns a tuple of the custom functions start and end markers
