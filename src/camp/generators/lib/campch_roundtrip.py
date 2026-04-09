@@ -304,60 +304,12 @@ class C_Scraper(Scraper):
 class H_Scraper(Scraper):
 
     #
-    # Returns a tuple of the custom type_enum start and end markers
-    #
-    def _make_custom_type_enum_markers(self):
-        return "/*   START typeENUM */", "/*   STOP typeENUM  */"
-
-    #
-    # Pops items off of the passed queue (list) structure, searching
-    # for the type_enum tag. Returns all lines encompassed in these tags
-    # lines: lines to search
-    # Returns: (list, list) tuple that is 1) list of strings from between the custom
-    # function tags and 2) updated 'lines' queue (evaluated lines are popped off)
-    #
-    # NOTICE: since this is treating lines as a queue, it will evaluate lines in
-    # reverse order (popping off the end of the list).
-    #
-    def _find_type_enums_in_queue(self, lines):
-        enums = []
-        line = ""
-
-        start, end = self._make_custom_type_enum_markers()
-
-        # find the start
-        while (len(lines) != 0 and line.strip() != start):
-            line = lines.pop()
-
-        # Append until we find the end
-        while (len(lines) != 0):
-            line = lines.pop()
-
-            if (line.strip() == end):
-                break
-            enums.append(line)
-
-        return enums, lines
-
-    # Writes the type enum tags and if scraping was required any
-    # typeENUMS that were found
-    #
-    def write_custom_type_enums(self, file):
-        start, end = self._make_custom_type_enum_markers()
-
-        file.write(start + "\n")
-        for line in self.type_enums:
-            file.write(line)
-        file.write(end + "\n\n")
-
-    #
     # Constructor for the H_Scraper class
     #
     def __init__(self, f):
         self.filename = f
-        self.includes = ["/*             TODO              */\n"]
-        self.functions = ["/*             TODO              */\n"]
-        self.type_enums = ["/*             TODO              */\n"]
+        self.includes = ["/*             NONE              */\n"]
+        self.functions = ["/*             NONE              */\n"]
 
         h = []
 
@@ -377,11 +329,10 @@ class H_Scraper(Scraper):
             LOGGER.debug(e)
 
         self.includes, h = self._find_custom_includes_in_queue(h)
-        self.type_enums, h = self._find_type_enums_in_queue(h)
         self.functions, h = self._find_custom_functions_in_queue(h)
 
         LOGGER.info("DONE")
 
         # Sanity Check. If scraping was requested and returned nothing, let the user know
-        if (len(self.includes) == 0 and len(self.functions) == 0 and len(self.type_enums) == 0):
+        if len(self.includes) == 0 and len(self.functions) == 0:
             LOGGER.warning("No custom input found to scrape in %s", self.filename)
