@@ -52,6 +52,17 @@ Parameters: none
 {%- endif %}
 {%- endif %}
 
+{%- if obj.operands is defined %}
+{% if obj.operands.items %}
+Operand list:
+{%- for operand in obj.operands.items %}
+  - Index {{loop.index0}}, name "{{operand.name}}", type {{type_summary(operand.typeobj) | indent(4)}}
+{%- endfor %}
+{%- else %}
+Operands: none
+{%- endif %}
+{%- endif %}
+
 {%- if obj.result is defined %}
 {% if obj.result.typeobj is defined %}
 Result name "{{obj.result.name}}", type {{type_summary(obj.result.typeobj)}}
