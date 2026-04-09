@@ -262,8 +262,8 @@ class C_Scraper(Scraper):
     # as the key, and the value is a list of strings that make up the custom body
     # of that function.
     #
-    def __init__(self, f):
-        self.filename = f
+    def __init__(self, filename: str):
+        self.filename = filename
         self.includes: List[str] = ["/*             NONE              */\n"]
         self.functions: List[str] = ["/*             NONE              */\n"]
         self.func_bods: Dict[str, str] = dict()
@@ -294,7 +294,7 @@ class C_Scraper(Scraper):
         LOGGER.info("DONE")
 
         # Sanity Check. If scraping was requested and returned nothing, let the user know
-        if (len(self.includes) == 0 and len(self.functions) == 0 and len(self.func_bods) == 0):
+        if len(self.includes) == 0 and len(self.functions) == 0 and len(self.func_bods) == 0:
             LOGGER.warning("No custom input found to scrape in %s", self.filename)
 
 
@@ -306,10 +306,10 @@ class H_Scraper(Scraper):
     #
     # Constructor for the H_Scraper class
     #
-    def __init__(self, f):
-        self.filename = f
-        self.includes = ["/*             NONE              */\n"]
-        self.functions = ["/*             NONE              */\n"]
+    def __init__(self, filename: str):
+        self.filename = filename
+        self.includes: List[str] = ["/*             NONE              */\n"]
+        self.functions: List[str] = ["/*             NONE              */\n"]
 
         h = []
 
