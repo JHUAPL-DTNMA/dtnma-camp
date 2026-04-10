@@ -55,25 +55,25 @@ LOGGER = logging.getLogger(__name__)
 
 def get_parser() -> argparse.ArgumentParser:
     ''' Construct the argument parser. '''
-    p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--log-level', choices=('debug', 'info', 'warning', 'error'),
-                   default='info',
-                   help='The minimum log severity.')
-    p.add_argument('-o', '--out',
-                   help="The output directory",
-                   default="./")
-    p.add_argument('-s', '--scrape',
-                   help="Previously generated H and C file to be scraped",
-                   action='store_true', default=False)
-    p.add_argument('admfile',
-                   help="ADM module file to use for file generation")
-    p.add_argument('--only-sql',
-                   help="Set this flag to only produce the SQL files",
-                   action='store_true', default=False)
-    p.add_argument('--only-ch',
-                   help="Set this flag to only produce the .c and .h files",
-                   action='store_true', default=False)
-    return p
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--log-level', choices=('debug', 'info', 'warning', 'error'),
+                        default='warning',
+                        help='The minimum log severity.')
+    parser.add_argument('-o', '--out',
+                        help="The output directory",
+                        default="./")
+    parser.add_argument('--scrape',
+                        help="Perform source scraping on generated H and C files",
+                        action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument('admfile',
+                        help="ADM module file to use for file generation")
+    parser.add_argument('--only-sql',
+                        help="Set this flag to only produce the SQL files",
+                        action='store_true', default=False)
+    parser.add_argument('--only-ch',
+                        help="Set this flag to only produce the .c and .h files",
+                        action='store_true', default=False)
+    return parser
 
 
 #
@@ -174,6 +174,7 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
     logging.basicConfig(level=args.log_level.upper())
+    LOGGER.debug('Got args: %s', args)
     if LOGGER.isEnabledFor(logging.DEBUG):
         logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
