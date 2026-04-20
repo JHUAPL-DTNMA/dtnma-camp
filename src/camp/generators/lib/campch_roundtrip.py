@@ -66,8 +66,6 @@ class Scraper(object):
                 break
             self.includes.append(line)
 
-        if not self.includes:
-            self.includes = ["/*             NONE              */\n"]
 #
 # C-file scraper class is a child of the Scraper class
 #
@@ -105,9 +103,6 @@ class C_Scraper(Scraper):
                 break
             self.functions.append(line)
 
-        if not self.functions:
-            self.functions = ["/*             NONE              */\n"]
-
     CUSTOM_PREINIT_START = re.compile(r'/\*\s+START CUSTOM PRE-INIT HERE\s+\*/')
     ''' Top of pre-init '''
     CUSTOM_PREINIT_STOP = re.compile(r'/\*\s+STOP CUSTOM PRE-INIT HERE\s+\*/')
@@ -119,13 +114,11 @@ class C_Scraper(Scraper):
 
     def _find_custom_init_in_queue(self, lines: List[str]) -> None:
         self.pre_init_lines = []
-
         # find the start
         while lines:
             line = lines.pop()
             if self.CUSTOM_PREINIT_START.search(line) is not None:
                 break
-
         # Append until we find the end
         while lines:
             line = lines.pop()
@@ -133,26 +126,18 @@ class C_Scraper(Scraper):
                 break
             self.pre_init_lines.append(line)
 
-        if not self.pre_init_lines:
-            self.pre_init_lines = ["/*          NONE         */\n"]
-
         self.post_init_lines = []
-
         # find the start
         while lines:
             line = lines.pop()
             if self.CUSTOM_POSTINIT_START.search(line) is not None:
                 break
-
         # Append until we find the end
         while lines:
             line = lines.pop()
             if self.CUSTOM_POSTINIT_STOP.search(line) is not None:
                 break
-            self.pre_init_lines.append(line)
-
-        if not self.post_init_lines:
-            self.post_init_lines = ["/*           NONE         */\n"]
+            self.post_init_lines.append(line)
 
     #
     # Helper function that returns the indicator and custom tag used by the custom bodies.
@@ -284,10 +269,10 @@ class C_Scraper(Scraper):
     #
     def __init__(self, filename: Optional[str]):
         self.filename = filename
-        self.includes: List[str] = []
-        self.functions: List[str] = []
-        self.pre_init_lines: List[str] = []
-        self.post_init_lines: List[str] = []
+        self.includes: List[str] = ["/*             NONE             */\n"]
+        self.functions: List[str] = ["/*             NONE              */\n"]
+        self.pre_init_lines: List[str] = ["    /*          NONE         */\n"]
+        self.post_init_lines: List[str] = ["    /*           NONE         */\n"]
         self.func_bods: Dict[str, str] = dict()
         self.func_bods_used: Set[str] = set()
 
@@ -330,7 +315,7 @@ class H_Scraper(Scraper):
     #
     def __init__(self, filename: Optional[str]):
         self.filename = filename
-        self.includes: List[str] = []
+        self.includes: List[str] = ["/*             NONE             */\n"]
 
         h: List[str] = []
 
