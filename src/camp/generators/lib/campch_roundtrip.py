@@ -50,24 +50,24 @@ class Scraper(object):
     # NOTICE: since this is treating lines as a queue, it will evaluate lines in
     # reverse order (popping off the end of the list).
     #
-    def _find_custom_includes_in_queue(self, lines: List[str]) -> Tuple[List[str], List[str]]:
-        includes: List[str] = []
+    def _find_custom_includes_in_queue(self, lines: List[str]) -> None:
+        self.includes = []
 
         # find the start
         while lines:
             line = lines.pop()
-            if self.CUSTOM_INCLUDES_START.match(line) is not None:
+            if self.CUSTOM_INCLUDES_START.search(line) is not None:
                 break
 
         # Append until we find the end
         while lines:
             line = lines.pop()
-            if self.CUSTOM_INCLUDES_STOP.match(line) is not None:
+            if self.CUSTOM_INCLUDES_STOP.search(line) is not None:
                 break
-            includes.append(line)
+            self.includes.append(line)
 
-        return includes, lines
-
+        if not self.includes:
+            self.includes = ["/*             NONE              */\n"]
 #
 # C-file scraper class is a child of the Scraper class
 #
@@ -85,29 +85,74 @@ class C_Scraper(Scraper):
     # for the custom functions tags. Returns all lines encompassed in these tags
     #
     # lines: lines to search
-    # Returns: (list, list) tuple that is 1) list of strings from between the custom
-    # function tags and 2) updated 'lines' queue (evaluated lines are popped off)
     #
     # NOTICE: since this is treating lines as a queue, it will evaluate lines in
     # reverse order (popping off the end of the list).
     #
-    def _find_custom_functions_in_queue(self, lines: List[str]) -> Tuple[List[str], List[str]]:
-        custom_func = []
+    def _find_custom_functions_in_queue(self, lines: List[str]) -> None:
+        self.functions = []
 
         # find the start
         while lines:
             line = lines.pop()
-            if self.CUSTOM_FUNCTIONS_START.match(line) is not None:
+            if self.CUSTOM_FUNCTIONS_START.search(line) is not None:
                 break
 
         # Append until we find the end
         while lines:
             line = lines.pop()
-            if self.CUSTOM_FUNCTIONS_STOP.match(line) is not None:
+            if self.CUSTOM_FUNCTIONS_STOP.search(line) is not None:
                 break
-            custom_func.append(line)
+            self.functions.append(line)
 
-        return custom_func, lines
+        if not self.functions:
+            self.functions = ["/*             NONE              */\n"]
+
+    CUSTOM_PREINIT_START = re.compile(r'/\*\s+START CUSTOM PRE-INIT HERE\s+\*/')
+    ''' Top of pre-init '''
+    CUSTOM_PREINIT_STOP = re.compile(r'/\*\s+STOP CUSTOM PRE-INIT HERE\s+\*/')
+    ''' Bottom of pre-init '''
+    CUSTOM_POSTINIT_START = re.compile(r'/\*\s+START CUSTOM POST-INIT HERE\s+\*/')
+    ''' Top of post-init '''
+    CUSTOM_POSTINIT_STOP = re.compile(r'/\*\s+STOP CUSTOM POST-INIT HERE\s+\*/')
+    ''' Bottom of post-init '''
+
+    def _find_custom_init_in_queue(self, lines: List[str]) -> None:
+        self.pre_init_lines = []
+
+        # find the start
+        while lines:
+            line = lines.pop()
+            if self.CUSTOM_PREINIT_START.search(line) is not None:
+                break
+
+        # Append until we find the end
+        while lines:
+            line = lines.pop()
+            if self.CUSTOM_PREINIT_STOP.search(line) is not None:
+                break
+            self.pre_init_lines.append(line)
+
+        if not self.pre_init_lines:
+            self.pre_init_lines = ["/*          NONE         */\n"]
+
+        self.post_init_lines = []
+
+        # find the start
+        while lines:
+            line = lines.pop()
+            if self.CUSTOM_POSTINIT_START.search(line) is not None:
+                break
+
+        # Append until we find the end
+        while lines:
+            line = lines.pop()
+            if self.CUSTOM_POSTINIT_STOP.search(line) is not None:
+                break
+            self.pre_init_lines.append(line)
+
+        if not self.post_init_lines:
+            self.post_init_lines = ["/*           NONE         */\n"]
 
     #
     # Helper function that returns the indicator and custom tag used by the custom bodies.
@@ -126,6 +171,7 @@ class C_Scraper(Scraper):
     def _get_custom_body_re_markers(self):
         indicator, marker = self._get_custom_body_pieces()
 
+        marker = '\\* \\' + marker
         function_string_matcher = '(.+)'
 
         return (
@@ -134,22 +180,24 @@ class C_Scraper(Scraper):
             re.compile(marker.format('STOP', function_string_matcher))
         )
 
+    CALLBACK_FUNCTIONS_STOP = re.compile(r'/\*\s+STOP CALLBACK FUNCTIONS HERE\s+\*/')
+    ''' End of callback block '''
+
     #
     # Pops items off of the passed queue (list) structure, searching
     # for the function custom body tags. Returns all dictonary of key:value pairs for
     # lines encompassed in these tags, where the key is the function name, and value
     # is the list of custom lines for that function
-    # This exhausts the entire passed queue, so unlike the other find*_custom_*() functions,
-    # it does not return a list of remaining lines in the queue
     #
     # lines: lines to search
     #
     # NOTICE: since this is treating lines as a queue, it will evaluate lines in
     # reverse order (popping off the end of the list).
     #
-    def _find_func_custom_body_in_queue(self, lines: List[str]):
-        func_bods = {}
-        func = None
+    def _find_func_custom_body_in_queue(self, lines: List[str]) -> None:
+        self.func_bods = {}
+
+        func: Optional[str] = None
 
         indicator, start_re, end_re = self._get_custom_body_re_markers()
 
@@ -157,6 +205,10 @@ class C_Scraper(Scraper):
         while lines:
             line = lines.pop()
             clean_line = line.strip()
+
+            if self.CALLBACK_FUNCTIONS_STOP.search(line) is not None:
+                # end of all callbacks
+                break
 
             # If we're inside one of the custom function bodies
             # keep appending until end
@@ -168,24 +220,22 @@ class C_Scraper(Scraper):
                     line = lines.pop()
                     clean_line = line.strip()
 
-                    if end_re.match(clean_line) is not None:
-                        func_bods[func].pop()
+                    if end_re.search(clean_line) is not None:
+                        self.func_bods[func].pop()
                         func = None
                     else:
                         continue
                 else:
-                    if func not in func_bods:
-                        func_bods[func] = []
-                    func_bods[func].append(line)
+                    func_lines = self.func_bods.setdefault(func, [])
+                    func_lines.append(line)
 
             # Check if this line is the start of a new custom function body
             else:
-                s = start_re.match(clean_line)
+                s = start_re.search(clean_line)
                 if s is not None:
                     func = s.group(1)
 
-        LOGGER.info('Collected bodies from functions: %s', ' '.join(func_bods.keys()))
-        return func_bods
+        LOGGER.info('Collected bodies from functions: %s', ' '.join(self.func_bods.keys()))
 
     #
     # Returns a tuple of the custom body's start and end markers
@@ -234,10 +284,10 @@ class C_Scraper(Scraper):
     #
     def __init__(self, filename: Optional[str]):
         self.filename = filename
-        self.includes: List[str] = ["/*             NONE              */\n"]
-        self.functions: List[str] = ["/*             NONE              */\n"]
-        self.pre_init_lines: List[str] = ["/*           NONE         */\n"]
-        self.post_init_lines: List[str] = ["/*           NONE          */\n"]
+        self.includes: List[str] = []
+        self.functions: List[str] = []
+        self.pre_init_lines: List[str] = []
+        self.post_init_lines: List[str] = []
         self.func_bods: Dict[str, str] = dict()
         self.func_bods_used: Set[str] = set()
 
@@ -251,17 +301,17 @@ class C_Scraper(Scraper):
         # NOTE: this results in the first line of the file being last in c
         # (find_* functions appropriately pop off the end of c).
         try:
-            for line in open(self.filename).readlines():
-                c.insert(0, line)
-        except IOError as e:
-            LOGGER.error("Failed to open %s for scraping", self.filename)
-            LOGGER.debug(e)
-        LOGGER.info('Scraped %d lines', len(c))
+            with open(self.filename) as infile:
+                for line in infile.readlines():
+                    c.insert(0, line)
+        except IOError:
+            LOGGER.exception("Failed to open %s for scraping", self.filename)
+        LOGGER.info('Read %d lines', len(c))
 
-        self.includes, c = self._find_custom_includes_in_queue(c)
-        self.functions, c = self._find_custom_functions_in_queue(c)
-        LOGGER.info('Remaining %d lines', len(c))
-        self.func_bods = self._find_func_custom_body_in_queue(c)
+        self._find_custom_includes_in_queue(c)
+        self._find_custom_functions_in_queue(c)
+        self._find_func_custom_body_in_queue(c)
+        self._find_custom_init_in_queue(c)
 
         LOGGER.info("DONE")
 
@@ -280,8 +330,7 @@ class H_Scraper(Scraper):
     #
     def __init__(self, filename: Optional[str]):
         self.filename = filename
-        self.includes: List[str] = ["/*             NONE              */\n"]
-        self.functions: List[str] = ["/*             NONE              */\n"]
+        self.includes: List[str] = []
 
         h: List[str] = []
 
@@ -294,16 +343,17 @@ class H_Scraper(Scraper):
         # NOTE: this results in the first line of the file being last in h
         # (find_* functions appropriately pop off the end of h).
         try:
-            for line in open(self.filename).readlines():
-                h.insert(0, line)
-        except IOError as e:
-            LOGGER.error("Failed to open %s for scraping", self.filename)
-            LOGGER.debug(e)
+            with open(self.filename) as infile:
+                for line in infile.readlines():
+                    h.insert(0, line)
+        except IOError:
+            LOGGER.exception("Failed to open %s for scraping", self.filename)
+        LOGGER.info('Read %d lines', len(h))
 
-        self.includes, h = self._find_custom_includes_in_queue(h)
+        self._find_custom_includes_in_queue(h)
 
         LOGGER.info("DONE")
 
         # Sanity Check. If scraping was requested and returned nothing, let the user know
-        if len(self.includes) == 0 and len(self.functions) == 0:
+        if len(self.includes) == 0:
             LOGGER.warning("No custom input found to scrape in %s", self.filename)
