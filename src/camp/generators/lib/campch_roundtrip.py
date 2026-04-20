@@ -22,7 +22,7 @@
 #
 import logging
 import re
-from typing import Dict, List, Set
+from typing import Dict, List, Optional, Set, Tuple
 
 LOGGER = logging.getLogger(__name__)
 
@@ -32,22 +32,12 @@ LOGGER = logging.getLogger(__name__)
 # newly-generated files.
 #
 class Scraper(object):
+    ''' Helper class to read off blocks of "CUSTOM ... HERE" lines. '''
 
-    # HELPER FUNCTIONS TO MAKE \CUSTOM\ TAGS FOR FILE #
-
-    #
-    # Returns a tuple of the custom includes start and end markers
-    #
-    def _make_custom_includes_markers(self):
-        return "/*   START CUSTOM INCLUDES HERE  */", "/*   STOP CUSTOM INCLUDES HERE  */"
-
-    #
-    # Returns a tuple of the custom functions start and end markers
-    #
-    def _make_custom_functions_markers(self):
-        return "/*   START CUSTOM FUNCTIONS HERE */", "/*   STOP CUSTOM FUNCTIONS HERE  */"
-
-    # HELPER FUNCTIONS FOR PARSING INTERNAL DATA STRUCT FOR CUSTOM CODE #
+    CUSTOM_INCLUDES_START = re.compile(r'/\*\s+START CUSTOM INCLUDES HERE\s+\*/')
+    ''' Top of includes '''
+    CUSTOM_INCLUDES_STOP = re.compile(r'/\*\s+STOP CUSTOM INCLUDES HERE\s+\*/')
+    ''' Bottom of includes '''
 
     #
     # Pops items off of the passed queue (list) structure, searching
@@ -60,24 +50,35 @@ class Scraper(object):
     # NOTICE: since this is treating lines as a queue, it will evaluate lines in
     # reverse order (popping off the end of the list).
     #
-    def _find_custom_includes_in_queue(self, lines: List[str]):
-        includes = []
-        line = ""
-
-        start, end = self._make_custom_includes_markers()
+    def _find_custom_includes_in_queue(self, lines: List[str]) -> Tuple[List[str], List[str]]:
+        includes: List[str] = []
 
         # find the start
-        while lines and line.strip() != start:
+        while lines:
             line = lines.pop()
+            if self.CUSTOM_INCLUDES_START.match(line) is not None:
+                break
 
         # Append until we find the end
         while lines:
             line = lines.pop()
-            if (line.strip() == end):
+            if self.CUSTOM_INCLUDES_STOP.match(line) is not None:
                 break
             includes.append(line)
 
         return includes, lines
+
+#
+# C-file scraper class is a child of the Scraper class
+#
+
+
+class C_Scraper(Scraper):
+
+    CUSTOM_FUNCTIONS_START = re.compile(r'/\*\s+START CUSTOM FUNCTIONS HERE\s+\*/')
+    ''' Top of local functions '''
+    CUSTOM_FUNCTIONS_STOP = re.compile(r'/\*\s+STOP CUSTOM FUNCTIONS HERE\s+\*/')
+    ''' Bottom of local functions '''
 
     #
     # Pops items off of the passed queue (list) structure, searching
@@ -90,57 +91,23 @@ class Scraper(object):
     # NOTICE: since this is treating lines as a queue, it will evaluate lines in
     # reverse order (popping off the end of the list).
     #
-    def _find_custom_functions_in_queue(self, lines):
+    def _find_custom_functions_in_queue(self, lines: List[str]) -> Tuple[List[str], List[str]]:
         custom_func = []
-        line = ""
-
-        start, end = self._make_custom_functions_markers()
 
         # find the start
-        while lines and line.strip() != start:
+        while lines:
             line = lines.pop()
+            if self.CUSTOM_FUNCTIONS_START.match(line) is not None:
+                break
 
         # Append until we find the end
         while lines:
             line = lines.pop()
-            if (line.strip() == end):
+            if self.CUSTOM_FUNCTIONS_STOP.match(line) is not None:
                 break
             custom_func.append(line)
 
         return custom_func, lines
-
-    # FUNCTIONS TO WRITE SCRAPED CUSTOM CODE TO FILE, WITH SURROUNDING TAGS #
-
-    #
-    # Write the standard 'CUSTOM' tag for the includes at the top of a file
-    # Adds any passed custom content between the start and stop tags
-    # file: open file descriptor to write to
-    # custom: array of lines to add as custom content (from scraping)
-    # if custom is empty, will just write the tags to the file
-    #
-    def write_custom_includes(self):
-        start, end = self._make_custom_includes_markers()
-
-        return start + "\n" + ''.join(self.includes) + end
-
-    #
-    # Write the standard 'CUSTOM' tag for custom functions
-    # Adds any passed custom content between the start and stop tags
-    #
-    # file: open file descriptor to write to
-    # custom: array of lines to add as custom content (from scraping)
-    # if custom is empty, will just write the tags for custom content to the file
-    #
-    def write_custom_functions(self):
-        start, end = self._make_custom_functions_markers()
-
-        return start + "\n" + ''.join(self.functions) + end
-
-
-#
-# C-file scraper class is a child of the Scraper class
-#
-class C_Scraper(Scraper):
 
     #
     # Helper function that returns the indicator and custom tag used by the custom bodies.
@@ -159,10 +126,13 @@ class C_Scraper(Scraper):
     def _get_custom_body_re_markers(self):
         indicator, marker = self._get_custom_body_pieces()
 
-        marker = '\\* \\' + marker
         function_string_matcher = '(.+)'
 
-        return indicator, marker.format('START', function_string_matcher), marker.format('STOP', function_string_matcher)
+        return (
+            indicator,
+            re.compile(marker.format('START', function_string_matcher)),
+            re.compile(marker.format('STOP', function_string_matcher))
+        )
 
     #
     # Pops items off of the passed queue (list) structure, searching
@@ -198,7 +168,7 @@ class C_Scraper(Scraper):
                     line = lines.pop()
                     clean_line = line.strip()
 
-                    if re.match(end_re, clean_line) is not None:
+                    if end_re.match(clean_line) is not None:
                         func_bods[func].pop()
                         func = None
                     else:
@@ -210,7 +180,7 @@ class C_Scraper(Scraper):
 
             # Check if this line is the start of a new custom function body
             else:
-                s = re.search(start_re, clean_line)
+                s = start_re.match(clean_line)
                 if s is not None:
                     func = s.group(1)
 
@@ -262,10 +232,12 @@ class C_Scraper(Scraper):
     # as the key, and the value is a list of strings that make up the custom body
     # of that function.
     #
-    def __init__(self, filename: str):
+    def __init__(self, filename: Optional[str]):
         self.filename = filename
         self.includes: List[str] = ["/*             NONE              */\n"]
         self.functions: List[str] = ["/*             NONE              */\n"]
+        self.pre_init_lines: List[str] = ["/*           NONE         */\n"]
+        self.post_init_lines: List[str] = ["/*           NONE          */\n"]
         self.func_bods: Dict[str, str] = dict()
         self.func_bods_used: Set[str] = set()
 
@@ -306,7 +278,7 @@ class H_Scraper(Scraper):
     #
     # Constructor for the H_Scraper class
     #
-    def __init__(self, filename: str):
+    def __init__(self, filename: Optional[str]):
         self.filename = filename
         self.includes: List[str] = ["/*             NONE              */\n"]
         self.functions: List[str] = ["/*             NONE              */\n"]
@@ -329,7 +301,6 @@ class H_Scraper(Scraper):
             LOGGER.debug(e)
 
         self.includes, h = self._find_custom_includes_in_queue(h)
-        self.functions, h = self._find_custom_functions_in_queue(h)
 
         LOGGER.info("DONE")
 

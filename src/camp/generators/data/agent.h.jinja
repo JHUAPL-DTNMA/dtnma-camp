@@ -21,7 +21,9 @@
 #include "refda/agent.h"
 #include <cace/util/defs.h>
 
-{{scraper.write_custom_includes()}}
+/*   START CUSTOM INCLUDES HERE  */
+{{scraper.includes | join('') -}}
+/*   STOP CUSTOM INCLUDES HERE  */
 
 #ifdef __cplusplus
 extern "C" {
