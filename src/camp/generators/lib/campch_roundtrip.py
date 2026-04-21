@@ -22,7 +22,7 @@
 #
 import logging
 import re
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set
 
 LOGGER = logging.getLogger(__name__)
 
