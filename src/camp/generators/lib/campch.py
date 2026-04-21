@@ -23,18 +23,18 @@
 #
 import io
 import logging
-import ace.models
 import jinja2
 import numpy
 import textwrap
-from typing import Union, Optional
-import ace
-from ace import models, ari, ari_text, typing
+from typing import cast, Union, Optional
+import ace.models
+import ace.typing, ace.type_constraint
+from ace import models, ari, ari_text
 from ace.lookup import dereference, ORM_TYPE
 
 LOGGER = logging.getLogger(__name__)
 
-AdmEntity = Union[models.AdmModule, models.AdmObjMixin]
+AdmEntity = Union[ari.StructType, models.AdmModule, models.AdmObjMixin]
 ''' Either an ADM itself or an AMM object defined within one. '''
 
 
@@ -77,12 +77,17 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
         '''
         if isinstance(value, ari.StructType):
             return 'CACE_ARI_TYPE_' + value.name
-        elif isinstance(value, models.AdmModule):
+
+        module: models.AdmModule
+        if isinstance(value, models.AdmModule):
             module = value
             parts = ['adm']
         elif isinstance(value, models.AdmObjMixin):
-            module = value.module
+            module = cast(models.AdmModule, value.module)
             parts = ['objid', amm_obj_type(value).name, yang_to_c(value.name)]
+        else:
+            raise RuntimeError('No module name available')
+
         return '_'.join([sym_prefix, yang_to_c(module.module_name), 'enum'] + parts).upper()
 
     def c_depth(name: str, depth: int) -> str:
@@ -96,7 +101,11 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
         if isinstance(value, models.AdmModule):
             parts = [yang_to_c(value.module_name)]
         elif isinstance(value, models.AdmObjMixin):
-            parts = list(map(yang_to_c, [value.module.module_name, amm_obj_type(value).name, value.name]))
+            module = cast(models.AdmModule, value.module)
+            parts = list(map(yang_to_c, [module.module_name, amm_obj_type(value).name, value.name]))
+        else:
+            raise RuntimeError('No C function name available')
+
         if suffix:
             parts.append(suffix)
         return '_'.join([sym_prefix] + parts).lower()
@@ -148,10 +157,10 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
         '''
         return prefix.join(textwrap.wrap(value))
 
-    def as_text(val: Union[ari.ARI, typing.BaseType]) -> str:
+    def as_text(val: Union[ari.ARI, ace.typing.BaseType]) -> str:
         ''' Encode an ARI or as text form URI.
         '''
-        if isinstance(val, typing.BaseType):
+        if isinstance(val, ace.typing.BaseType):
             val = val.ari_name()
 
         enc = ari_text.Encoder()
@@ -177,14 +186,19 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
         '''
         return f'./{amm_obj_type(obj).name}/{obj.norm_name}'
 
-    def deref(ari: ari.ARI) -> models.AdmObjMixin:
+    def deref(ari: ari.ReferenceARI) -> models.AdmObjMixin:
         ''' Dereference an ARI into an AMM object.
         '''
         LOGGER.debug('deref from %s', ari)
-        return dereference(ari, admset.db_session())
+        obj = dereference(ari, admset.db_session())
+
+        if obj is None:
+            LOGGER.error('deref got no object named %s', as_text(ari))
+            raise RuntimeError(f'No such object named {as_text(ari)}')
+        return obj
 
     def ari_builtin(ari: ari.ARI, typename: str) -> bool:
-        typeobj = typing.BUILTINS[typename]
+        typeobj = ace.typing.BUILTINS[typename]
         got = typeobj.get(ari)
         return got is not None
 

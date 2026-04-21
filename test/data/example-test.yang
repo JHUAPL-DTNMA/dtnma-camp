@@ -223,12 +223,34 @@ module example-test {
       amm:type "/ARITYPE/UVAST";
     }
   }
+  amm:oper compare-lt {
+    amm:enum 1;
+    description
+      "Compare values for less-than predicate.
+       The operands are cast to the least compatible numeric type
+       before the comparison.";
+    amm:operand left {
+      description
+        "The left-side operand.";
+      amm:type "/ARITYPE/UVAST";
+    }
+    amm:operand right {
+      description
+        "The left-side operand.";
+      amm:type "/ARITYPE/UVAST";
+    }
+    amm:result result {
+      description
+        "The comparison result.";
+      amm:type "/ARITYPE/bool";
+    }
+  }
   amm:sbr sbr1 {
     amm:enum 8;
     description
       "";
-    amm:action "/AC/(./CTRL/first,./CTRL/second)";
-    amm:condition "/AC/(./EDD/sensor,./VAR/min_threshold,./OPER/compare_lt)";
+    amm:action "/AC/(./CTRL/get,./CTRL/set)";
+    amm:condition "/AC/(./EDD/edd_uvast,./VAR/var_uvast_val,./OPER/compare-lt)";
     amm:min-interval "/TD/PT30S";
     amm:max-count 10;
     amm:init-enabled false;
@@ -237,14 +259,14 @@ module example-test {
     amm:enum 9;
     description
       "";
-    amm:action "/AC/(./CTRL/first,./CTRL/second)";
-    amm:condition "/AC/(./EDD/sensor,./VAR/min_threshold,./OPER/compare_lt)";
+    amm:action "/AC/(./CTRL/get,./CTRL/set)";
+    amm:condition "/AC/(./EDD/edd_uvast,./VAR/var_uvast_val,./OPER/compare-lt)";
   }
   amm:tbr tbr_rule {
     amm:enum 30;
     description
       "Generate telemetry reports.";
-    amm:action "/AC/(./CTRL/first,./CTRL/other)";
+    amm:action "/AC/(./CTRL/get,./CTRL/set)";
     amm:start "/TP/20.5";
     amm:period "/TD/PT30S";
   }

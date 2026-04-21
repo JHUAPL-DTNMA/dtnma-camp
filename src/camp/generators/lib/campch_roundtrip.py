@@ -22,16 +22,19 @@
 #
 import logging
 import re
-from typing import Dict, List, Set
+from typing import Dict, List, Optional, Set
 
 LOGGER = logging.getLogger(__name__)
 
 
-#
-# Class to handle scraping files, and writing custom tags and code to
-# newly-generated files.
-#
 class Scraper(object):
+    ''' Class to handle scraping files, and writing custom tags and code to
+    newly-generated files.
+    '''
+
+    def __init__(self):
+        self.includes = []
+        self.functions = []
 
     # HELPER FUNCTIONS TO MAKE \CUSTOM\ TAGS FOR FILE #
 
@@ -262,7 +265,7 @@ class C_Scraper(Scraper):
     # as the key, and the value is a list of strings that make up the custom body
     # of that function.
     #
-    def __init__(self, filename: str):
+    def __init__(self, filename: Optional[str]):
         self.filename = filename
         self.includes: List[str] = ["/*             NONE              */\n"]
         self.functions: List[str] = ["/*             NONE              */\n"]
@@ -306,7 +309,7 @@ class H_Scraper(Scraper):
     #
     # Constructor for the H_Scraper class
     #
-    def __init__(self, filename: str):
+    def __init__(self, filename: Optional[str]):
         self.filename = filename
         self.includes: List[str] = ["/*             NONE              */\n"]
         self.functions: List[str] = ["/*             NONE              */\n"]
