@@ -28,7 +28,6 @@ import os
 import unittest
 import jinja2
 from ace import AdmSet, Checker
-from camp.generators.lib.campch_roundtrip import H_Scraper, C_Scraper
 from camp.generators import (
     create_sql,
     create_impl_h,

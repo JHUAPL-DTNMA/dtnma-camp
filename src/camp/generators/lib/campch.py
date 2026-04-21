@@ -28,7 +28,8 @@ import numpy
 import textwrap
 from typing import cast, Union, Optional
 import ace.models
-import ace.typing, ace.type_constraint
+import ace.typing
+import ace.type_constraint
 from ace import models, ari, ari_text
 from ace.lookup import dereference, ORM_TYPE
 
