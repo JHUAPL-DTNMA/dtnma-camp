@@ -62,6 +62,9 @@ edd_endpoint_active_aid INTEGER;
 oper_add_oid INTEGER;
 oper_add_fid INTEGER;
 oper_add_aid INTEGER;
+oper_compare_lt_oid INTEGER;
+oper_compare_lt_fid INTEGER;
+oper_compare_lt_aid INTEGER;
 
 sbr_sbr1_oid INTEGER;
 sbr_sbr1_fid INTEGER;
@@ -163,6 +166,12 @@ CALL SP__insert_obj_metadata(-6, 'add', r_data_model_id, 0, null, null, 'Add two
 
 CALL SP__insert_operator_formal_definition(oper_add_oid, 'Add two uvast values. The operands are cast to the least compatible numeric type before the arithmetic.', null, 2, '.left, .right', 'result', '', oper_add_fid);
 CALL SP__insert_operator_actual_definition(oper_add_oid, 'The singleton value for add', null, oper_add_aid);
+
+CALL SP__insert_obj_metadata(-6, 'compare-lt', r_data_model_id, 1, null, null, 'Compare values for less-than predicate. The operands are cast to the least compatible numeric type before the comparison.', oper_compare_lt_oid);
+
+
+CALL SP__insert_operator_formal_definition(oper_compare_lt_oid, 'Compare values for less-than predicate. The operands are cast to the least compatible numeric type before the comparison.', null, 2, '.left, .right', 'result', '', oper_compare_lt_fid);
+CALL SP__insert_operator_actual_definition(oper_compare_lt_oid, 'The singleton value for compare-lt', null, oper_compare_lt_aid);
 
 
 
