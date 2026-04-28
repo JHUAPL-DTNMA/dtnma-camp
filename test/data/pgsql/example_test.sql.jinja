@@ -104,7 +104,7 @@ CALL SP__insert_obj_metadata(-2, 'const1', r_data_model_id, 0, null, null, 'Exam
 CALL SP__insert_const_actual_definition(const_const1_oid, 'Example value.', 'ari://ietf/amm-semtype/IDENT/use(name=/ARITYPE/UVAST)', '31', const_const1_aid);
 
 CALL SP__insert_obj_metadata(-2, 'showall', r_data_model_id, 1, null, null, 'Some constant list', const_showall_oid);
-CALL SP__insert_const_actual_definition(const_showall_oid, 'Some constant list', 'ari://ietf/amm-semtype/IDENT/use(name=/ARITYPE/AC)', '/AC/(./CONST/const1,/TP/-360.5,/TD/PT1H0.2S,/TD/-PT1H0.5S)', const_showall_aid);
+CALL SP__insert_const_actual_definition(const_showall_oid, 'Some constant list', 'ari://ietf/amm-semtype/IDENT/use(name=/ARITYPE/AC)', '/AC/(./CONST/const1,/TP/-360.5,/TD/PT1H0.2S,/TD/-PT1H0.5S,%22need%20%5C%5Cesc%09%22)', const_showall_aid);
 
 -- ctrl
 

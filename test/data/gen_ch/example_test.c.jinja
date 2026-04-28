@@ -408,6 +408,10 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                     cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
                     cace_ari_set_td(item, (struct timespec) {-3601, 500000000});
                 }
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
+                    cace_ari_set_tstr(item, "need \\esc\t", true);
+                }
             }
 
             obj = refda_register_const(adm, cace_amm_idseg_ref_withenum("showall", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_CONST_SHOWALL), objdata);

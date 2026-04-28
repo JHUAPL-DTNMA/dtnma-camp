@@ -162,7 +162,7 @@ module example-test {
     amm:enum 1;
     description
       "Some constant list";
-    amm:init-value "/AC/(./CONST/const1,/TP/-360.5,/TD/PT1H0.2S,/TD/-PT1H0.5S)";
+    amm:init-value "/AC/(./CONST/const1,/TP/-360.5,/TD/PT1H0.2S,/TD/-PT1H0.5S,%22need%20%5C%5Cesc%09%22)";
     amm:type "/ARITYPE/AC";
   }
   amm:ctrl get {

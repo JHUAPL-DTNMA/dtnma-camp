@@ -124,9 +124,9 @@ cace_ari_set_tstr({{ptrname}}, {{value.value | c_str}}, true);
     cace_ari_set_bstr({{ptrname}}, &data, true);
 }
 {%- elif value is ari_builtin('tp') -%}
-cace_ari_set_tp({{ptrname}}, (struct timespec) {{ value.value | as_timepoint }});
+cace_ari_set_tp({{ptrname}}, {{ value.value | as_timepoint }});
 {%- elif value is ari_builtin('td') -%}
-cace_ari_set_td({{ptrname}}, (struct timespec) {{ value.value | as_timedelta }});
+cace_ari_set_td({{ptrname}}, {{ value.value | as_timedelta }});
 {#- Non-primitive types #}
 {%- elif value is ari_builtin('aritype') -%}
 // use of {{value | as_text}}
