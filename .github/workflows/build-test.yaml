@@ -34,7 +34,7 @@ on:
     - cron: '0 0 * * 0'
 
 env:
-  ACE_REPO: "git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@main"
+  ACE_REPO: "git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@96-ari-decoding-of-decimal-fractions-limits"
 
 jobs:
   build:
