@@ -21,6 +21,7 @@
 # under the prime contract 80NM0018D0004 between the Caltech and NASA under
 # subcontract 1658085.
 #
+import copy
 import io
 import logging
 import jinja2
@@ -143,9 +144,19 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
     def c_str(value: str) -> str:
         ''' Enforce an escaped text string in C source.
         '''
-        return '"' + str(value).replace('\\', '\\\\').replace('"', '\\"').replace("'", "\\'") \
-            .replace("\a", "\\a").replace("\b", "\\b").replace("\f", "\\f").replace("\n", "\\n") \
-            .replace("\r", "\\r").replace("\t", "\\t").replace("\v", "\\v") + '"'
+        ESC_CHARS = str.maketrans({
+            '\\': '\\\\',
+            '"': '\\"',
+            "'": "\\'",
+            "\a": "\\a",
+            "\b": "\\b",
+            "\f": "\\f",
+            "\n": "\\n",
+            "\r": "\\r",
+            "\t": "\\t",
+            "\v": "\\v",
+        })
+        return '"' + str(value).translate(ESC_CHARS) + '"'
 
     def c_bytes_init(value: bytes) -> str:
         ''' Encode a byte string as a sequence of uint8_t values
@@ -169,18 +180,17 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
         enc.encode(val, buf)
         return buf.getvalue()
 
-    def as_timepoint(value: numpy.datetime64) -> str:
-        diff = value - ari.DTN_EPOCH
-        tv_sec = diff // numpy.timedelta64(1, 's')
-        diff -= tv_sec * numpy.timedelta64(1, 's')
-        tv_nsec = diff // numpy.timedelta64(1, 'ns')
-        return f"{{{tv_sec}, {tv_nsec}}}"
+    def as_timepoint(value: numpy.timedelta64) -> str:
+        # TP is also a delta from the DTN epoch
+        return as_timedelta(value)
 
     def as_timedelta(value: numpy.timedelta64) -> str:
+        value = copy.copy(value)
         tv_sec = value // numpy.timedelta64(1, 's')
         value -= tv_sec * numpy.timedelta64(1, 's')
         tv_nsec = value // numpy.timedelta64(1, 'ns')
-        return f"{{{tv_sec}, {tv_nsec}}}"
+
+        return f"(struct timespec) {{{tv_sec}, {tv_nsec}}}"
 
     def ref_text(obj: models.AdmObjMixin) -> str:
         ''' Create a text reference for an AMM object.

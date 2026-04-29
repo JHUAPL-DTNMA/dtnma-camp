@@ -396,6 +396,22 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                     // reference to ari://example/test/CONST/const1
                     cace_ari_set_objref_path_intid(item, 65535, 9999, CACE_ARI_TYPE_CONST, 0);
                 }
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
+                    cace_ari_set_tp(item, (struct timespec) {-361, 800000000});
+                }
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
+                    cace_ari_set_td(item, (struct timespec) {3600, 200000000});
+                }
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
+                    cace_ari_set_td(item, (struct timespec) {-3601, 800000000});
+                }
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
+                    cace_ari_set_tstr(item, "need \\esc\t", true);
+                }
             }
 
             obj = refda_register_const(adm, cace_amm_idseg_ref_withenum("showall", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_CONST_SHOWALL), objdata);
@@ -689,7 +705,6 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                     cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_OBJECT);
                     cace_amm_type_set_use_ref_move(&(fparam->typeobj), &typeref);
                 }
-                cace_ari_set_tstr(&(fparam->defval), "hello", true);
             }
         }
         { // For ./CTRL/set
@@ -847,10 +862,7 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 }
             }
             // min_interval
-            {
-              struct timespec ts = {30, 0};
-              cace_ari_set_td(&(objdata->min_interval), ts);
-            }
+            cace_ari_set_td(&(objdata->min_interval), (struct timespec) {30, 0});
             // init_enabled
             objdata->init_enabled = false;
             // max_exec_count
@@ -895,10 +907,7 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 }
             }
             // min_interval
-            {
-              struct timespec ts = {0, 0};
-              cace_ari_set_td(&(objdata->min_interval), ts);
-            }
+            cace_ari_set_td(&(objdata->min_interval), (struct timespec) {0, 0});
             // init_enabled
             objdata->init_enabled = true;
             // max_exec_count
@@ -928,15 +937,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 }
             }
             // period
-            {
-              struct timespec ts = {30, 0};
-              cace_ari_set_td(&(objdata->period), ts);
-            }
+            cace_ari_set_td(&(objdata->period), (struct timespec) {30, 0});
             // start_time
-            {
-              struct timespec ts = {20, 500000000};
-              cace_ari_set_tp(&(objdata->start_time), ts);
-            }
+            cace_ari_set_tp(&(objdata->start_time), (struct timespec) {20, 500000000});
             // init_enabled
             objdata->init_enabled = true;
             // max_exec_count

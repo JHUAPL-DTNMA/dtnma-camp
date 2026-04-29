@@ -162,7 +162,7 @@ module example-test {
     amm:enum 1;
     description
       "Some constant list";
-    amm:init-value "/AC/(./CONST/const1)";
+    amm:init-value "/AC/(./CONST/const1,/TP/-360.2,/TD/PT1H0.2S,/TD/-PT1H0.2S,%22need%20%5C%5Cesc%09%22)";
     amm:type "/ARITYPE/AC";
   }
   amm:ctrl get {
@@ -172,7 +172,6 @@ module example-test {
     amm:parameter object {
       description
         "Identity of the object to retrieve.";
-      amm:default "hello";
       amm:type "/ARITYPE/OBJECT";
     }
     amm:result data {

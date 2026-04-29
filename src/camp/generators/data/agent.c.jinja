@@ -97,7 +97,8 @@ Produced type: {{type_summary(obj.typeobj)}}
 
 {%- macro ari_set_value(ptrname, value, depth = 0) -%}
 {%- if value is instance(ari.LiteralARI) -%}
-{#- Primitive types #}
+{#- // literal {{value | as_text}} #}
+{#- Simple types #}
 {%- if value is ari_builtin('null') -%}
 cace_ari_set_null({{ptrname}});
 {%- elif value is ari_builtin('bool') -%}
@@ -123,15 +124,9 @@ cace_ari_set_tstr({{ptrname}}, {{value.value | c_str}}, true);
     cace_ari_set_bstr({{ptrname}}, &data, true);
 }
 {%- elif value is ari_builtin('tp') -%}
-{
-  struct timespec ts = {{ value.value | as_timepoint }};
-  cace_ari_set_tp({{ptrname}}, ts);
-}
+cace_ari_set_tp({{ptrname}}, {{ value.value | as_timepoint }});
 {%- elif value is ari_builtin('td') -%}
-{
-  struct timespec ts = {{ value.value | as_timedelta }};
-  cace_ari_set_td({{ptrname}}, ts);
-}
+cace_ari_set_td({{ptrname}}, {{ value.value | as_timedelta }});
 {#- Non-primitive types #}
 {%- elif value is ari_builtin('aritype') -%}
 // use of {{value | as_text}}
