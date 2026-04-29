@@ -172,7 +172,6 @@ module example-test {
     amm:parameter object {
       description
         "Identity of the object to retrieve.";
-      amm:default "hello";
       amm:type "/ARITYPE/OBJECT";
     }
     amm:result data {
