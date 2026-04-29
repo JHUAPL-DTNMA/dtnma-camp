@@ -67,6 +67,7 @@ then
     git pull
     DEPS_BUILD_ION=0 ./deps.sh
     popd
+
     if [[ ! -d ${SELFDIR}/deps/dtnma-tools/build ]]
     then
         pushd ${SELFDIR}/deps/dtnma-tools
@@ -83,13 +84,20 @@ then
     PYTEST_ARGS="${SELFDIR}/test_c_integration.py"
 elif [[ "$1" = "sql" ]]
 then
-    DOCKER=${DOCKER:-docker}
-    COMPOSE_ARGS="-f ${SELFDIR}/sql-compose.yml"
-    ${DOCKER} compose ${COMPOSE_ARGS} build
-    ${DOCKER} compose ${COMPOSE_ARGS} up --detach --force-recreate --remove-orphans
+    ORIG_PGHOST="$PGHOST"
+    if [[ -z "$ORIG_PGHOST" ]]
+    then
+        DOCKER=${DOCKER:-docker}
+        # local container port-bound to localhost
+        export PGHOST="localhost"
+        export PGUSER="postgres"
+        export PGPASSWORD="postgres"
+        export PGDATABASE="runner"
 
-    export PGHOST="localhost"
-    # all other PG* test environment is passed through this script
+        COMPOSE_ARGS="-f ${SELFDIR}/sql-compose.yml"
+        ${DOCKER} compose ${COMPOSE_ARGS} build
+        ${DOCKER} compose ${COMPOSE_ARGS} up --detach --force-recreate --remove-orphans
+    fi
 
     PYTEST_ARGS="${SELFDIR}/test_sql_integration.py"
 else
@@ -104,8 +112,11 @@ python3 -m pytest -v --cov=camp --log-level=info ${PYTEST_ARGS} || TESTEXIT=$?
 
 if [[ "$1" = "sql" ]]
 then
-    ${DOCKER} compose ${COMPOSE_ARGS} down --rmi local --volumes
-    ${DOCKER} compose ${COMPOSE_ARGS} rm --force --volumes
+    if [[ -z "$ORIG_PGHOST" ]]
+    then
+        ${DOCKER} compose ${COMPOSE_ARGS} down --rmi local --volumes
+        ${DOCKER} compose ${COMPOSE_ARGS} rm --force --volumes
+    fi
 fi
 
 exit ${TESTEXIT}
