@@ -360,14 +360,16 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
 #include <cace/util/logging.h>
 #include <cace/util/defs.h>
 
-{{scraper.write_custom_includes()}}
+/*   START CUSTOM INCLUDES HERE */
+{{scraper.includes | join('') }}/*   STOP CUSTOM INCLUDES HERE  */
 
-{{scraper.write_custom_functions()}}
+/*   START CUSTOM FUNCTIONS HERE */
+{{scraper.functions | join('') }}/*   STOP CUSTOM FUNCTIONS HERE  */
 
+/*   START CALLBACK FUNCTIONS HERE */
 {%- if adm.edd %}
 {%- for obj in adm.edd %}
 {% set func_sym = obj | c_func %}
-
 {{ callback_summary(obj) | c_comment }}
 static void {{func_sym}}(refda_edd_prod_ctx_t *ctx)
 {
@@ -379,7 +381,6 @@ static void {{func_sym}}(refda_edd_prod_ctx_t *ctx)
 {%- if adm.ctrl %}
 {%- for obj in adm.ctrl %}
 {% set func_sym = obj | c_func %}
-
 {{ callback_summary(obj) | c_comment }}
 static void {{func_sym}}(refda_ctrl_exec_ctx_t *ctx)
 {
@@ -391,7 +392,6 @@ static void {{func_sym}}(refda_ctrl_exec_ctx_t *ctx)
 {%- if adm.oper %}
 {%- for obj in adm.oper %}
 {% set func_sym = obj | c_func %}
-
 {{ callback_summary(obj) | c_comment }}
 static void {{func_sym}}(refda_oper_eval_ctx_t *ctx)
 {
@@ -400,11 +400,16 @@ static void {{func_sym}}(refda_oper_eval_ctx_t *ctx)
 {%- endfor %}
 {%- endif %}
 
+/*   STOP CALLBACK FUNCTIONS HERE  */
+
 int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {
     CHKERR1(agent);
     CACE_LOG_DEBUG("Registering ADM: " {{adm.norm_name | c_str}});
     REFDA_AGENT_LOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
+
+    /*   START PRE-INIT HERE */
+{{scraper.pre_init_lines | join('') }}    /*   STOP PRE-INIT HERE  */
 
     cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(
         &(agent->objs), cace_amm_idseg_ref_withenum({{adm.ns_org_name | c_str}}, {{adm.ns_org_enum | c_int}}),
@@ -619,6 +624,10 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {%- endfor %}
 {%- endif %}
     }
+
+    /*   START POST-INIT HERE */
+{{scraper.post_init_lines | join('') }}    /*   STOP POST-INIT HERE  */
+
     REFDA_AGENT_UNLOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
     return 0;
 }

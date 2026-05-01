@@ -11,8 +11,8 @@
 #include "refda/agent.h"
 #include <cace/util/defs.h>
 
-/*   START CUSTOM INCLUDES HERE  */
-/*             NONE              */
+/*   START CUSTOM INCLUDES HERE */
+/*             NONE             */
 /*   STOP CUSTOM INCLUDES HERE  */
 
 #ifdef __cplusplus

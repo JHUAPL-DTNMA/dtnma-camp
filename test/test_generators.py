@@ -122,8 +122,8 @@ class TestCreateCH(BaseTest):
         self.assertLess(0, buf.tell())
         buf.seek(0)
 
-        tmpl = self._tmpl_env.get_template('gen_ch/example_test.h.jinja')
-        content = tmpl.render(datestamp=self._today_datestamp())
+        with open(os.path.join(SELFDIR, 'data', 'gen_ch/example_test.h'), 'r') as infile:
+            content = infile.read()
         self.assertMultiLineEqual(content, buf.read())
 
     def test_create_impl_c_noscrape(self):
@@ -143,6 +143,6 @@ class TestCreateCH(BaseTest):
         self.assertLess(0, buf.tell())
         buf.seek(0)
 
-        tmpl = self._tmpl_env.get_template('gen_ch/example_test.c.jinja')
-        content = tmpl.render(datestamp=self._today_datestamp())
+        with open(os.path.join(SELFDIR, 'data', 'gen_ch/example_test.c'), 'r') as infile:
+            content = infile.read()
         self.assertMultiLineEqual(content, buf.read())

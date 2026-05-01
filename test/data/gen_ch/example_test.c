@@ -16,14 +16,15 @@
 #include <cace/util/logging.h>
 #include <cace/util/defs.h>
 
-/*   START CUSTOM INCLUDES HERE  */
-/*             NONE              */
+/*   START CUSTOM INCLUDES HERE */
+/*             NONE             */
 /*   STOP CUSTOM INCLUDES HERE  */
 
 /*   START CUSTOM FUNCTIONS HERE */
 /*             NONE              */
 /*   STOP CUSTOM FUNCTIONS HERE  */
 
+/*   START CALLBACK FUNCTIONS HERE */
 
 /* Name: edd_uvast
  * Description:
@@ -46,7 +47,6 @@ static void refda_adm_example_test_edd_edd__uvast(refda_edd_prod_ctx_t *ctx)
 	 * +-------------------------------------------------------------------------+
 	 */
 }
-
 
 /* Name: edd_uvast_param
  * Description:
@@ -71,7 +71,6 @@ static void refda_adm_example_test_edd_edd__uvast__param(refda_edd_prod_ctx_t *c
 	 */
 }
 
-
 /* Name: edd_ac_param
  * Description:
  *   Example UVAST EDD with parameters.
@@ -94,7 +93,6 @@ static void refda_adm_example_test_edd_edd__ac__param(refda_edd_prod_ctx_t *ctx)
 	 * +-------------------------------------------------------------------------+
 	 */
 }
-
 
 /* Name: edd_am_param
  * Description:
@@ -121,7 +119,6 @@ static void refda_adm_example_test_edd_edd__am__param(refda_edd_prod_ctx_t *ctx)
 	 */
 }
 
-
 /* Name: edd_tbl_param
  * Description:
  *   Example UVAST EDD with parameters.
@@ -147,7 +144,6 @@ static void refda_adm_example_test_edd_edd__tbl__param(refda_edd_prod_ctx_t *ctx
 	 */
 }
 
-
 /* Name: edd_tp
  * Description:
  *   Example TP EDD: current system time.
@@ -169,7 +165,6 @@ static void refda_adm_example_test_edd_edd__tp(refda_edd_prod_ctx_t *ctx)
 	 * +-------------------------------------------------------------------------+
 	 */
 }
-
 
 /* Name: endpoint_active
  * Description:
@@ -194,7 +189,6 @@ static void refda_adm_example_test_edd_endpoint__active(refda_edd_prod_ctx_t *ct
 	 */
 }
 
-
 /* Name: get
  * Description:
  *   Get a single MIB value from the agent.
@@ -217,7 +211,6 @@ static void refda_adm_example_test_ctrl_get(refda_ctrl_exec_ctx_t *ctx)
 	 * +-------------------------------------------------------------------------+
 	 */
 }
-
 
 /* Name: set
  * Description:
@@ -242,7 +235,6 @@ static void refda_adm_example_test_ctrl_set(refda_ctrl_exec_ctx_t *ctx)
 	 * +-------------------------------------------------------------------------+
 	 */
 }
-
 
 /* Name: add
  * Description:
@@ -271,7 +263,6 @@ static void refda_adm_example_test_oper_add(refda_oper_eval_ctx_t *ctx)
 	 */
 }
 
-
 /* Name: compare-lt
  * Description:
  *   Compare values for less-than predicate. The operands are cast to the
@@ -299,11 +290,17 @@ static void refda_adm_example_test_oper_compare_lt(refda_oper_eval_ctx_t *ctx)
 	 */
 }
 
+/*   STOP CALLBACK FUNCTIONS HERE  */
+
 int refda_adm_example_test_init(refda_agent_t *agent)
 {
     CHKERR1(agent);
     CACE_LOG_DEBUG("Registering ADM: " "example-test");
     REFDA_AGENT_LOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
+
+    /*   START PRE-INIT HERE */
+    /*          NONE         */
+    /*   STOP PRE-INIT HERE  */
 
     cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(
         &(agent->objs), cace_amm_idseg_ref_withenum("example", 65535),
@@ -948,6 +945,11 @@ int refda_adm_example_test_init(refda_agent_t *agent)
             obj = refda_register_tbr(adm, cace_amm_idseg_ref_withenum("tbr_rule", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_TBR_TBR__RULE), objdata);
         }
     }
+
+    /*   START POST-INIT HERE */
+    /*           NONE         */
+    /*   STOP POST-INIT HERE  */
+
     REFDA_AGENT_UNLOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
     return 0;
 }
