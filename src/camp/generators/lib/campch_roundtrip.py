@@ -27,12 +27,10 @@ from typing import Dict, List, Optional, Set
 LOGGER = logging.getLogger(__name__)
 
 
-#
-# Class to handle scraping files, and writing custom tags and code to
-# newly-generated files.
-#
 class Scraper(object):
-    ''' Helper class to read off blocks of "CUSTOM ... HERE" lines. '''
+    ''' Class to handle scraping files, and writing custom tags and code to
+    newly-generated files.
+    '''
 
     CUSTOM_INCLUDES_START = re.compile(r'/\*\s+START CUSTOM INCLUDES HERE\s+\*/')
     ''' Top of includes '''

@@ -90,7 +90,12 @@ python3 -m piptools compile --extra test pyproject.toml
 pip3 install -r requirements.txt
 ```
 
-If the `python3 -m piptools compile --extra test pyproject.toml` command fails due to the following error: "Could not find a version that satisfies the requirement dtnma-ace (from versions: none)", then one solution is to remove the `dtnma-ace` dependency from the `pyproject.toml` file via a text editor and then try the command again. 
+If the `python3 -m piptools compile --extra test pyproject.toml` command fails due to the following error: "Could not find a version that satisfies the requirement dtnma-ace (from versions: none)", then one solution is to remove the `dtnma-ace` dependency from the `pyproject.toml` file via a text editor and then try the command again.
+
+To execute all unit tests, importing CAMP from the source tree, run:
+```
+PYTHONPATH=src/ python3 -m pytest -v --cov=camp test
+```
 
 To install the project itself from source run:
 ```

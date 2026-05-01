@@ -79,6 +79,8 @@ extern "C" {
  */
 /// For ./OPER/add
 #define REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_OPER_ADD 0
+/// For ./OPER/compare-lt
+#define REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_OPER_COMPARE_LT 1
 
 /*
  * Enumerations for SBR objects

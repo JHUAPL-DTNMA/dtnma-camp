@@ -21,20 +21,22 @@
 # under the prime contract 80NM0018D0004 between the Caltech and NASA under
 # subcontract 1658085.
 #
+import copy
 import io
 import logging
-import ace.models
 import jinja2
 import numpy
 import textwrap
-from typing import Union, Optional
-import ace
-from ace import models, ari, ari_text, typing
+from typing import cast, Union, Optional
+import ace.models
+import ace.typing
+import ace.type_constraint
+from ace import models, ari, ari_text
 from ace.lookup import dereference, ORM_TYPE
 
 LOGGER = logging.getLogger(__name__)
 
-AdmEntity = Union[models.AdmModule, models.AdmObjMixin]
+AdmEntity = Union[ari.StructType, models.AdmModule, models.AdmObjMixin]
 ''' Either an ADM itself or an AMM object defined within one. '''
 
 
@@ -77,12 +79,17 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
         '''
         if isinstance(value, ari.StructType):
             return 'CACE_ARI_TYPE_' + value.name
-        elif isinstance(value, models.AdmModule):
+
+        module: models.AdmModule
+        if isinstance(value, models.AdmModule):
             module = value
             parts = ['adm']
         elif isinstance(value, models.AdmObjMixin):
-            module = value.module
+            module = cast(models.AdmModule, value.module)
             parts = ['objid', amm_obj_type(value).name, yang_to_c(value.name)]
+        else:
+            raise RuntimeError('No module name available')
+
         return '_'.join([sym_prefix, yang_to_c(module.module_name), 'enum'] + parts).upper()
 
     def c_depth(name: str, depth: int) -> str:
@@ -96,7 +103,11 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
         if isinstance(value, models.AdmModule):
             parts = [yang_to_c(value.module_name)]
         elif isinstance(value, models.AdmObjMixin):
-            parts = list(map(yang_to_c, [value.module.module_name, amm_obj_type(value).name, value.name]))
+            module = cast(models.AdmModule, value.module)
+            parts = list(map(yang_to_c, [module.module_name, amm_obj_type(value).name, value.name]))
+        else:
+            raise RuntimeError('No C function name available')
+
         if suffix:
             parts.append(suffix)
         return '_'.join([sym_prefix] + parts).lower()
@@ -133,9 +144,19 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
     def c_str(value: str) -> str:
         ''' Enforce an escaped text string in C source.
         '''
-        return '"' + str(value).replace('\\', '\\\\').replace('"', '\\"').replace("'", "\\'") \
-            .replace("\a", "\\a").replace("\b", "\\b").replace("\f", "\\f").replace("\n", "\\n") \
-            .replace("\r", "\\r").replace("\t", "\\t").replace("\v", "\\v") + '"'
+        ESC_CHARS = str.maketrans({
+            '\\': '\\\\',
+            '"': '\\"',
+            "'": "\\'",
+            "\a": "\\a",
+            "\b": "\\b",
+            "\f": "\\f",
+            "\n": "\\n",
+            "\r": "\\r",
+            "\t": "\\t",
+            "\v": "\\v",
+        })
+        return '"' + str(value).translate(ESC_CHARS) + '"'
 
     def c_bytes_init(value: bytes) -> str:
         ''' Encode a byte string as a sequence of uint8_t values
@@ -148,10 +169,10 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
         '''
         return prefix.join(textwrap.wrap(value))
 
-    def as_text(val: Union[ari.ARI, typing.BaseType]) -> str:
+    def as_text(val: Union[ari.ARI, ace.typing.BaseType]) -> str:
         ''' Encode an ARI or as text form URI.
         '''
-        if isinstance(val, typing.BaseType):
+        if isinstance(val, ace.typing.BaseType):
             val = val.ari_name()
 
         enc = ari_text.Encoder()
@@ -159,32 +180,36 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
         enc.encode(val, buf)
         return buf.getvalue()
 
-    def as_timepoint(value: numpy.datetime64) -> str:
-        diff = value - ari.DTN_EPOCH
-        tv_sec = diff // numpy.timedelta64(1, 's')
-        diff -= tv_sec * numpy.timedelta64(1, 's')
-        tv_nsec = diff // numpy.timedelta64(1, 'ns')
-        return f"{{{tv_sec}, {tv_nsec}}}"
+    def as_timepoint(value: numpy.timedelta64) -> str:
+        # TP is also a delta from the DTN epoch
+        return as_timedelta(value)
 
     def as_timedelta(value: numpy.timedelta64) -> str:
+        value = copy.copy(value)
         tv_sec = value // numpy.timedelta64(1, 's')
         value -= tv_sec * numpy.timedelta64(1, 's')
         tv_nsec = value // numpy.timedelta64(1, 'ns')
-        return f"{{{tv_sec}, {tv_nsec}}}"
+
+        return f"(struct timespec) {{{tv_sec}, {tv_nsec}}}"
 
     def ref_text(obj: models.AdmObjMixin) -> str:
         ''' Create a text reference for an AMM object.
         '''
         return f'./{amm_obj_type(obj).name}/{obj.norm_name}'
 
-    def deref(ari: ari.ARI) -> models.AdmObjMixin:
+    def deref(ari: ari.ReferenceARI) -> models.AdmObjMixin:
         ''' Dereference an ARI into an AMM object.
         '''
         LOGGER.debug('deref from %s', ari)
-        return dereference(ari, admset.db_session())
+        obj = dereference(ari, admset.db_session())
+
+        if obj is None:
+            LOGGER.error('deref got no object named %s', as_text(ari))
+            raise RuntimeError(f'No such object named {as_text(ari)}')
+        return obj
 
     def ari_builtin(ari: ari.ARI, typename: str) -> bool:
-        typeobj = typing.BUILTINS[typename]
+        typeobj = ace.typing.BUILTINS[typename]
         got = typeobj.get(ari)
         return got is not None
 

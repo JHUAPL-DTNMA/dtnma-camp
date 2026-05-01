@@ -28,7 +28,6 @@ import os
 import unittest
 import jinja2
 from ace import AdmSet, Checker
-from camp.generators.lib.campch_roundtrip import H_Scraper, C_Scraper
 from camp.generators import (
     create_sql,
     create_impl_h,
@@ -40,6 +39,10 @@ LOGGER = logging.getLogger(__name__)
 ''' Logger for this module '''
 SELFDIR = os.path.dirname(__file__)
 ''' Directory containing this file '''
+logging.getLogger('ace').setLevel(logging.ERROR)
+
+# ADM handling outside of tests
+ADMS = AdmSet(cache_dir=False)
 
 
 class BaseTest(unittest.TestCase):
@@ -58,15 +61,14 @@ class BaseTest(unittest.TestCase):
         logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
         self._dir = TmpDir()
         LOGGER.info('Working in %s', self._dir)
-        self._admset = AdmSet()
 
     def _get_adm(self, file_name):
         ''' Read an ADM file from the 'tests/data' directory.
         '''
         admfile = os.path.join(SELFDIR, 'data', file_name)
         LOGGER.info("Loading %s ... ", admfile)
-        adm = self._admset.load_from_file(admfile)
-        errs = Checker(self._admset.db_session()).check(adm)
+        adm = ADMS.load_from_file(admfile)
+        errs = Checker(ADMS.db_session()).check(adm)
         self.assertEqual([], errs)
         return adm
 
@@ -82,7 +84,7 @@ class TestCreateSql(BaseTest):
         adm = self._get_adm('example-test.yang')
         outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
 
-        writer = create_sql.Writer(self._admset, adm, outdir, dialect='pgsql')
+        writer = create_sql.Writer(ADMS, adm, outdir, dialect='pgsql')
         out_path = writer.file_path()
         self.assertEqual(
             os.path.join(outdir, 'example_test.sql'),
@@ -107,7 +109,7 @@ class TestCreateCH(BaseTest):
         outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
         LOGGER.info('Writing to %s', outdir)
 
-        writer = create_impl_h.Writer(self._admset, adm, outdir, H_Scraper(None))
+        writer = create_impl_h.Writer(ADMS, adm, outdir, scrape=False)
         out_path = writer.file_path()
         self.assertEqual(
             os.path.join(outdir, 'example_test.h'),
@@ -128,7 +130,7 @@ class TestCreateCH(BaseTest):
         adm = self._get_adm('example-test.yang')
         outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
 
-        writer = create_impl_c.Writer(self._admset, adm, outdir, C_Scraper(None))
+        writer = create_impl_c.Writer(ADMS, adm, outdir, scrape=False)
         out_path = writer.file_path()
         self.assertEqual(
             os.path.join(outdir, 'example_test.c'),

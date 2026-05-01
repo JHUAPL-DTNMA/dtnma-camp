@@ -58,7 +58,6 @@ addopts = [
 ]
 testpaths = [
     "test",
-    "integration-test",
 ]
 norecursedirs = "deps"
 

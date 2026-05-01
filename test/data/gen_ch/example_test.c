@@ -263,6 +263,33 @@ static void refda_adm_example_test_oper_add(refda_oper_eval_ctx_t *ctx)
 	 */
 }
 
+/* Name: compare-lt
+ * Description:
+ *   Compare values for less-than predicate. The operands are cast to the
+ *   least compatible numeric type before the comparison.
+ *
+ * Parameters: none
+ *
+ * Operand list:
+ *   - Index 0, name "left", type use of ari:/ARITYPE/UVAST
+ *   - Index 1, name "right", type use of ari:/ARITYPE/UVAST
+ *
+ * Result name "result", type use of ari:/ARITYPE/BOOL
+ */
+static void refda_adm_example_test_oper_compare_lt(refda_oper_eval_ctx_t *ctx)
+{
+	/*
+	 * +-------------------------------------------------------------------------+
+	 * |START CUSTOM FUNCTION refda_adm_example_test_oper_compare_lt BODY
+	 * +-------------------------------------------------------------------------+
+	 */
+	/*
+	 * +-------------------------------------------------------------------------+
+	 * |STOP CUSTOM FUNCTION refda_adm_example_test_oper_compare_lt BODY
+	 * +-------------------------------------------------------------------------+
+	 */
+}
+
 /*   STOP CALLBACK FUNCTIONS HERE  */
 
 int refda_adm_example_test_init(refda_agent_t *agent)
@@ -365,6 +392,22 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                     cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
                     // reference to ari://example/test/CONST/const1
                     cace_ari_set_objref_path_intid(item, 65535, 9999, CACE_ARI_TYPE_CONST, 0);
+                }
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
+                    cace_ari_set_tp(item, (struct timespec) {-361, 800000000});
+                }
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
+                    cace_ari_set_td(item, (struct timespec) {3600, 200000000});
+                }
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
+                    cace_ari_set_td(item, (struct timespec) {-3601, 800000000});
+                }
+                {
+                    cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
+                    cace_ari_set_tstr(item, "need \\esc\t", true);
                 }
             }
 
@@ -659,7 +702,6 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                     cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_OBJECT);
                     cace_amm_type_set_use_ref_move(&(fparam->typeobj), &typeref);
                 }
-                cace_ari_set_tstr(&(fparam->defval), "hello", true);
             }
         }
         { // For ./CTRL/set
@@ -738,6 +780,44 @@ int refda_adm_example_test_init(refda_agent_t *agent)
             obj = refda_register_oper(adm, cace_amm_idseg_ref_withenum("add", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_OPER_ADD), objdata);
             // no parameters
         }
+        { // For ./OPER/compare-lt
+            refda_amm_oper_desc_t *objdata = CACE_MALLOC(sizeof(refda_amm_oper_desc_t));
+            refda_amm_oper_desc_init(objdata);
+            // operands:
+            cace_amm_named_type_array_resize(objdata->operand_types, 2);
+            {
+                cace_amm_named_type_t *operand = cace_amm_named_type_array_get(objdata->operand_types, 0);
+                m_string_set_cstr(operand->name, "left");
+                {
+                    cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
+                    // use of ari:/ARITYPE/UVAST
+                    cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
+                    cace_amm_type_set_use_ref_move(&(operand->typeobj), &typeref);
+                }
+            }
+            {
+                cace_amm_named_type_t *operand = cace_amm_named_type_array_get(objdata->operand_types, 1);
+                m_string_set_cstr(operand->name, "right");
+                {
+                    cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
+                    // use of ari:/ARITYPE/UVAST
+                    cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_UVAST);
+                    cace_amm_type_set_use_ref_move(&(operand->typeobj), &typeref);
+                }
+            }
+            // result type:
+            {
+                cace_ari_t typeref = CACE_ARI_INIT_UNDEFINED;
+                // use of ari:/ARITYPE/BOOL
+                cace_ari_set_aritype(&typeref, CACE_ARI_TYPE_BOOL);
+                cace_amm_type_set_use_ref_move(&(objdata->res_type), &typeref);
+            }
+            // callback:
+            objdata->evaluate = refda_adm_example_test_oper_compare_lt;
+
+            obj = refda_register_oper(adm, cace_amm_idseg_ref_withenum("compare-lt", REFDA_ADM_EXAMPLE_TEST_ENUM_OBJID_OPER_COMPARE_LT), objdata);
+            // no parameters
+        }
 
         /**
          * Register SBR objects
@@ -750,11 +830,13 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_ac_t *acinit = cace_ari_set_ac(&(objdata->action), NULL);
                 {
                     cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
-                    // FIXME reference to unknown object ari://example/test/CTRL/first
+                    // reference to ari://example/test/CTRL/get
+                    cace_ari_set_objref_path_intid(item, 65535, 9999, CACE_ARI_TYPE_CTRL, 2);
                 }
                 {
                     cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
-                    // FIXME reference to unknown object ari://example/test/CTRL/second
+                    // reference to ari://example/test/CTRL/set
+                    cace_ari_set_objref_path_intid(item, 65535, 9999, CACE_ARI_TYPE_CTRL, 3);
                 }
             }
             // condition
@@ -762,22 +844,22 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_ac_t *acinit = cace_ari_set_ac(&(objdata->condition), NULL);
                 {
                     cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
-                    // FIXME reference to unknown object ari://example/test/EDD/sensor
+                    // reference to ari://example/test/EDD/edd_uvast
+                    cace_ari_set_objref_path_intid(item, 65535, 9999, CACE_ARI_TYPE_EDD, 0);
                 }
                 {
                     cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
-                    // FIXME reference to unknown object ari://example/test/VAR/min_threshold
+                    // reference to ari://example/test/VAR/var_uvast_val
+                    cace_ari_set_objref_path_intid(item, 65535, 9999, CACE_ARI_TYPE_VAR, 0);
                 }
                 {
                     cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
-                    // FIXME reference to unknown object ari://example/test/OPER/compare_lt
+                    // reference to ari://example/test/OPER/compare-lt
+                    cace_ari_set_objref_path_intid(item, 65535, 9999, CACE_ARI_TYPE_OPER, 1);
                 }
             }
             // min_interval
-            {
-              struct timespec ts = {30, 0};
-              cace_ari_set_td(&(objdata->min_interval), ts);
-            }
+            cace_ari_set_td(&(objdata->min_interval), (struct timespec) {30, 0});
             // init_enabled
             objdata->init_enabled = false;
             // max_exec_count
@@ -793,11 +875,13 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_ac_t *acinit = cace_ari_set_ac(&(objdata->action), NULL);
                 {
                     cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
-                    // FIXME reference to unknown object ari://example/test/CTRL/first
+                    // reference to ari://example/test/CTRL/get
+                    cace_ari_set_objref_path_intid(item, 65535, 9999, CACE_ARI_TYPE_CTRL, 2);
                 }
                 {
                     cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
-                    // FIXME reference to unknown object ari://example/test/CTRL/second
+                    // reference to ari://example/test/CTRL/set
+                    cace_ari_set_objref_path_intid(item, 65535, 9999, CACE_ARI_TYPE_CTRL, 3);
                 }
             }
             // condition
@@ -805,22 +889,22 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_ac_t *acinit = cace_ari_set_ac(&(objdata->condition), NULL);
                 {
                     cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
-                    // FIXME reference to unknown object ari://example/test/EDD/sensor
+                    // reference to ari://example/test/EDD/edd_uvast
+                    cace_ari_set_objref_path_intid(item, 65535, 9999, CACE_ARI_TYPE_EDD, 0);
                 }
                 {
                     cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
-                    // FIXME reference to unknown object ari://example/test/VAR/min_threshold
+                    // reference to ari://example/test/VAR/var_uvast_val
+                    cace_ari_set_objref_path_intid(item, 65535, 9999, CACE_ARI_TYPE_VAR, 0);
                 }
                 {
                     cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
-                    // FIXME reference to unknown object ari://example/test/OPER/compare_lt
+                    // reference to ari://example/test/OPER/compare-lt
+                    cace_ari_set_objref_path_intid(item, 65535, 9999, CACE_ARI_TYPE_OPER, 1);
                 }
             }
             // min_interval
-            {
-              struct timespec ts = {0, 0};
-              cace_ari_set_td(&(objdata->min_interval), ts);
-            }
+            cace_ari_set_td(&(objdata->min_interval), (struct timespec) {0, 0});
             // init_enabled
             objdata->init_enabled = true;
             // max_exec_count
@@ -840,23 +924,19 @@ int refda_adm_example_test_init(refda_agent_t *agent)
                 cace_ari_ac_t *acinit = cace_ari_set_ac(&(objdata->action), NULL);
                 {
                     cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
-                    // FIXME reference to unknown object ari://example/test/CTRL/first
+                    // reference to ari://example/test/CTRL/get
+                    cace_ari_set_objref_path_intid(item, 65535, 9999, CACE_ARI_TYPE_CTRL, 2);
                 }
                 {
                     cace_ari_t *item = cace_ari_list_push_back_new(acinit->items);
-                    // FIXME reference to unknown object ari://example/test/CTRL/other
+                    // reference to ari://example/test/CTRL/set
+                    cace_ari_set_objref_path_intid(item, 65535, 9999, CACE_ARI_TYPE_CTRL, 3);
                 }
             }
             // period
-            {
-              struct timespec ts = {30, 0};
-              cace_ari_set_td(&(objdata->period), ts);
-            }
+            cace_ari_set_td(&(objdata->period), (struct timespec) {30, 0});
             // start_time
-            {
-              struct timespec ts = {20, 500000000};
-              cace_ari_set_tp(&(objdata->start_time), ts);
-            }
+            cace_ari_set_tp(&(objdata->start_time), (struct timespec) {20, 500000000});
             // init_enabled
             objdata->init_enabled = true;
             // max_exec_count
