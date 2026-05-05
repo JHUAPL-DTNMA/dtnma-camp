@@ -41,7 +41,7 @@ LICENSEOPTS="${LICENSEOPTS} --exclude test/data/*/* integration-test/deps/*"
 
 
 # Specific paths
-if [ "$#" -gt 0 ]
+if [[ "$#" -gt 0 ]]
 then
     echo "Applying markings to selected $@ ..."
     licenseheaders ${LICENSEOPTS} --dir $@
