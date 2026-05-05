@@ -25,6 +25,7 @@
 import datetime
 import logging
 import os
+import shutil
 import unittest
 import jinja2
 from ace import AdmSet, Checker
@@ -41,8 +42,10 @@ SELFDIR = os.path.dirname(__file__)
 ''' Directory containing this file '''
 logging.getLogger('ace').setLevel(logging.ERROR)
 
-# ADM handling outside of tests
 ADMS = AdmSet(cache_dir=False)
+''' ADM handling outside of test classes '''
+# Allow external ADM in `ADM_PATH`
+ADMS.load_default_dirs()
 
 
 class BaseTest(unittest.TestCase):
@@ -122,7 +125,7 @@ class TestCreateCH(BaseTest):
         self.assertLess(0, buf.tell())
         buf.seek(0)
 
-        with open(os.path.join(SELFDIR, 'data', 'gen_ch/example_test.h'), 'r') as infile:
+        with open(os.path.join(SELFDIR, 'data', 'gen_ch', 'example_test.h'), 'r') as infile:
             content = infile.read()
         self.assertMultiLineEqual(content, buf.read())
 
@@ -143,6 +146,60 @@ class TestCreateCH(BaseTest):
         self.assertLess(0, buf.tell())
         buf.seek(0)
 
-        with open(os.path.join(SELFDIR, 'data', 'gen_ch/example_test.c'), 'r') as infile:
+        with open(os.path.join(SELFDIR, 'data', 'gen_ch', 'example_test.c'), 'r') as infile:
+            content = infile.read()
+        self.assertMultiLineEqual(content, buf.read())
+
+    def test_create_impl_h_scrape(self):
+        adm = self._get_adm('example-test.yang')
+        outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
+        LOGGER.info('Writing to %s', outdir)
+
+        # pre-place original files
+        shutil.copytree(
+            os.path.join(SELFDIR, 'data', 'scrape_ch_same'),
+            outdir
+        )
+
+        writer = create_impl_h.Writer(ADMS, adm, outdir, scrape=True)
+        out_path = writer.file_path()
+        self.assertEqual(
+            os.path.join(outdir, 'example_test.h'),
+            out_path
+        )
+
+        buf = open(out_path, 'w+')
+        writer.write(buf)
+        self.assertLess(0, buf.tell())
+        buf.seek(0)
+
+        with open(os.path.join(SELFDIR, 'data', 'scrape_ch_same', 'example_test.h'), 'r') as infile:
+            content = infile.read()
+        self.assertMultiLineEqual(content, buf.read())
+
+    def test_create_impl_c_scrape(self):
+        adm = self._get_adm('example-test.yang')
+        outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
+        LOGGER.info('Writing to %s', outdir)
+
+        # pre-place original files
+        shutil.copytree(
+            os.path.join(SELFDIR, 'data', 'scrape_ch_same'),
+            outdir
+        )
+
+        writer = create_impl_c.Writer(ADMS, adm, outdir, scrape=True)
+        out_path = writer.file_path()
+        self.assertEqual(
+            os.path.join(outdir, 'example_test.c'),
+            out_path
+        )
+
+        buf = open(out_path, 'w+')
+        writer.write(buf)
+        self.assertLess(0, buf.tell())
+        buf.seek(0)
+
+        with open(os.path.join(SELFDIR, 'data', 'scrape_ch_same', 'example_test.c'), 'r') as infile:
             content = infile.read()
         self.assertMultiLineEqual(content, buf.read())

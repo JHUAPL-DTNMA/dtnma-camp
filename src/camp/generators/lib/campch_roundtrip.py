@@ -32,44 +32,80 @@ class Scraper(object):
     newly-generated files.
     '''
 
+    GENSRC_START = re.compile(r'/\*\s+START GENERATED SOURCE HERE\s+\*/')
+    ''' Top of generated lines '''
+    GENSRC_STOP = re.compile(r'/\*\s+STOP GENERATED SOURCE HERE\s+\*/')
+    ''' Bottom of generated lines '''
+
     CUSTOM_INCLUDES_START = re.compile(r'/\*\s+START CUSTOM INCLUDES HERE\s+\*/')
     ''' Top of includes '''
     CUSTOM_INCLUDES_STOP = re.compile(r'/\*\s+STOP CUSTOM INCLUDES HERE\s+\*/')
     ''' Bottom of includes '''
 
-    #
-    # Pops items off of the passed queue (list) structure, searching
-    # for the custom includes tags. Returns all lines encompassed in these tags
-    #
-    # lines: lines to search
-    # Returns: (list, list) tuple that is 1) list of strings from between the custom
-    # includes tags and 2) updated 'lines' queue (evaluated lines are popped off)
-    #
-    # NOTICE: since this is treating lines as a queue, it will evaluate lines in
-    # reverse order (popping off the end of the list).
-    #
+    def __init__(self, filename: Optional[str]):
+        self.filename = filename
+        self.extra_top: List[str] = []
+        self.extra_bottom: List[str] = []
+        self.includes: List[str] = ["/*             NONE             */\n"]
+
+    def _find_extra_lines(self, lines: List[str]) -> None:
+        ''' Pop extra content at start and end of the file.
+        Only specific extra lines are removed.
+        Either or both of the markers can be present in the file.
+
+        :param lines: lines to search and pop from.
+        '''
+        self.extra_top = []
+        self.extra_bottom = []
+
+        start_ix = None
+        for line_ix, line in enumerate(lines):
+            if self.GENSRC_START.search(line) is not None:
+                start_ix = line_ix
+                break
+
+        LOGGER.info('generated start at %s', start_ix)
+        if start_ix is not None:
+            self.extra_top = lines[:start_ix]
+            del lines[:(start_ix + 1)]
+
+        stop_ix = None
+        for line_ix, line in enumerate(lines):
+            if self.GENSRC_STOP.search(line) is not None:
+                stop_ix = line_ix
+                break
+
+        LOGGER.info('generated stop at %s', stop_ix)
+        if stop_ix is not None:
+            self.extra_bottom = lines[(stop_ix + 1):]
+            del lines[stop_ix:]
+
     def _find_custom_includes_in_queue(self, lines: List[str]) -> None:
+        '''
+        Pops items off of the passed queue (list) structure, searching
+        for the custom includes tags. Returns all lines encompassed in these tags
+        NOTICE: since this is treating lines as a queue, it will evaluate lines in
+        reverse order (popping off the end of the list).
+
+        :param lines: lines to search and pop from.
+        '''
         self.includes = []
 
         # find the start
         while lines:
-            line = lines.pop()
+            line = lines.pop(0)
             if self.CUSTOM_INCLUDES_START.search(line) is not None:
                 break
 
         # Append until we find the end
         while lines:
-            line = lines.pop()
+            line = lines.pop(0)
             if self.CUSTOM_INCLUDES_STOP.search(line) is not None:
                 break
             self.includes.append(line)
 
-#
-# C-file scraper class is a child of the Scraper class
-#
-
-
 class C_Scraper(Scraper):
+    ''' C-file scraper class is a child of the Scraper class '''
 
     CUSTOM_FUNCTIONS_START = re.compile(r'/\*\s+START CUSTOM FUNCTIONS HERE\s+\*/')
     ''' Top of local functions '''
@@ -90,13 +126,13 @@ class C_Scraper(Scraper):
 
         # find the start
         while lines:
-            line = lines.pop()
+            line = lines.pop(0)
             if self.CUSTOM_FUNCTIONS_START.search(line) is not None:
                 break
 
         # Append until we find the end
         while lines:
-            line = lines.pop()
+            line = lines.pop(0)
             if self.CUSTOM_FUNCTIONS_STOP.search(line) is not None:
                 break
             self.functions.append(line)
@@ -112,30 +148,34 @@ class C_Scraper(Scraper):
 
     def _find_custom_init_in_queue(self, lines: List[str]) -> None:
         self.pre_init_lines = []
-        # find the start
-        while lines:
-            line = lines.pop()
+        # find the pre-init block
+        start_ix = None
+        stop_ix = None
+        for line_ix, line in enumerate(lines):
             if self.CUSTOM_PREINIT_START.search(line) is not None:
+                start_ix = line_ix
+            elif self.CUSTOM_PREINIT_STOP.search(line) is not None:
+                stop_ix = line_ix
                 break
-        # Append until we find the end
-        while lines:
-            line = lines.pop()
-            if self.CUSTOM_PREINIT_STOP.search(line) is not None:
-                break
-            self.pre_init_lines.append(line)
+        LOGGER.info('pre-init between %s and %s', start_ix, stop_ix)
+        if start_ix is not None and stop_ix is not None:
+            self.pre_init_lines = lines[(start_ix + 1):stop_ix]
+            del lines[start_ix:(stop_ix + 1)]
 
         self.post_init_lines = []
-        # find the start
-        while lines:
-            line = lines.pop()
+        # find the post-init block
+        start_ix = None
+        stop_ix = None
+        for line_ix, line in enumerate(lines):
             if self.CUSTOM_POSTINIT_START.search(line) is not None:
+                start_ix = line_ix
+            elif self.CUSTOM_POSTINIT_STOP.search(line) is not None:
+                stop_ix = line_ix
                 break
-        # Append until we find the end
-        while lines:
-            line = lines.pop()
-            if self.CUSTOM_POSTINIT_STOP.search(line) is not None:
-                break
-            self.post_init_lines.append(line)
+        LOGGER.info('post-init between %s and %s', start_ix, stop_ix)
+        if start_ix is not None and stop_ix is not None:
+            self.post_init_lines = lines[(start_ix + 1):stop_ix]
+            del lines[start_ix:(stop_ix + 1)]
 
     #
     # Helper function that returns the indicator and custom tag used by the custom bodies.
@@ -186,7 +226,7 @@ class C_Scraper(Scraper):
 
         # While lines remain in the queue, pop one off and evaluate it
         while lines:
-            line = lines.pop()
+            line = lines.pop(0)
             clean_line = line.strip()
 
             if self.CALLBACK_FUNCTIONS_STOP.search(line) is not None:
@@ -200,7 +240,7 @@ class C_Scraper(Scraper):
                 # Append to this function's dictionary entry until you reach
                 # another indicator with an end tag
                 if clean_line == indicator:
-                    line = lines.pop()
+                    line = lines.pop(0)
                     clean_line = line.strip()
 
                     if end_re.search(clean_line) is not None:
@@ -226,16 +266,19 @@ class C_Scraper(Scraper):
     def _make_custom_body_markers(self, function):
         indicator, marker = self._get_custom_body_pieces()
 
-        template = ("\t/*\n"
-                    "\t {0}\n"
-                    "\t * {1}\n"
-                    "\t {0}\n"
-                    "\t */\n")
+        template = ("    /*\n"
+                    "     {0}\n"
+                    "     * {1}\n"
+                    "     {0}\n"
+                    "     */\n")
 
         start_marker = marker.format("START", function)
         end_marker = marker.format("STOP", function)
 
-        return template.format(indicator, start_marker), template.format(indicator, end_marker)
+        return (
+            template.format(indicator, start_marker),
+            template.format(indicator, end_marker)
+        )
 
     #
     # Write the standard 'CUSTOM' tag for the body of a standard function
@@ -266,11 +309,10 @@ class C_Scraper(Scraper):
     # of that function.
     #
     def __init__(self, filename: Optional[str]):
-        self.filename = filename
-        self.includes: List[str] = ["/*             NONE             */\n"]
+        super().__init__(filename)
         self.functions: List[str] = ["/*             NONE              */\n"]
-        self.pre_init_lines: List[str] = ["    /*          NONE         */\n"]
-        self.post_init_lines: List[str] = ["    /*           NONE         */\n"]
+        self.pre_init_lines: List[str] = []
+        self.post_init_lines: List[str] = []
         self.func_bods: Dict[str, str] = dict()
         self.func_bods_used: Set[str] = set()
 
@@ -279,22 +321,20 @@ class C_Scraper(Scraper):
 
         LOGGER.info("Scraping source from %s", self.filename)
 
-        c: List[str] = []
-        # Insert each line into a queue
-        # NOTE: this results in the first line of the file being last in c
-        # (find_* functions appropriately pop off the end of c).
+        src: List[str] = []
+        # Insert each line into a list
         try:
             with open(self.filename) as infile:
-                for line in infile.readlines():
-                    c.insert(0, line)
+                src = infile.readlines()
         except IOError:
             LOGGER.exception("Failed to open %s for scraping", self.filename)
-        LOGGER.info('Read %d lines', len(c))
+        LOGGER.info('Read %d lines', len(src))
 
-        self._find_custom_includes_in_queue(c)
-        self._find_custom_functions_in_queue(c)
-        self._find_func_custom_body_in_queue(c)
-        self._find_custom_init_in_queue(c)
+        self._find_extra_lines(src)
+        self._find_custom_includes_in_queue(src)
+        self._find_custom_functions_in_queue(src)
+        self._find_func_custom_body_in_queue(src)
+        self._find_custom_init_in_queue(src)
 
         LOGGER.info("DONE")
 
@@ -303,37 +343,28 @@ class C_Scraper(Scraper):
             LOGGER.warning("No custom input found to scrape in %s", self.filename)
 
 
-#
-# h-file scraper class is a child of the Scraper class.
-#
 class H_Scraper(Scraper):
+    ''' H-file scraper class is a child of the Scraper class. '''
 
-    #
-    # Constructor for the H_Scraper class
-    #
     def __init__(self, filename: Optional[str]):
-        self.filename = filename
-        self.includes: List[str] = ["/*             NONE             */\n"]
-
-        h: List[str] = []
+        super().__init__(filename)
 
         if self.filename is None:
             return
 
         LOGGER.info("Scraping source from %s", self.filename)
 
-        # Insert each line into a queue
-        # NOTE: this results in the first line of the file being last in h
-        # (find_* functions appropriately pop off the end of h).
+        src: List[str] = []
+        # Insert each line into a list
         try:
             with open(self.filename) as infile:
-                for line in infile.readlines():
-                    h.insert(0, line)
+                src = infile.readlines()
         except IOError:
             LOGGER.exception("Failed to open %s for scraping", self.filename)
-        LOGGER.info('Read %d lines', len(h))
+        LOGGER.info('Read %d lines', len(src))
 
-        self._find_custom_includes_in_queue(h)
+        self._find_extra_lines(src)
+        self._find_custom_includes_in_queue(src)
 
         LOGGER.info("DONE")
 

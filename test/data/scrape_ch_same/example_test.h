@@ -1,3 +1,5 @@
+/* Some extra top H content */
+
 /*  START GENERATED SOURCE HERE */
 /** @file
  * This is the header for the implementation of the
@@ -13,7 +15,8 @@
 #include <cace/util/defs.h>
 
 /*   START CUSTOM INCLUDES HERE */
-/*             NONE             */
+#include <something/special.h>
+#include <order/is/preserved.h>
 /*   STOP CUSTOM INCLUDES HERE  */
 
 #ifdef __cplusplus
@@ -110,3 +113,5 @@ int refda_adm_example_test_init(refda_agent_t *agent);
 
 #endif /* REFDA_ADM_EXAMPLE_TEST_H_ */
 /*  STOP GENERATED SOURCE HERE */
+
+/* some extra bottom H content */

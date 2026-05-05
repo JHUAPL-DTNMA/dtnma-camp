@@ -1,3 +1,5 @@
+/* Some extra top C content */
+
 /*  START GENERATED SOURCE HERE */
 /** @file
  * This is the compilation unit for the implementation of the
@@ -18,11 +20,15 @@
 #include <cace/util/defs.h>
 
 /*   START CUSTOM INCLUDES HERE */
-/*             NONE             */
+#include <this/that/other.h>
+#include <order/is/preserved.h>
 /*   STOP CUSTOM INCLUDES HERE  */
 
 /*   START CUSTOM FUNCTIONS HERE */
-/*             NONE              */
+static void something_special()
+{
+    goes_here();
+}
 /*   STOP CUSTOM FUNCTIONS HERE  */
 
 /*   START CALLBACK FUNCTIONS HERE */
@@ -42,6 +48,8 @@ static void refda_adm_example_test_edd_edd__uvast(refda_edd_prod_ctx_t *ctx)
      * |START CUSTOM FUNCTION refda_adm_example_test_edd_edd__uvast BODY
      * +-------------------------------------------------------------------------+
      */
+    // keep comment
+    do_some_thing_uvast(ctx);
     /*
      * +-------------------------------------------------------------------------+
      * |STOP CUSTOM FUNCTION refda_adm_example_test_edd_edd__uvast BODY
@@ -65,6 +73,7 @@ static void refda_adm_example_test_edd_edd__uvast__param(refda_edd_prod_ctx_t *c
      * |START CUSTOM FUNCTION refda_adm_example_test_edd_edd__uvast__param BODY
      * +-------------------------------------------------------------------------+
      */
+    do_other_thing(ctx);
     /*
      * +-------------------------------------------------------------------------+
      * |STOP CUSTOM FUNCTION refda_adm_example_test_edd_edd__uvast__param BODY
@@ -88,6 +97,7 @@ static void refda_adm_example_test_edd_edd__ac__param(refda_edd_prod_ctx_t *ctx)
      * |START CUSTOM FUNCTION refda_adm_example_test_edd_edd__ac__param BODY
      * +-------------------------------------------------------------------------+
      */
+    do_real_thing(ctx);
     /*
      * +-------------------------------------------------------------------------+
      * |STOP CUSTOM FUNCTION refda_adm_example_test_edd_edd__ac__param BODY
@@ -113,6 +123,8 @@ static void refda_adm_example_test_edd_edd__am__param(refda_edd_prod_ctx_t *ctx)
      * |START CUSTOM FUNCTION refda_adm_example_test_edd_edd__am__param BODY
      * +-------------------------------------------------------------------------+
      */
+    // keep comment
+    do_some_thing_am(ctx);
     /*
      * +-------------------------------------------------------------------------+
      * |STOP CUSTOM FUNCTION refda_adm_example_test_edd_edd__am__param BODY
@@ -138,6 +150,8 @@ static void refda_adm_example_test_edd_edd__tbl__param(refda_edd_prod_ctx_t *ctx
      * |START CUSTOM FUNCTION refda_adm_example_test_edd_edd__tbl__param BODY
      * +-------------------------------------------------------------------------+
      */
+    // keep comment
+    do_some_thing_tbl(ctx);
     /*
      * +-------------------------------------------------------------------------+
      * |STOP CUSTOM FUNCTION refda_adm_example_test_edd_edd__tbl__param BODY
@@ -160,6 +174,8 @@ static void refda_adm_example_test_edd_edd__tp(refda_edd_prod_ctx_t *ctx)
      * |START CUSTOM FUNCTION refda_adm_example_test_edd_edd__tp BODY
      * +-------------------------------------------------------------------------+
      */
+    // keep comment
+    do_some_thing_tp(ctx);
     /*
      * +-------------------------------------------------------------------------+
      * |STOP CUSTOM FUNCTION refda_adm_example_test_edd_edd__tp BODY
@@ -206,6 +222,8 @@ static void refda_adm_example_test_ctrl_get(refda_ctrl_exec_ctx_t *ctx)
      * |START CUSTOM FUNCTION refda_adm_example_test_ctrl_get BODY
      * +-------------------------------------------------------------------------+
      */
+    // keep comment
+    do_some_thing_ctrl_get(ctx);
     /*
      * +-------------------------------------------------------------------------+
      * |STOP CUSTOM FUNCTION refda_adm_example_test_ctrl_get BODY
@@ -230,6 +248,8 @@ static void refda_adm_example_test_ctrl_set(refda_ctrl_exec_ctx_t *ctx)
      * |START CUSTOM FUNCTION refda_adm_example_test_ctrl_set BODY
      * +-------------------------------------------------------------------------+
      */
+    // keep comment
+    do_some_thing_ctrl_set(ctx);
     /*
      * +-------------------------------------------------------------------------+
      * |STOP CUSTOM FUNCTION refda_adm_example_test_ctrl_set BODY
@@ -257,6 +277,8 @@ static void refda_adm_example_test_oper_add(refda_oper_eval_ctx_t *ctx)
      * |START CUSTOM FUNCTION refda_adm_example_test_oper_add BODY
      * +-------------------------------------------------------------------------+
      */
+    // keep comment
+    do_some_thing_oper_add(ctx);
     /*
      * +-------------------------------------------------------------------------+
      * |STOP CUSTOM FUNCTION refda_adm_example_test_oper_add BODY
@@ -284,6 +306,8 @@ static void refda_adm_example_test_oper_compare_lt(refda_oper_eval_ctx_t *ctx)
      * |START CUSTOM FUNCTION refda_adm_example_test_oper_compare_lt BODY
      * +-------------------------------------------------------------------------+
      */
+    // keep comment
+    do_some_thing_compare_lt(ctx);
     /*
      * +-------------------------------------------------------------------------+
      * |STOP CUSTOM FUNCTION refda_adm_example_test_oper_compare_lt BODY
@@ -300,6 +324,8 @@ int refda_adm_example_test_init(refda_agent_t *agent)
     REFDA_AGENT_LOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
 
     /*   START CUSTOM PRE-INIT HERE */
+    // keep comment
+    do_my_pre_init(agent);
     /*   STOP CUSTOM PRE-INIT HERE  */
 
     cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(
@@ -947,9 +973,13 @@ int refda_adm_example_test_init(refda_agent_t *agent)
     }
 
     /*   START CUSTOM POST-INIT HERE */
+    // keep comment
+    do_my_post_init(agent);
     /*   STOP CUSTOM POST-INIT HERE  */
 
     REFDA_AGENT_UNLOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
     return 0;
 }
 /*  STOP GENERATED SOURCE HERE */
+
+/* some extra bottom C content */

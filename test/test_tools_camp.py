@@ -63,9 +63,11 @@ class TestCamp(unittest.TestCase):
             for file_name in files:
                 file_path = os.path.join(root_path, file_name)
                 relpaths.append(os.path.relpath(file_path, path))
-                LOGGER.info('Contents of %s', file_path)
-                with open(file_path, 'r') as infile:
-                    LOGGER.info('\n%s', infile.read())
+
+                if LOGGER.isEnabledFor(logging.DEBUG):
+                    LOGGER.debug('Contents of %s', file_path)
+                    with open(file_path, 'r') as infile:
+                        LOGGER.debug('\n%s', infile.read())
         return sorted(relpaths)
 
     def _today_datestamp(self):

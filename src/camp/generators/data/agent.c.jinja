@@ -342,6 +342,8 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
 {%- endif %}
 {%- endmacro -%}
 
+{{scraper.extra_top | join('') -}}
+/*  START GENERATED SOURCE HERE */
 /** @file
  * This is the compilation unit for the implementation of the
  * ADM module "{{adm.module_name}}" for the C-language reference DA.
@@ -408,8 +410,8 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
     CACE_LOG_DEBUG("Registering ADM: " {{adm.norm_name | c_str}});
     REFDA_AGENT_LOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
 
-    /*   START PRE-INIT HERE */
-{{scraper.pre_init_lines | join('') }}    /*   STOP PRE-INIT HERE  */
+    /*   START CUSTOM PRE-INIT HERE */
+{{scraper.pre_init_lines | join('') }}    /*   STOP CUSTOM PRE-INIT HERE  */
 
     cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(
         &(agent->objs), cace_amm_idseg_ref_withenum({{adm.ns_org_name | c_str}}, {{adm.ns_org_enum | c_int}}),
@@ -625,9 +627,11 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {%- endif %}
     }
 
-    /*   START POST-INIT HERE */
-{{scraper.post_init_lines | join('') }}    /*   STOP POST-INIT HERE  */
+    /*   START CUSTOM POST-INIT HERE */
+{{scraper.post_init_lines | join('') }}    /*   STOP CUSTOM POST-INIT HERE  */
 
     REFDA_AGENT_UNLOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
     return 0;
 }
+/*  STOP GENERATED SOURCE HERE */
+{{scraper.extra_bottom | join('') -}}
