@@ -22,11 +22,10 @@
 #
 ''' Verify behavior of the "camp" command tool.
 '''
-import datetime
 import logging
 import os
+import shutil
 import unittest
-import jinja2
 from ace import AdmSet, Checker
 from camp.generators import (
     create_sql,
@@ -41,8 +40,10 @@ SELFDIR = os.path.dirname(__file__)
 ''' Directory containing this file '''
 logging.getLogger('ace').setLevel(logging.ERROR)
 
-# ADM handling outside of tests
 ADMS = AdmSet(cache_dir=False)
+''' ADM handling outside of test classes '''
+# Allow external ADM in `ADM_PATH`
+ADMS.load_default_dirs()
 
 
 class BaseTest(unittest.TestCase):
@@ -51,10 +52,6 @@ class BaseTest(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._tmpl_env = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(os.path.join(SELFDIR, 'data')),
-            keep_trailing_newline=True
-        )
 
     def setUp(self):
         self.maxDiff = None
@@ -72,17 +69,13 @@ class BaseTest(unittest.TestCase):
         self.assertEqual([], errs)
         return adm
 
-    def _today_datestamp(self):
-        ''' Get a datestamp for files created today.
-        '''
-        return datetime.date.today().strftime('%Y-%m-%d')
-
 
 class TestCreateSql(BaseTest):
 
     def test_create_sql(self):
         adm = self._get_adm('example-test.yang')
         outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
+        os.makedirs(outdir)
 
         writer = create_sql.Writer(ADMS, adm, outdir, dialect='pgsql')
         out_path = writer.file_path()
@@ -91,58 +84,76 @@ class TestCreateSql(BaseTest):
             out_path
         )
 
-        os.makedirs(os.path.dirname(out_path))
         buf = open(out_path, 'w+')
         writer.write(buf)
         self.assertLess(0, buf.tell())
         buf.seek(0)
 
-        tmpl = self._tmpl_env.get_template('pgsql/example_test.sql.jinja')
-        content = tmpl.render(datestamp=self._today_datestamp())
+        with open(os.path.join(SELFDIR, 'data', 'pgsql', 'example_test.sql'), 'r') as infile:
+            content = infile.read()
         self.assertMultiLineEqual(content, buf.read())
 
 
 class TestCreateCH(BaseTest):
 
-    def test_create_impl_h_noscrape(self):
+    def test_create_impl_noscrape(self):
+        adm = self._get_adm('example-test.yang')
+        outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
+        os.makedirs(outdir)
+
+        FILES = (
+            ('example_test.h', create_impl_h.Writer),
+            ('example_test.c', create_impl_c.Writer),
+        )
+        for filename, Writer in FILES:
+            with self.subTest(filename):
+                writer = Writer(ADMS, adm, outdir, scrape=False)
+                out_path = writer.file_path()
+                self.assertEqual(
+                    os.path.join(outdir, filename),
+                    out_path
+                )
+
+                buf = open(out_path, 'w+')
+                writer.write(buf)
+                self.assertLess(0, buf.tell())
+                buf.seek(0)
+
+                with open(os.path.join(SELFDIR, 'data', 'gen_ch', filename), 'r') as infile:
+                    content = infile.read()
+                self.assertMultiLineEqual(content, buf.read())
+
+    def test_create_impl_scrape(self):
         adm = self._get_adm('example-test.yang')
         outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
         LOGGER.info('Writing to %s', outdir)
+        os.makedirs(outdir)
 
-        writer = create_impl_h.Writer(ADMS, adm, outdir, scrape=False)
-        out_path = writer.file_path()
-        self.assertEqual(
-            os.path.join(outdir, 'example_test.h'),
-            out_path
+        FILES = (
+            ('example_test.h', create_impl_h.Writer),
+            ('example_test.c', create_impl_c.Writer),
         )
+        for filename, Writer in FILES:
+            with self.subTest(filename):
+                # pre-place original files
+                shutil.rmtree(outdir)
+                shutil.copytree(
+                    os.path.join(SELFDIR, 'data', 'scrape_ch_same'),
+                    outdir
+                )
 
-        os.makedirs(os.path.dirname(out_path))
-        buf = open(out_path, 'w+')
-        writer.write(buf)
-        self.assertLess(0, buf.tell())
-        buf.seek(0)
+                writer = Writer(ADMS, adm, outdir, scrape=True)
+                out_path = writer.file_path()
+                self.assertEqual(
+                    os.path.join(outdir, filename),
+                    out_path
+                )
 
-        tmpl = self._tmpl_env.get_template('gen_ch/example_test.h.jinja')
-        content = tmpl.render(datestamp=self._today_datestamp())
-        self.assertMultiLineEqual(content, buf.read())
+                buf = open(out_path, 'w+')
+                writer.write(buf)
+                self.assertLess(0, buf.tell())
+                buf.seek(0)
 
-    def test_create_impl_c_noscrape(self):
-        adm = self._get_adm('example-test.yang')
-        outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
-
-        writer = create_impl_c.Writer(ADMS, adm, outdir, scrape=False)
-        out_path = writer.file_path()
-        self.assertEqual(
-            os.path.join(outdir, 'example_test.c'),
-            out_path
-        )
-
-        os.makedirs(os.path.dirname(out_path))
-        buf = open(out_path, 'w+')
-        writer.write(buf)
-        self.assertLess(0, buf.tell())
-        buf.seek(0)
-
-        tmpl = self._tmpl_env.get_template('gen_ch/example_test.c.jinja')
-        content = tmpl.render(datestamp=self._today_datestamp())
-        self.assertMultiLineEqual(content, buf.read())
+                with open(os.path.join(SELFDIR, 'data', 'scrape_ch_same', filename), 'r') as infile:
+                    content = infile.read()
+                self.assertMultiLineEqual(content, buf.read())

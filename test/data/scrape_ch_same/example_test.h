@@ -1,3 +1,6 @@
+/* Some extra top H content */
+
+/*  START GENERATED SOURCE HERE */
 /** @file
  * This is the header for the implementation of the
  * ADM module "example-test" for the C-language reference DA.
@@ -11,8 +14,9 @@
 #include "refda/agent.h"
 #include <cace/util/defs.h>
 
-/*   START CUSTOM INCLUDES HERE  */
-/*             NONE              */
+/*   START CUSTOM INCLUDES HERE */
+#include <something/special.h>
+#include <order/is/preserved.h>
 /*   STOP CUSTOM INCLUDES HERE  */
 
 #ifdef __cplusplus
@@ -104,7 +108,10 @@ extern "C" {
 int refda_adm_example_test_init(refda_agent_t *agent);
 
 #ifdef __cplusplus
-}
+} /* extern C */
 #endif
 
 #endif /* REFDA_ADM_EXAMPLE_TEST_H_ */
+/*  STOP GENERATED SOURCE HERE */
+
+/* some extra bottom H content */

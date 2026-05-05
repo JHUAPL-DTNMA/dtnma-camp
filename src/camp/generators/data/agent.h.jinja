@@ -7,6 +7,8 @@
 {%- endif %}
 {%- endmacro -%}
 
+{{scraper.extra_top | join('') -}}
+/*  START GENERATED SOURCE HERE */
 /** @file
  * This is the header for the implementation of the
  * ADM module "{{adm.module_name}}" for the C-language reference DA.
@@ -21,7 +23,9 @@
 #include "refda/agent.h"
 #include <cace/util/defs.h>
 
-{{scraper.write_custom_includes()}}
+/*   START CUSTOM INCLUDES HERE */
+{{scraper.includes | join('') -}}
+/*   STOP CUSTOM INCLUDES HERE  */
 
 #ifdef __cplusplus
 extern "C" {
@@ -128,7 +132,9 @@ extern "C" {
 int {{adm | c_func(suffix='init')}}(refda_agent_t *agent);
 
 #ifdef __cplusplus
-}
+} /* extern C */
 #endif
 
 #endif /* {{guard_sym}} */
+/*  STOP GENERATED SOURCE HERE */
+{{scraper.extra_bottom | join('') -}}

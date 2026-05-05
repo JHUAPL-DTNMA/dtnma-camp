@@ -23,8 +23,6 @@
 ''' Verify behavior of the "camp" command tool.
 '''
 import argparse
-import datetime
-import jinja2
 import logging
 import os
 from typing import List
@@ -41,10 +39,6 @@ class TestCamp(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._tmpl_env = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(os.path.join(SELFDIR, 'data')),
-            keep_trailing_newline=True
-        )
 
     def setUp(self):
         self.maxDiff = None
@@ -63,21 +57,17 @@ class TestCamp(unittest.TestCase):
             for file_name in files:
                 file_path = os.path.join(root_path, file_name)
                 relpaths.append(os.path.relpath(file_path, path))
-                LOGGER.info('Contents of %s', file_path)
-                with open(file_path, 'r') as infile:
-                    LOGGER.info('\n%s', infile.read())
-        return sorted(relpaths)
 
-    def _today_datestamp(self):
-        ''' Get a datestamp for files created today.
-        '''
-        return datetime.date.today().strftime('%Y-%m-%d')
+                if LOGGER.isEnabledFor(logging.DEBUG):
+                    LOGGER.debug('Contents of %s', file_path)
+                    with open(file_path, 'r') as infile:
+                        LOGGER.debug('\n%s', infile.read())
+        return sorted(relpaths)
 
     def test_parser(self):
         parser = camp.tools.camp.get_parser()
         self.assertIsInstance(parser, argparse.ArgumentParser)
 
-    @unittest.expectedFailure
     def test_run_sql(self):
         args = argparse.Namespace()
         args.admfile = os.path.join(SELFDIR, 'data', 'example-test.yang')
@@ -90,14 +80,14 @@ class TestCamp(unittest.TestCase):
         finally:
             got_files = self._walk_files(args.out)
         expect_files = [
-            'amp-sql/Agent_Scripts/adm_test_adm.sql',
+            'example_test.sql',
         ]
         self.assertEqual(expect_files, got_files)
 
-        with open(os.path.join(args.out, 'amp-sql', 'Agent_Scripts', 'adm_test_adm.sql'), 'r') as out:
-            tmpl = self._tmpl_env.get_template('test_adm.pgsql.sql.jinja')
-            content = tmpl.render(datestamp=self._today_datestamp())
-            self.assertEqual(content, out.read())
+        for filename in expect_files:
+            with open(os.path.join(args.out, filename), 'r') as genfile:
+                with open(os.path.join(SELFDIR, 'data', 'pgsql', filename), 'r') as infile:
+                    self.assertMultiLineEqual(infile.read(), genfile.read())
 
     def test_run_ch_new(self):
         args = argparse.Namespace()
@@ -116,3 +106,8 @@ class TestCamp(unittest.TestCase):
             'example_test.h',
         ])
         self.assertEqual(expect_files, got_files)
+
+        for filename in expect_files:
+            with open(os.path.join(args.out, filename), 'r') as genfile:
+                with open(os.path.join(SELFDIR, 'data', 'gen_ch', filename), 'r') as infile:
+                    self.assertMultiLineEqual(infile.read(), genfile.read())
