@@ -86,6 +86,7 @@ class TestCreateSql(BaseTest):
     def test_create_sql(self):
         adm = self._get_adm('example-test.yang')
         outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
+        os.makedirs(outdir)
 
         writer = create_sql.Writer(ADMS, adm, outdir, dialect='pgsql')
         out_path = writer.file_path()
@@ -94,7 +95,6 @@ class TestCreateSql(BaseTest):
             out_path
         )
 
-        os.makedirs(os.path.dirname(out_path))
         buf = open(out_path, 'w+')
         writer.write(buf)
         self.assertLess(0, buf.tell())
@@ -107,99 +107,64 @@ class TestCreateSql(BaseTest):
 
 class TestCreateCH(BaseTest):
 
-    def test_create_impl_h_noscrape(self):
+    def test_create_impl_noscrape(self):
+        adm = self._get_adm('example-test.yang')
+        outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
+        os.makedirs(outdir)
+
+        FILES = (
+            ('example_test.h', create_impl_h.Writer),
+            ('example_test.c', create_impl_c.Writer),
+        )
+        for filename, Writer in FILES:
+            with self.subTest(filename):
+                writer = Writer(ADMS, adm, outdir, scrape=False)
+                out_path = writer.file_path()
+                self.assertEqual(
+                    os.path.join(outdir, filename),
+                    out_path
+                )
+
+                buf = open(out_path, 'w+')
+                writer.write(buf)
+                self.assertLess(0, buf.tell())
+                buf.seek(0)
+
+                with open(os.path.join(SELFDIR, 'data', 'gen_ch', filename), 'r') as infile:
+                    content = infile.read()
+                self.assertMultiLineEqual(content, buf.read())
+
+    def test_create_impl_scrape(self):
         adm = self._get_adm('example-test.yang')
         outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
         LOGGER.info('Writing to %s', outdir)
+        os.makedirs(outdir)
 
-        writer = create_impl_h.Writer(ADMS, adm, outdir, scrape=False)
-        out_path = writer.file_path()
-        self.assertEqual(
-            os.path.join(outdir, 'example_test.h'),
-            out_path
+        FILES = (
+            ('example_test.h', create_impl_h.Writer),
+            ('example_test.c', create_impl_c.Writer),
         )
+        for filename, Writer in FILES:
+            with self.subTest(filename):
+                # pre-place original files
+                shutil.rmtree(outdir)
+                shutil.copytree(
+                    os.path.join(SELFDIR, 'data', 'scrape_ch_same'),
+                    outdir
+                )
 
-        os.makedirs(os.path.dirname(out_path))
-        buf = open(out_path, 'w+')
-        writer.write(buf)
-        self.assertLess(0, buf.tell())
-        buf.seek(0)
+                writer = Writer(ADMS, adm, outdir, scrape=True)
+                out_path = writer.file_path()
+                self.assertEqual(
+                    os.path.join(outdir, filename),
+                    out_path
+                )
 
-        with open(os.path.join(SELFDIR, 'data', 'gen_ch', 'example_test.h'), 'r') as infile:
-            content = infile.read()
-        self.assertMultiLineEqual(content, buf.read())
+                buf = open(out_path, 'w+')
+                writer.write(buf)
+                self.assertLess(0, buf.tell())
+                buf.seek(0)
 
-    def test_create_impl_c_noscrape(self):
-        adm = self._get_adm('example-test.yang')
-        outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
-
-        writer = create_impl_c.Writer(ADMS, adm, outdir, scrape=False)
-        out_path = writer.file_path()
-        self.assertEqual(
-            os.path.join(outdir, 'example_test.c'),
-            out_path
-        )
-
-        os.makedirs(os.path.dirname(out_path))
-        buf = open(out_path, 'w+')
-        writer.write(buf)
-        self.assertLess(0, buf.tell())
-        buf.seek(0)
-
-        with open(os.path.join(SELFDIR, 'data', 'gen_ch', 'example_test.c'), 'r') as infile:
-            content = infile.read()
-        self.assertMultiLineEqual(content, buf.read())
-
-    def test_create_impl_h_scrape(self):
-        adm = self._get_adm('example-test.yang')
-        outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
-        LOGGER.info('Writing to %s', outdir)
-
-        # pre-place original files
-        shutil.copytree(
-            os.path.join(SELFDIR, 'data', 'scrape_ch_same'),
-            outdir
-        )
-
-        writer = create_impl_h.Writer(ADMS, adm, outdir, scrape=True)
-        out_path = writer.file_path()
-        self.assertEqual(
-            os.path.join(outdir, 'example_test.h'),
-            out_path
-        )
-
-        buf = open(out_path, 'w+')
-        writer.write(buf)
-        self.assertLess(0, buf.tell())
-        buf.seek(0)
-
-        with open(os.path.join(SELFDIR, 'data', 'scrape_ch_same', 'example_test.h'), 'r') as infile:
-            content = infile.read()
-        self.assertMultiLineEqual(content, buf.read())
-
-    def test_create_impl_c_scrape(self):
-        adm = self._get_adm('example-test.yang')
-        outdir = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
-        LOGGER.info('Writing to %s', outdir)
-
-        # pre-place original files
-        shutil.copytree(
-            os.path.join(SELFDIR, 'data', 'scrape_ch_same'),
-            outdir
-        )
-
-        writer = create_impl_c.Writer(ADMS, adm, outdir, scrape=True)
-        out_path = writer.file_path()
-        self.assertEqual(
-            os.path.join(outdir, 'example_test.c'),
-            out_path
-        )
-
-        buf = open(out_path, 'w+')
-        writer.write(buf)
-        self.assertLess(0, buf.tell())
-        buf.seek(0)
-
-        with open(os.path.join(SELFDIR, 'data', 'scrape_ch_same', 'example_test.c'), 'r') as infile:
-            content = infile.read()
-        self.assertMultiLineEqual(content, buf.read())
+                with open(os.path.join(SELFDIR, 'data', 'scrape_ch_same', filename), 'r') as infile:
+                    content = infile.read()
+                self.assertMultiLineEqual(content, buf.read())

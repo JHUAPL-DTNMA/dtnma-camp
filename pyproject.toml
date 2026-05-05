@@ -32,6 +32,7 @@ dependencies = [
 test = [
   "jinja2",
   "pytest",
+  "pytest-subtests",
   "pytest-cov",
   "coverage",
   "psycopg2-binary"
