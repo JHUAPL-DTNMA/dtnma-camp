@@ -22,12 +22,10 @@
 #
 ''' Verify behavior of the "camp" command tool.
 '''
-import datetime
 import logging
 import os
 import shutil
 import unittest
-import jinja2
 from ace import AdmSet, Checker
 from camp.generators import (
     create_sql,
@@ -54,10 +52,6 @@ class BaseTest(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._tmpl_env = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(os.path.join(SELFDIR, 'data')),
-            keep_trailing_newline=True
-        )
 
     def setUp(self):
         self.maxDiff = None
@@ -74,11 +68,6 @@ class BaseTest(unittest.TestCase):
         errs = Checker(ADMS.db_session()).check(adm)
         self.assertEqual([], errs)
         return adm
-
-    def _today_datestamp(self):
-        ''' Get a datestamp for files created today.
-        '''
-        return datetime.date.today().strftime('%Y-%m-%d')
 
 
 class TestCreateSql(BaseTest):
@@ -100,8 +89,8 @@ class TestCreateSql(BaseTest):
         self.assertLess(0, buf.tell())
         buf.seek(0)
 
-        tmpl = self._tmpl_env.get_template('pgsql/example_test.sql.jinja')
-        content = tmpl.render(datestamp=self._today_datestamp())
+        with open(os.path.join(SELFDIR, 'data', 'pgsql', 'example_test.sql'), 'r') as infile:
+            content = infile.read()
         self.assertMultiLineEqual(content, buf.read())
 
 
