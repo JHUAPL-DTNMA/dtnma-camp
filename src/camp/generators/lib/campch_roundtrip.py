@@ -104,6 +104,7 @@ class Scraper(object):
                 break
             self.includes.append(line)
 
+
 class C_Scraper(Scraper):
     ''' C-file scraper class is a child of the Scraper class '''
 
