@@ -62,6 +62,10 @@ testpaths = [
 ]
 norecursedirs = "deps"
 
+[tool.coverage.run]
+relative_files = true
+branch = true
+
 [tool.pylint.MAIN]
 load-plugins="pylint_junit"
 suggestion-mode="no"
