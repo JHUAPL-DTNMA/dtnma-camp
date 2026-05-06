@@ -39,7 +39,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  ACE_REPO: "git+https://github.com/JHUAPL-DTNMA/dtnma-ace.git@main"
+  ACE_REPO: "https://github.com/JHUAPL-DTNMA/dtnma-ace.git@main"
 
 jobs:
   apidoc:
@@ -55,7 +55,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y python3-pip
           pip3 install --upgrade pip
-          pip3 install ${ACE_REPO}
+          pip3 install git+${ACE_REPO}
           pip3 install .[docs]
       - name: build
         run: ./build_docs.sh
