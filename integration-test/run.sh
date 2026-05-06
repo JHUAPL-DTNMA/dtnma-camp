@@ -67,12 +67,13 @@ then
     git pull
     DEPS_BUILD_ION=0 ./deps.sh
     popd
+
     if [[ ! -d ${SELFDIR}/deps/dtnma-tools/build ]]
     then
         pushd ${SELFDIR}/deps/dtnma-tools
         ./prep.sh \
-            -DBUILD_ION_PROXY=OFF \
-            -DTRANSPORT_ION_BP=OFF \
+            -DBUILD_ION_PROXY=OFF -DBUILD_MANAGER=OFF \
+            -DTRANSPORT_UNIX_SOCKET=OFF -DTRANSPORT_PROXY_SOCKET=OFF -DTRANSPORT_ION_BP=OFF \
             -DTEST_MEMCHECK=OFF -DTEST_COVERAGE=OFF \
             -DBUILD_DOCS_API=OFF -DBUILD_DOCS_MAN=OFF
         ./build.sh
