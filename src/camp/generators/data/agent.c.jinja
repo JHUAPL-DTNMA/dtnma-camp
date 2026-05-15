@@ -413,9 +413,12 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
     /*   START CUSTOM PRE-INIT HERE */
 {{scraper.pre_init_lines | join('') }}    /*   STOP CUSTOM PRE-INIT HERE  */
 
+    /* Updated to pull macros instead of hard-coded string */
     cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(
-        &(agent->objs), cace_amm_idseg_ref_withenum({{adm.ns_org_name | c_str}}, {{adm.ns_org_enum | c_int}}),
-        cace_amm_idseg_ref_withenum({{adm.ns_model_name | c_str}}, {{adm | cpp_enum}}), {{adm.latest_revision_date | c_str}});
+        &(agent->objs), 
+        cace_amm_idseg_ref_withenum({{adm | cpp_enum}}_ORG_NAME, {{adm | cpp_enum}}_ORG_ID),
+        cace_amm_idseg_ref_withenum({{adm | cpp_enum}}_MOD_NAME, {{adm | cpp_enum}}), 
+        {{adm | cpp_enum}}_REVISION);
     if (adm)
     {
         cace_amm_obj_desc_t *obj;

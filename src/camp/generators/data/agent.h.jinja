@@ -27,6 +27,12 @@
 {{scraper.includes | join('') -}}
 /*   STOP CUSTOM INCLUDES HERE  */
 
+/* ADM constants for generated header files */
+#define {{adm | cpp_enum}}_ORG_NAME "{{adm.org_name}}"
+#define {{adm | cpp_enum}}_ORG_ID {{adm.org_id | c_int}}
+#define {{adm | cpp_enum}}_MOD_NAME "{{adm.module_name}}"
+#define {{adm | cpp_enum}}_REVISION "{{adm.revision}}"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
