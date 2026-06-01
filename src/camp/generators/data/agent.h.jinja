@@ -27,18 +27,19 @@
 {{scraper.includes | join('') -}}
 /*   STOP CUSTOM INCLUDES HERE  */
 
-/* ADM constants for generated header files */
-#define {{adm | cpp_enum}}_ORG_NAME "{{adm.ns_org_name}}"
-#define {{adm | cpp_enum}}_ORG_ID {{adm.ns_org_enum | c_int}}
-#define {{adm | cpp_enum}}_MOD_NAME "{{adm.module_name}}"
-#define {{adm | cpp_enum}}_REVISION "{{adm.revision}}"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /// Enumeration of the ADM itself
 #define {{adm | cpp_enum}} {{adm.ns_model_enum | c_int}}
+
+/// ADM constants for generated header files 
+#define {{adm | cpp_str}}_ORG_NAME "{{adm.ns_org_name}}"
+#define {{adm | cpp_str}}_ORG_ID {{adm.ns_org_enum | c_int}}
+#define {{adm | cpp_str}}_MOD_NAME "{{adm.module_name}}"
+#define {{adm | cpp_str}}_REVISION "{{adm.revision}}"
+
 
 {%- if adm.ident %}
 
@@ -53,7 +54,7 @@ extern "C" {
 {%- if adm.typedef %}
 
 /*
- * Enumerations for TYPEDEF objects
+ * Enumerations for rTYPEDEF objects
  */
 {%- for obj in adm.typedef %}
 {{obj_enum(obj)}}
