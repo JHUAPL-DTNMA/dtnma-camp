@@ -416,9 +416,9 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
     /* Updated to pull macros instead of hard-coded string */
     cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(
         &(agent->objs), 
-        cace_amm_idseg_ref_withenum({{adm | cpp_str}}_ORG_NAME, {{adm | cpp_str}}_ORG_ID),
-        cace_amm_idseg_ref_withenum({{adm | cpp_str}}_MOD_NAME, {{adm | cpp_str}}), 
-        {{adm | cpp_str}}_REVISION);
+        cace_amm_idseg_ref_withenum({{adm | c_str}}_ORG_NAME, {{adm | c_str}}_ORG_ID),
+        cace_amm_idseg_ref_withenum({{adm | c_str}}_MOD_NAME, {{adm | c_str}}), 
+        {{adm | c_str}}_REVISION);
     if (adm)
     {
         cace_amm_obj_desc_t *obj;
