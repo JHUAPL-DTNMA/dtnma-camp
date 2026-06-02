@@ -33,6 +33,8 @@ extern "C" {
 #define REFDA_ADM_EXAMPLE_TEST_ADM_MODEL_ENUM 9999
 /// Revision date for the model
 #define REFDA_ADM_EXAMPLE_TEST_ADM_MODEL_REVISION "2024-11-21"
+/// @deprecated use REFDA_ADM_EXAMPLE_TEST_ADM_MODEL_ENUM directly
+#define REFDA_ADM_EXAMPLE_TEST_ADM_ENUM_ADM REFDA_ADM_EXAMPLE_TEST_ADM_MODEL_ENUM
 
 /*
  * Enumerations for TYPEDEF objects
