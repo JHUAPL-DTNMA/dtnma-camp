@@ -330,9 +330,9 @@ int refda_adm_example_test_init(refda_agent_t *agent)
 
     cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(
         &(agent->objs),
-        cace_amm_idseg_ref_withenum(REFDA_ADM_EXAMPLE_TEST_ADM_ORG_NAME, REFDA_ADM_EXAMPLE_TEST_ADM_ORG_ENUM),
-        cace_amm_idseg_ref_withenum(REFDA_ADM_EXAMPLE_TEST_ADM_MODEL_NAME, REFDA_ADM_EXAMPLE_TEST_ADM_MODEL_ENUM),
-        REFDA_ADM_EXAMPLE_TEST_ADM_MODEL_REVISION
+        cace_amm_idseg_ref_withenum(REFDA_ADM_EXAMPLE_TEST_ORG_NAME, REFDA_ADM_EXAMPLE_TEST_ORG_ENUM),
+        cace_amm_idseg_ref_withenum(REFDA_ADM_EXAMPLE_TEST_MODEL_NAME, REFDA_ADM_EXAMPLE_TEST_MODEL_ENUM),
+        REFDA_ADM_EXAMPLE_TEST_MODEL_REVISION
     );
     if (adm)
     {

@@ -83,7 +83,7 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
         module: models.AdmModule
         if isinstance(value, models.AdmModule):
             module = value
-            parts = ['adm']
+            parts = []
         elif isinstance(value, models.AdmObjMixin):
             module = cast(models.AdmModule, value.module)
             parts = ['enum', 'objid', amm_obj_type(value).name, yang_to_c(value.name)]
