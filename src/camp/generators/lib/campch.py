@@ -86,11 +86,11 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
             parts = ['adm']
         elif isinstance(value, models.AdmObjMixin):
             module = cast(models.AdmModule, value.module)
-            parts = ['objid', amm_obj_type(value).name, yang_to_c(value.name)]
+            parts = ['enum', 'objid', amm_obj_type(value).name, yang_to_c(value.name)]
         else:
             raise RuntimeError('No module name available')
 
-        return '_'.join([sym_prefix, yang_to_c(module.module_name), 'enum'] + parts).upper()
+        return '_'.join([sym_prefix, yang_to_c(module.module_name)] + parts).upper()
 
     def c_depth(name: str, depth: int) -> str:
         if depth == 0:
