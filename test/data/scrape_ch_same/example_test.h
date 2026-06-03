@@ -23,8 +23,21 @@
 extern "C" {
 #endif
 
-/// Enumeration of the ADM itself
-#define REFDA_ADM_EXAMPLE_TEST_ENUM_ADM 9999
+/*
+ * Defines for the ADM itself
+ */
+/// Text name of the organization
+#define REFDA_ADM_EXAMPLE_TEST_ORG_NAME "example"
+/// Enumeration of the organization
+#define REFDA_ADM_EXAMPLE_TEST_ORG_ENUM 65535
+/// Text name of the model
+#define REFDA_ADM_EXAMPLE_TEST_MODEL_NAME "test"
+/// Enumeration of the model
+#define REFDA_ADM_EXAMPLE_TEST_MODEL_ENUM 9999
+/// Revision date for the model
+#define REFDA_ADM_EXAMPLE_TEST_MODEL_REVISION "2024-11-21"
+/// @deprecated use REFDA_ADM_EXAMPLE_TEST_MODEL_ENUM directly
+#define REFDA_ADM_EXAMPLE_TEST_ENUM_ADM REFDA_ADM_EXAMPLE_TEST_MODEL_ENUM
 
 /*
  * Enumerations for TYPEDEF objects
