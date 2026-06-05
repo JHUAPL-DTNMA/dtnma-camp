@@ -329,8 +329,11 @@ int refda_adm_example_test_init(refda_agent_t *agent)
     /*   STOP CUSTOM PRE-INIT HERE  */
 
     cace_amm_obj_ns_t *adm = cace_amm_obj_store_add_ns(
-        &(agent->objs), cace_amm_idseg_ref_withenum("example", 65535),
-        cace_amm_idseg_ref_withenum("test", REFDA_ADM_EXAMPLE_TEST_ENUM_ADM), "2024-11-21");
+        &(agent->objs),
+        cace_amm_idseg_ref_withenum(REFDA_ADM_EXAMPLE_TEST_ORG_NAME, REFDA_ADM_EXAMPLE_TEST_ORG_ENUM),
+        cace_amm_idseg_ref_withenum(REFDA_ADM_EXAMPLE_TEST_MODEL_NAME, REFDA_ADM_EXAMPLE_TEST_MODEL_ENUM),
+        REFDA_ADM_EXAMPLE_TEST_MODEL_REVISION
+    );
     if (adm)
     {
         cace_amm_obj_desc_t *obj;

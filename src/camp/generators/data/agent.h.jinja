@@ -31,8 +31,22 @@
 extern "C" {
 #endif
 
-/// Enumeration of the ADM itself
-#define {{adm | cpp_enum}} {{adm.ns_model_enum | c_int}}
+/*
+ * Defines for the ADM itself
+ */
+/// Text name of the organization
+#define {{adm | cpp_enum}}_ORG_NAME {{adm.ns_org_name | c_str}}
+/// Enumeration of the organization
+#define {{adm | cpp_enum}}_ORG_ENUM {{adm.ns_org_enum | c_int}}
+/// Text name of the model
+#define {{adm | cpp_enum}}_MODEL_NAME {{adm.ns_model_name | c_str}}
+/// Enumeration of the model
+#define {{adm | cpp_enum}}_MODEL_ENUM {{adm.ns_model_enum | c_int}}
+/// Revision date for the model
+#define {{adm | cpp_enum}}_MODEL_REVISION {{adm.latest_revision_date | c_str}}
+/// @deprecated use {{adm | cpp_enum}}_MODEL_ENUM directly
+#define {{adm | cpp_enum}}_ENUM_ADM {{adm | cpp_enum}}_MODEL_ENUM
+
 
 {%- if adm.ident %}
 
