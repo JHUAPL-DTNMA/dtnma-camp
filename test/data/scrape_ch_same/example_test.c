@@ -17,6 +17,7 @@
 #include <cace/amm/semtype.h>
 #include <cace/ari/text.h>
 #include <cace/util/logging.h>
+#include <cace/util/mutex.h>
 #include <cace/util/defs.h>
 
 /*   START CUSTOM INCLUDES HERE */
@@ -321,7 +322,7 @@ int refda_adm_example_test_init(refda_agent_t *agent)
 {
     CHKERR1(agent);
     CACE_LOG_DEBUG("Registering ADM: " "example-test");
-    REFDA_AGENT_LOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
+    CACE_MUTEX_LOCK(&agent->objs_mutex);
 
     /*   START CUSTOM PRE-INIT HERE */
     // keep comment
@@ -980,7 +981,7 @@ int refda_adm_example_test_init(refda_agent_t *agent)
     do_my_post_init(agent);
     /*   STOP CUSTOM POST-INIT HERE  */
 
-    REFDA_AGENT_UNLOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
+    CACE_MUTEX_UNLOCK(&agent->objs_mutex);
     return 0;
 }
 /*  STOP GENERATED SOURCE HERE */
