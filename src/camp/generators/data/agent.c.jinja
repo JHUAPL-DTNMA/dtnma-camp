@@ -211,7 +211,8 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
     {
         // Constraint: {{cnst}}
         cnst = cace_amm_semtype_cnst_array_push_new({{semtype_varname}}->constraints);
-        {% if cnst is instance(type_constraint.NumericRange) %}
+        {%- if cnst is instance(type_constraint.NumericRange) %}
+
         cace_util_range_int64_t *range = cace_amm_semtype_cnst_set_range_int64(cnst);
         {%- for intvl in cnst.ranges %}
         {
@@ -230,6 +231,7 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
         }
         {%- endfor %}
         {%- elif cnst is instance(type_constraint.IntegerEnums) %}
+
         cace_util_range_int64_t *range = cace_amm_semtype_cnst_set_range_int64(cnst);
         {%- for intvl in cnst.as_value_range() %}
         {
@@ -248,9 +250,11 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
         }
         {%- endfor %}
         {%- elif cnst is instance(type_constraint.IntegerBits) %}
+
         uint64_t *mask = cace_amm_semtype_cnst_set_int_bits(cnst);
         *mask = 0x{{"{:016x}".format(cnst.mask)}}ULL
         {%- elif cnst is instance(type_constraint.StringLength) %}
+
         cace_util_range_size_t *range = cace_amm_semtype_cnst_set_strlen(cnst);
         {%- for intvl in cnst.ranges %}
         {
@@ -269,6 +273,7 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
         }
         {%- endfor %}
         {%- elif cnst is instance(type_constraint.TextPattern) %}
+
         cace_amm_semtype_cnst_set_textpat(cnst, {{cnst.pattern | c_str}});
         {%- else %}
         // FIXME unhandled constraint {{cnst}}
@@ -360,6 +365,7 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
 #include <cace/amm/semtype.h>
 #include <cace/ari/text.h>
 #include <cace/util/logging.h>
+#include <cace/util/mutex.h>
 #include <cace/util/defs.h>
 
 /*   START CUSTOM INCLUDES HERE */
@@ -408,7 +414,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {
     CHKERR1(agent);
     CACE_LOG_DEBUG("Registering ADM: " {{adm.norm_name | c_str}});
-    REFDA_AGENT_LOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
+    CACE_MUTEX_LOCK(&agent->objs_mutex);
 
     /*   START CUSTOM PRE-INIT HERE */
 {{scraper.pre_init_lines | join('') }}    /*   STOP CUSTOM PRE-INIT HERE  */
@@ -633,7 +639,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
     /*   START CUSTOM POST-INIT HERE */
 {{scraper.post_init_lines | join('') }}    /*   STOP CUSTOM POST-INIT HERE  */
 
-    REFDA_AGENT_UNLOCK(agent, REFDA_AGENT_ERR_LOCK_FAILED);
+    CACE_MUTEX_UNLOCK(&agent->objs_mutex);
     return 0;
 }
 /*  STOP GENERATED SOURCE HERE */

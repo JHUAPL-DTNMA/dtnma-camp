@@ -64,7 +64,7 @@ class Scraper(object):
                 start_ix = line_ix
                 break
 
-        LOGGER.info('generated start at %s', start_ix)
+        LOGGER.debug('generated start at %s', start_ix)
         if start_ix is not None:
             self.extra_top = lines[:start_ix]
             del lines[:(start_ix + 1)]
@@ -75,7 +75,7 @@ class Scraper(object):
                 stop_ix = line_ix
                 break
 
-        LOGGER.info('generated stop at %s', stop_ix)
+        LOGGER.debug('generated stop at %s', stop_ix)
         if stop_ix is not None:
             self.extra_bottom = lines[(stop_ix + 1):]
             del lines[stop_ix:]
@@ -158,7 +158,7 @@ class C_Scraper(Scraper):
             elif self.CUSTOM_PREINIT_STOP.search(line) is not None:
                 stop_ix = line_ix
                 break
-        LOGGER.info('pre-init between %s and %s', start_ix, stop_ix)
+        LOGGER.debug('pre-init between %s and %s', start_ix, stop_ix)
         if start_ix is not None and stop_ix is not None:
             self.pre_init_lines = lines[(start_ix + 1):stop_ix]
             del lines[start_ix:(stop_ix + 1)]
@@ -173,7 +173,7 @@ class C_Scraper(Scraper):
             elif self.CUSTOM_POSTINIT_STOP.search(line) is not None:
                 stop_ix = line_ix
                 break
-        LOGGER.info('post-init between %s and %s', start_ix, stop_ix)
+        LOGGER.debug('post-init between %s and %s', start_ix, stop_ix)
         if start_ix is not None and stop_ix is not None:
             self.post_init_lines = lines[(start_ix + 1):stop_ix]
             del lines[start_ix:(stop_ix + 1)]
