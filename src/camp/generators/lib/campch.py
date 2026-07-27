@@ -23,15 +23,16 @@
 import copy
 import io
 import logging
+import textwrap
+from typing import Optional, Union, cast
+
+import ace.models
+import ace.type_constraint
+import ace.typing
 import jinja2
 import numpy
-import textwrap
-from typing import cast, Union, Optional
-import ace.models
-import ace.typing
-import ace.type_constraint
-from ace import models, ari, ari_text
-from ace.lookup import dereference, ORM_TYPE
+from ace import ari, ari_text, models
+from ace.lookup import ORM_TYPE, dereference
 
 LOGGER = logging.getLogger(__name__)
 

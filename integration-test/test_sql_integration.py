@@ -22,11 +22,14 @@
 #
 import logging
 import os
+import tempfile
+
+import ace
 import psycopg2
 import pytest
-import tempfile
-import ace
+
 from camp.generators.lib.campch import yang_to_sql
+
 from .util import ADMS_DIR, adm_files, run_camp
 
 LOGGER = logging.getLogger(__name__)

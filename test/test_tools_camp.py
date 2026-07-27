@@ -25,9 +25,11 @@
 import argparse
 import logging
 import os
-from typing import List
 import unittest
+from typing import List
+
 import camp.tools.camp
+
 from .util import TmpDir
 
 LOGGER = logging.getLogger(__name__)

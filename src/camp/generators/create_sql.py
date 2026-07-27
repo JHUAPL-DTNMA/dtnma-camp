@@ -24,10 +24,12 @@
 
 import logging
 import os
-import jinja2
 from typing import TextIO
-from camp.generators.lib.campch import yang_to_c, update_jinja_env
+
+import jinja2
+
 from camp.generators.base import AbstractWriter, CHelperMixin
+from camp.generators.lib.campch import update_jinja_env, yang_to_c
 
 LOGGER = logging.getLogger(__name__)
 
