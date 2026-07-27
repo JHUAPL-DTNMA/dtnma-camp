@@ -20,8 +20,8 @@
 # under the prime contract 80NM0018D0004 between the Caltech and NASA under
 # subcontract 1658085.
 #
-''' This module creates the c file for the implementation version of the ADM.
-'''
+"""This module creates the c file for the implementation version of the ADM."""
+
 import logging
 import os
 import jinja2
@@ -34,8 +34,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Writer(AbstractWriter, CHelperMixin):
-    ''' The common header file writer.
-    '''
+    """The common header file writer."""
 
     def __init__(self, admset, adm, out_path, scrape: bool):
         super().__init__(admset, adm, out_path)
@@ -55,22 +54,22 @@ class Writer(AbstractWriter, CHelperMixin):
         SELFDIR = os.path.dirname(__file__)
 
         self._tmpl_env = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(os.path.join(SELFDIR, 'data')),
-            keep_trailing_newline=True
+            loader=jinja2.FileSystemLoader(os.path.join(SELFDIR, "data")),
+            keep_trailing_newline=True,
         )
-        update_jinja_env(self._tmpl_env, self.admset, sym_prefix='refda_adm')
+        update_jinja_env(self._tmpl_env, self.admset, sym_prefix="refda_adm")
 
         keys = dict(
             adm=self.adm,
             scraper=self._scraper,
         )
         try:
-            tmpl = self._tmpl_env.get_template('agent.c.jinja')
+            tmpl = self._tmpl_env.get_template("agent.c.jinja")
         except Exception as err:
-            LOGGER.exception('Failed to load template')
+            LOGGER.exception("Failed to load template")
             raise RuntimeError('Failed to load template "agent.c.jinja"') from err
         tmpl.stream(**keys).dump(outfile)
 
         funcs_unused = self._scraper.funcs_unused()
         if funcs_unused:
-            LOGGER.warning('Unused function bodies for: %s', ' '.join(funcs_unused))
+            LOGGER.warning("Unused function bodies for: %s", " ".join(funcs_unused))

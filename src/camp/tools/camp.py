@@ -20,8 +20,7 @@
 # under the prime contract 80NM0018D0004 between the Caltech and NASA under
 # subcontract 1658085.
 #
-'''C code generator for Asynchronous management protocols.
-'''
+"""C code generator for Asynchronous management protocols."""
 # JHU/APL
 # Description: Entrypoint into the camp program. Calls generators to
 # create various files (i.e., C code for NASA ION) from the YANG representation
@@ -43,6 +42,7 @@ import sys
 import tempfile
 import traceback
 import ace
+
 # Import all generators
 from camp.generators import (
     create_impl_h,
@@ -54,25 +54,34 @@ LOGGER = logging.getLogger(__name__)
 
 
 def get_parser() -> argparse.ArgumentParser:
-    ''' Construct the argument parser. '''
+    """Construct the argument parser."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--log-level', choices=('debug', 'info', 'warning', 'error'),
-                        default='warning',
-                        help='The minimum log severity.')
-    parser.add_argument('-o', '--out',
-                        help="The output directory",
-                        default="./")
-    parser.add_argument('--scrape',
-                        help="Perform source scraping on generated H and C files",
-                        action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument('admfile',
-                        help="ADM module file to use for file generation")
-    parser.add_argument('--only-sql',
-                        help="Set this flag to only produce the SQL files",
-                        action='store_true', default=False)
-    parser.add_argument('--only-ch',
-                        help="Set this flag to only produce the .c and .h files",
-                        action='store_true', default=False)
+    parser.add_argument(
+        "--log-level",
+        choices=("debug", "info", "warning", "error"),
+        default="warning",
+        help="The minimum log severity.",
+    )
+    parser.add_argument("-o", "--out", help="The output directory", default="./")
+    parser.add_argument(
+        "--scrape",
+        help="Perform source scraping on generated H and C files",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+    )
+    parser.add_argument("admfile", help="ADM module file to use for file generation")
+    parser.add_argument(
+        "--only-sql",
+        help="Set this flag to only produce the SQL files",
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
+        "--only-ch",
+        help="Set this flag to only produce the .c and .h files",
+        action="store_true",
+        default=False,
+    )
     return parser
 
 
@@ -81,7 +90,7 @@ def get_parser() -> argparse.ArgumentParser:
 # d_name is the path to the output directory
 #
 def set_up_outputdir(d_name):
-    if (not os.path.isdir(d_name)):
+    if not os.path.isdir(d_name):
         try:
             os.makedirs(d_name)
         except OSError as err:
@@ -100,10 +109,14 @@ def run(args: argparse.Namespace):
         only_args = [args.only_sql, args.only_ch]
         only_cnt = sum(only_args)
         if only_cnt > 1:
-            raise RuntimeError("Cannot have multiple --only-* option. No files will be generated.")
+            raise RuntimeError(
+                "Cannot have multiple --only-* option. No files will be generated."
+            )
 
         if not os.path.exists(args.admfile):
-            raise RuntimeError("Passed ADM module file does not exist ({})".format(args.admfile))
+            raise RuntimeError(
+                "Passed ADM module file does not exist ({})".format(args.admfile)
+            )
 
         set_up_outputdir(args.out)
     except Exception as e:
@@ -132,9 +145,7 @@ def run(args: argparse.Namespace):
         ]
 
     if not args.only_ch:
-        generators += [
-            create_sql.Writer(admset, adm, args.out, dialect='pgsql')
-        ]
+        generators += [create_sql.Writer(admset, adm, args.out, dialect="pgsql")]
 
     failures = 0
     for gen in generators:
@@ -147,39 +158,39 @@ def run(args: argparse.Namespace):
         tmp = tempfile.NamedTemporaryFile(dir=dir_path, prefix=file_name, delete=False)
 
         try:
-            LOGGER.info('Generating %s ...', os.path.relpath(file_path, args.out))
+            LOGGER.info("Generating %s ...", os.path.relpath(file_path, args.out))
             with open(tmp.name, "w") as outfile:
                 try:
                     gen.write(outfile)
                 except Exception as err:
                     LOGGER.error("Failed to generate %s file: %s", file_path, err)
-                    LOGGER.debug('%s', traceback.format_exc())
+                    LOGGER.debug("%s", traceback.format_exc())
                     os.unlink(tmp.name)
                     failures += 1
                     continue
             os.rename(tmp.name, file_path)
-            LOGGER.info('done.')
+            LOGGER.info("done.")
         except IOError as err:
             LOGGER.error("Failed to open %s for writing: %s", file_path, err)
             os.unlink(tmp.name)
             failures += 1
             continue
 
-    LOGGER.debug('Resulted in %d failures out of %d files', failures, len(generators))
+    LOGGER.debug("Resulted in %d failures out of %d files", failures, len(generators))
     return 2 if failures else 0
 
 
 def main():
-    ''' Script entrypoint. '''
+    """Script entrypoint."""
     parser = get_parser()
     args = parser.parse_args()
     logging.basicConfig(level=args.log_level.upper())
-    LOGGER.debug('Got args: %s', args)
+    LOGGER.debug("Got args: %s", args)
     if LOGGER.isEnabledFor(logging.DEBUG):
-        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+        logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
 
     return run(args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

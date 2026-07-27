@@ -1,4 +1,3 @@
-
 #
 # Copyright (c) 2020-2026 The Johns Hopkins University Applied Physics
 # Laboratory LLC.
@@ -37,48 +36,44 @@ from ace.lookup import dereference, ORM_TYPE
 LOGGER = logging.getLogger(__name__)
 
 AdmEntity = Union[ari.StructType, models.AdmModule, models.AdmObjMixin]
-''' Either an ADM itself or an AMM object defined within one. '''
+""" Either an ADM itself or an AMM object defined within one. """
 
 
 def yang_to_c(identifier):
-    ''' Translates a valid YANG identifier to a valid C99 symbol name.
-    '''
-    return identifier.replace('_', '__').replace('-', '_').replace('.', '_p_')
+    """Translates a valid YANG identifier to a valid C99 symbol name."""
+    return identifier.replace("_", "__").replace("-", "_").replace(".", "_p_")
 
 
 def yang_to_sql(identifier):
-    ''' Translates a valid YANG identifier to a valid SQL symbol name.
-    '''
+    """Translates a valid YANG identifier to a valid SQL symbol name."""
     if identifier:
-        return identifier.replace('-', '_').replace('.', '_p_')
+        return identifier.replace("-", "_").replace(".", "_p_")
     return ""
 
 
 def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
-    ''' Set state of a jinja environment for ADM implementation
+    """Set state of a jinja environment for ADM implementation
     source generation.
-    '''
+    """
     REVERSE_MAP = {val: key for key, val in ORM_TYPE.items()}
 
     def amm_obj_type(obj: models.AdmObjMixin) -> ari.StructType:
         return REVERSE_MAP[type(obj)]
 
     def cpp_header(adm: models.AdmModule) -> str:
-        ''' Get the header name for a module.
+        """Get the header name for a module.
         The symbol prefix is not part of the file name.
-        '''
-        return yang_to_c(adm.module_name).lower() + '.h'
+        """
+        return yang_to_c(adm.module_name).lower() + ".h"
 
     def cpp_guard(adm: models.AdmModule) -> str:
-        ''' Get the header guard for a module.
-        '''
-        return '_'.join([sym_prefix, yang_to_c(adm.module_name), 'H_']).upper()
+        """Get the header guard for a module."""
+        return "_".join([sym_prefix, yang_to_c(adm.module_name), "H_"]).upper()
 
     def cpp_enum(value: AdmEntity) -> str:
-        ''' Map from ORM and YANG names into C preprocessor define name.
-        '''
+        """Map from ORM and YANG names into C preprocessor define name."""
         if isinstance(value, ari.StructType):
-            return 'CACE_ARI_TYPE_' + value.name
+            return "CACE_ARI_TYPE_" + value.name
 
         module: models.AdmModule
         if isinstance(value, models.AdmModule):
@@ -86,11 +81,11 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
             parts = []
         elif isinstance(value, models.AdmObjMixin):
             module = cast(models.AdmModule, value.module)
-            parts = ['enum', 'objid', amm_obj_type(value).name, yang_to_c(value.name)]
+            parts = ["enum", "objid", amm_obj_type(value).name, yang_to_c(value.name)]
         else:
-            raise RuntimeError('No module name available')
+            raise RuntimeError("No module name available")
 
-        return '_'.join([sym_prefix, yang_to_c(module.module_name)] + parts).upper()
+        return "_".join([sym_prefix, yang_to_c(module.module_name)] + parts).upper()
 
     def c_depth(name: str, depth: int) -> str:
         if depth == 0:
@@ -98,80 +93,80 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
         return name + f"_d{depth}"
 
     def c_func(value: AdmEntity, suffix: Optional[str] = None) -> str:
-        ''' Map from ORM and YANG names into C function symbol name.
-        '''
+        """Map from ORM and YANG names into C function symbol name."""
         if isinstance(value, models.AdmModule):
             parts = [yang_to_c(value.module_name)]
         elif isinstance(value, models.AdmObjMixin):
             module = cast(models.AdmModule, value.module)
-            parts = list(map(yang_to_c, [module.module_name, amm_obj_type(value).name, value.name]))
+            parts = list(
+                map(
+                    yang_to_c,
+                    [module.module_name, amm_obj_type(value).name, value.name],
+                )
+            )
         else:
-            raise RuntimeError('No C function name available')
+            raise RuntimeError("No C function name available")
 
         if suffix:
             parts.append(suffix)
-        return '_'.join([sym_prefix] + parts).lower()
+        return "_".join([sym_prefix] + parts).lower()
 
     def c_comment(value: str) -> str:
-        ''' Wrap a multi-line text value as a C multiline comment.
+        """Wrap a multi-line text value as a C multiline comment.
         Indentation outside or inside is done with a separate filter.
-        '''
+        """
         newl = env.newline_sequence
         lines = value.strip(newl).split(newl)
-        buf = '/* ' + lines.pop(0)
+        buf = "/* " + lines.pop(0)
         for line in lines:
-            buf += newl + ' *'
+            buf += newl + " *"
             if line:
-                buf += ' ' + line
-        buf += newl + ' */'
+                buf += " " + line
+        buf += newl + " */"
         return buf
 
     def c_bool(value) -> str:
-        ''' Enforce a boolean value in C99 source.
-        '''
-        return 'true' if bool(value) else 'false'
+        """Enforce a boolean value in C99 source."""
+        return "true" if bool(value) else "false"
 
     def c_int(value) -> str:
-        ''' Enforce an integer value in C source.
-        '''
-        return '{0:d}'.format(int(value))
+        """Enforce an integer value in C source."""
+        return "{0:d}".format(int(value))
 
     def c_float(value) -> str:
-        ''' Enforce an floating point value in C source.
-        '''
-        return '{0:e}'.format(float(value))
+        """Enforce an floating point value in C source."""
+        return "{0:e}".format(float(value))
 
     def c_str(value: str) -> str:
-        ''' Enforce an escaped text string in C source.
-        '''
-        ESC_CHARS = str.maketrans({
-            '\\': '\\\\',
-            '"': '\\"',
-            "'": "\\'",
-            "\a": "\\a",
-            "\b": "\\b",
-            "\f": "\\f",
-            "\n": "\\n",
-            "\r": "\\r",
-            "\t": "\\t",
-            "\v": "\\v",
-        })
+        """Enforce an escaped text string in C source."""
+        ESC_CHARS = str.maketrans(
+            {
+                "\\": "\\\\",
+                '"': '\\"',
+                "'": "\\'",
+                "\a": "\\a",
+                "\b": "\\b",
+                "\f": "\\f",
+                "\n": "\\n",
+                "\r": "\\r",
+                "\t": "\\t",
+                "\v": "\\v",
+            }
+        )
         return '"' + str(value).translate(ESC_CHARS) + '"'
 
     def c_bytes_init(value: bytes) -> str:
-        ''' Encode a byte string as a sequence of uint8_t values
+        """Encode a byte string as a sequence of uint8_t values
         within an array initializer.
-        '''
-        return '{' + ', '.join([hex(part) for part in value]) + '}'
+        """
+        return "{" + ", ".join([hex(part) for part in value]) + "}"
 
-    def rewrap(value: str, prefix: str = '\n'):
-        ''' Unwrap and re-wrap text along word bounaries.
-        '''
+    def rewrap(value: str, prefix: str = "\n"):
+        """Unwrap and re-wrap text along word bounaries."""
         return prefix.join(textwrap.wrap(value))
 
     def as_text(val: Union[ari.ARI, ace.typing.BaseType]) -> str:
-        ''' Encode an ARI or as text form URI.
-        '''
+        """Encode an ARI or as text form URI."""
         if isinstance(val, ace.typing.BaseType):
             val = val.ari_name()
 
@@ -186,26 +181,24 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
 
     def as_timedelta(value: numpy.timedelta64) -> str:
         value = copy.copy(value)
-        tv_sec = value // numpy.timedelta64(1, 's')
-        value -= tv_sec * numpy.timedelta64(1, 's')
-        tv_nsec = value // numpy.timedelta64(1, 'ns')
+        tv_sec = value // numpy.timedelta64(1, "s")
+        value -= tv_sec * numpy.timedelta64(1, "s")
+        tv_nsec = value // numpy.timedelta64(1, "ns")
 
         return f"(struct timespec) {{{tv_sec}, {tv_nsec}}}"
 
     def ref_text(obj: models.AdmObjMixin) -> str:
-        ''' Create a text reference for an AMM object.
-        '''
-        return f'./{amm_obj_type(obj).name}/{obj.norm_name}'
+        """Create a text reference for an AMM object."""
+        return f"./{amm_obj_type(obj).name}/{obj.norm_name}"
 
     def deref(ari: ari.ReferenceARI) -> models.AdmObjMixin:
-        ''' Dereference an ARI into an AMM object.
-        '''
-        LOGGER.debug('deref from %s', ari)
+        """Dereference an ARI into an AMM object."""
+        LOGGER.debug("deref from %s", ari)
         obj = dereference(ari, admset.db_session())
 
         if obj is None:
-            LOGGER.error('deref got no object named %s', as_text(ari))
-            raise RuntimeError(f'No such object named {as_text(ari)}')
+            LOGGER.error("deref got no object named %s", as_text(ari))
+            raise RuntimeError(f"No such object named {as_text(ari)}")
         return obj
 
     def ari_builtin(ari: ari.ARI, typename: str) -> bool:
@@ -214,55 +207,59 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
         return got is not None
 
     def sql_name(value: str) -> str:
-        ''' valid sql name
-        '''
+        """valid sql name"""
         return yang_to_sql(value).lower()
 
     def sql_var_name(obj: ace.models.AdmObjMixin) -> str:
-        ''' formatting a name to be a sql variable
-        '''
+        """formatting a name to be a sql variable"""
         if obj:
-            return yang_to_sql(obj.__tablename__).lower() + "_" + yang_to_sql(obj.name).lower()
+            return (
+                yang_to_sql(obj.__tablename__).lower()
+                + "_"
+                + yang_to_sql(obj.name).lower()
+            )
         return "None"
 
     def sql_string(value: str) -> str:
-        ''' escape string and add quotes for sql
-        '''
+        """escape string and add quotes for sql"""
         if value:
-            return '\'' + value.replace('\\', '\\\\').replace("'", ' `').replace('\n', ' ') + '\''
+            return (
+                "'"
+                + value.replace("\\", "\\\\").replace("'", " `").replace("\n", " ")
+                + "'"
+            )
         else:
-            return '\'\''
+            return "''"
 
     env.globals |= {
-        'ari': ace.ari,
-        'typing': ace.typing,
-        'type_constraint': ace.type_constraint,
-        'inf': float('inf')
+        "ari": ace.ari,
+        "typing": ace.typing,
+        "type_constraint": ace.type_constraint,
+        "inf": float("inf"),
     }
     env.filters |= {
-        'cpp_header': cpp_header,
-        'cpp_guard': cpp_guard,
-        'cpp_enum': cpp_enum,
-        'c_depth': c_depth,
-        'c_func': c_func,
-        'c_comment': c_comment,
-        'c_bool': c_bool,
-        'c_int': c_int,
-        'c_float': c_float,
-        'c_str': c_str,
-        'c_bytes_init': c_bytes_init,
-        'rewrap': rewrap,
-        'as_text': as_text,
-        'as_timepoint': as_timepoint,
-        'as_timedelta': as_timedelta,
-        'ref_text': ref_text,
-        'deref': deref,
-        'sql_name': sql_name,
-        'sql_string': sql_string,
-        'sql_var_name': sql_var_name,
-
+        "cpp_header": cpp_header,
+        "cpp_guard": cpp_guard,
+        "cpp_enum": cpp_enum,
+        "c_depth": c_depth,
+        "c_func": c_func,
+        "c_comment": c_comment,
+        "c_bool": c_bool,
+        "c_int": c_int,
+        "c_float": c_float,
+        "c_str": c_str,
+        "c_bytes_init": c_bytes_init,
+        "rewrap": rewrap,
+        "as_text": as_text,
+        "as_timepoint": as_timepoint,
+        "as_timedelta": as_timedelta,
+        "ref_text": ref_text,
+        "deref": deref,
+        "sql_name": sql_name,
+        "sql_string": sql_string,
+        "sql_var_name": sql_var_name,
     }
     env.tests |= {
-        'instance': isinstance,
-        'ari_builtin': ari_builtin,
+        "instance": isinstance,
+        "ari_builtin": ari_builtin,
     }

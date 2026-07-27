@@ -20,18 +20,18 @@
 # under the prime contract 80NM0018D0004 between the Caltech and NASA under
 # subcontract 1658085.
 #
-''' Abstract base behavior for all generators.
-'''
+"""Abstract base behavior for all generators."""
+
 from typing import TextIO
 
 
 class AbstractWriter:
-    ''' Interface for any generator Writer class.
+    """Interface for any generator Writer class.
 
     :ivar admset: The :class:`AdmSet` to use.
     :ivar adm: The specific ADM to generate for.
     :ivar out_path: The output parent path to be used.
-    '''
+    """
 
     def __init__(self, admset, adm, out_path, **kwargs):
         self.admset = admset
@@ -39,24 +39,24 @@ class AbstractWriter:
         self.out_path = out_path
 
     def file_path(self) -> str:
-        ''' Get the path to the file to be generated.
+        """Get the path to the file to be generated.
         This should be derived from :attr:`out_path`.
 
         :return: The full path for the file.
-        '''
+        """
         raise NotImplementedError
 
     def write(self, outfile: TextIO):
-        ''' Main function for the program. orchestrates calling all helper
+        """Main function for the program. orchestrates calling all helper
         functions to generate the file text.
 
         :param outfile: The file object to write to.
-        '''
+        """
         raise NotImplementedError
 
 
 class CHelperMixin:
-    ''' A mixin class for AbstractWriter to provide C language helpers.
-    '''
+    """A mixin class for AbstractWriter to provide C language helpers."""
+
 
 #    def get_(self) -> str:

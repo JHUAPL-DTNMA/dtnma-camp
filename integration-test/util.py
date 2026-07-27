@@ -20,10 +20,11 @@
 # under the prime contract 80NM0018D0004 between the Caltech and NASA under
 # subcontract 1658085.
 #
-''' Shared test fixture utilities.
+"""Shared test fixture utilities.
 This module must be in the same directory as the
 anms-adms and dtnma-tools repos.
-'''
+"""
+
 import argparse
 import os
 from typing import Tuple
@@ -32,14 +33,13 @@ from camp.tools.camp import run
 _util_path = os.path.dirname(os.path.abspath(__file__))
 
 ADMS_DIR = os.path.join(_util_path, "deps", "adms")
-''' ADM storage path. '''
+""" ADM storage path. """
 DTNMA_TOOLS_DIR = os.path.join(_util_path, "deps", "dtnma-tools")
-''' DTNMA agent source path. '''
+""" DTNMA agent source path. """
 
 
 def _good_file(name: str) -> bool:
-    ''' Determine if a file path is an ADM to load.
-    '''
+    """Determine if a file path is an ADM to load."""
     path = os.path.join(ADMS_DIR, name)
     if not os.path.isfile(path):
         return False
@@ -49,9 +49,9 @@ def _good_file(name: str) -> bool:
 
 
 def adm_files() -> Tuple[str]:
-    ''' Get a list of available ADMs from the test directory.
+    """Get a list of available ADMs from the test directory.
     These are file names only, which are under :obj:`ADMS_DIR` parent dir.
-    '''
+    """
     paths = [name for name in os.listdir(ADMS_DIR)]
     return tuple(sorted(filter(_good_file, paths)))
 
