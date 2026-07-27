@@ -87,9 +87,7 @@ class TestCamp(unittest.TestCase):
 
         for filename in expect_files:
             with open(os.path.join(args.out, filename), "r") as genfile:
-                with open(
-                    os.path.join(SELFDIR, "data", "pgsql", filename), "r"
-                ) as infile:
+                with open(os.path.join(SELFDIR, "data", "pgsql", filename), "r") as infile:
                     self.assertMultiLineEqual(infile.read(), genfile.read())
 
     def test_run_ch_new(self):
@@ -114,7 +112,5 @@ class TestCamp(unittest.TestCase):
 
         for filename in expect_files:
             with open(os.path.join(args.out, filename), "r") as genfile:
-                with open(
-                    os.path.join(SELFDIR, "data", "gen_ch", filename), "r"
-                ) as infile:
+                with open(os.path.join(SELFDIR, "data", "gen_ch", filename), "r") as infile:
                     self.assertMultiLineEqual(infile.read(), genfile.read())

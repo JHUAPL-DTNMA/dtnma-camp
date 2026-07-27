@@ -64,7 +64,5 @@ class Writer(AbstractWriter, CHelperMixin):
             tmpl = self._tmpl_env.get_template(f"agent.{self.dialect}.jinja")
         except Exception as err:
             LOGGER.exception("Failed to load template")
-            raise RuntimeError(
-                f'Failed to load template "agent.{self.dialect}.jinja"'
-            ) from err
+            raise RuntimeError(f'Failed to load template "agent.{self.dialect}.jinja"') from err
         tmpl.stream(**keys).dump(outfile)

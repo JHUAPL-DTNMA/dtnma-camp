@@ -214,21 +214,13 @@ def update_jinja_env(env: jinja2.Environment, admset, sym_prefix: str):
     def sql_var_name(obj: ace.models.AdmObjMixin) -> str:
         """formatting a name to be a sql variable"""
         if obj:
-            return (
-                yang_to_sql(obj.__tablename__).lower()
-                + "_"
-                + yang_to_sql(obj.name).lower()
-            )
+            return yang_to_sql(obj.__tablename__).lower() + "_" + yang_to_sql(obj.name).lower()
         return "None"
 
     def sql_string(value: str) -> str:
         """escape string and add quotes for sql"""
         if value:
-            return (
-                "'"
-                + value.replace("\\", "\\\\").replace("'", " `").replace("\n", " ")
-                + "'"
-            )
+            return "'" + value.replace("\\", "\\\\").replace("'", " `").replace("\n", " ") + "'"
         else:
             return "''"
 

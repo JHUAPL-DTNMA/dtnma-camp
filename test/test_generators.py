@@ -86,9 +86,7 @@ class TestCreateSql(BaseTest):
         self.assertLess(0, buf.tell())
         buf.seek(0)
 
-        with open(
-            os.path.join(SELFDIR, "data", "pgsql", "example_test.sql"), "r"
-        ) as infile:
+        with open(os.path.join(SELFDIR, "data", "pgsql", "example_test.sql"), "r") as infile:
             content = infile.read()
         self.assertMultiLineEqual(content, buf.read())
 
@@ -114,9 +112,7 @@ class TestCreateCH(BaseTest):
                 self.assertLess(0, buf.tell())
                 buf.seek(0)
 
-                with open(
-                    os.path.join(SELFDIR, "data", "gen_ch", filename), "r"
-                ) as infile:
+                with open(os.path.join(SELFDIR, "data", "gen_ch", filename), "r") as infile:
                     content = infile.read()
                 self.assertMultiLineEqual(content, buf.read())
 
@@ -145,8 +141,6 @@ class TestCreateCH(BaseTest):
                 self.assertLess(0, buf.tell())
                 buf.seek(0)
 
-                with open(
-                    os.path.join(SELFDIR, "data", "scrape_ch_same", filename), "r"
-                ) as infile:
+                with open(os.path.join(SELFDIR, "data", "scrape_ch_same", filename), "r") as infile:
                     content = infile.read()
                 self.assertMultiLineEqual(content, buf.read())

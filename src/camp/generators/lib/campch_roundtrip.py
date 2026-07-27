@@ -258,9 +258,7 @@ class C_Scraper(Scraper):
                 if s is not None:
                     func = s.group(1)
 
-        LOGGER.info(
-            "Collected bodies from functions: %s", " ".join(self.func_bods.keys())
-        )
+        LOGGER.info("Collected bodies from functions: %s", " ".join(self.func_bods.keys()))
 
     #
     # Returns a tuple of the custom body's start and end markers
@@ -336,11 +334,7 @@ class C_Scraper(Scraper):
         LOGGER.info("DONE")
 
         # Sanity Check. If scraping was requested and returned nothing, let the user know
-        if (
-            len(self.includes) == 0
-            and len(self.functions) == 0
-            and len(self.func_bods) == 0
-        ):
+        if len(self.includes) == 0 and len(self.functions) == 0 and len(self.func_bods) == 0:
             LOGGER.warning("No custom input found to scrape in %s", self.filename)
 
 

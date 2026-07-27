@@ -110,14 +110,10 @@ def run(args: argparse.Namespace):
         only_args = [args.only_sql, args.only_ch]
         only_cnt = sum(only_args)
         if only_cnt > 1:
-            raise RuntimeError(
-                "Cannot have multiple --only-* option. No files will be generated."
-            )
+            raise RuntimeError("Cannot have multiple --only-* option. No files will be generated.")
 
         if not os.path.exists(args.admfile):
-            raise RuntimeError(
-                "Passed ADM module file does not exist ({})".format(args.admfile)
-            )
+            raise RuntimeError("Passed ADM module file does not exist ({})".format(args.admfile))
 
         set_up_outputdir(args.out)
     except Exception as e:
