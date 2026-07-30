@@ -20,14 +20,16 @@
 # under the prime contract 80NM0018D0004 between the Caltech and NASA under
 # subcontract 1658085.
 #
-''' Verify behavior of the "camp" command tool.
-'''
+"""Verify behavior of the "camp" command tool."""
+
 import argparse
 import logging
 import os
-from typing import List
 import unittest
+from typing import List
+
 import camp.tools.camp
+
 from .util import TmpDir
 
 LOGGER = logging.getLogger(__name__)
@@ -36,7 +38,6 @@ SELFDIR = os.path.dirname(__file__)
 
 
 class TestCamp(unittest.TestCase):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -49,9 +50,9 @@ class TestCamp(unittest.TestCase):
         del self._dir
 
     def _walk_files(self, path: str) -> List[str]:
-        ''' Print out a list of file contents for test writer use and
+        """Print out a list of file contents for test writer use and
         return the full set of relative paths found.
-        '''
+        """
         relpaths = []
         for root_path, dirs, files in os.walk(path):
             for file_name in files:
@@ -59,9 +60,9 @@ class TestCamp(unittest.TestCase):
                 relpaths.append(os.path.relpath(file_path, path))
 
                 if LOGGER.isEnabledFor(logging.DEBUG):
-                    LOGGER.debug('Contents of %s', file_path)
-                    with open(file_path, 'r') as infile:
-                        LOGGER.debug('\n%s', infile.read())
+                    LOGGER.debug("Contents of %s", file_path)
+                    with open(file_path, "r") as infile:
+                        LOGGER.debug("\n%s", infile.read())
         return sorted(relpaths)
 
     def test_parser(self):
@@ -70,8 +71,8 @@ class TestCamp(unittest.TestCase):
 
     def test_run_sql(self):
         args = argparse.Namespace()
-        args.admfile = os.path.join(SELFDIR, 'data', 'example-test.yang')
-        args.out = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
+        args.admfile = os.path.join(SELFDIR, "data", "example-test.yang")
+        args.out = os.path.join(os.environ["XDG_DATA_HOME"], "out")
         args.only_sql = True
         args.only_ch = False
         try:
@@ -80,19 +81,19 @@ class TestCamp(unittest.TestCase):
         finally:
             got_files = self._walk_files(args.out)
         expect_files = [
-            'example_test.sql',
+            "example_test.sql",
         ]
         self.assertEqual(expect_files, got_files)
 
         for filename in expect_files:
-            with open(os.path.join(args.out, filename), 'r') as genfile:
-                with open(os.path.join(SELFDIR, 'data', 'pgsql', filename), 'r') as infile:
+            with open(os.path.join(args.out, filename), "r") as genfile:
+                with open(os.path.join(SELFDIR, "data", "pgsql", filename), "r") as infile:
                     self.assertMultiLineEqual(infile.read(), genfile.read())
 
     def test_run_ch_new(self):
         args = argparse.Namespace()
-        args.admfile = os.path.join(SELFDIR, 'data', 'example-test.yang')
-        args.out = os.path.join(os.environ['XDG_DATA_HOME'], 'out')
+        args.admfile = os.path.join(SELFDIR, "data", "example-test.yang")
+        args.out = os.path.join(os.environ["XDG_DATA_HOME"], "out")
         args.only_sql = False
         args.only_ch = True
         args.scrape = False
@@ -101,13 +102,15 @@ class TestCamp(unittest.TestCase):
             self.assertEqual(0, exitcode)
         finally:
             got_files = set(self._walk_files(args.out))
-        expect_files = set([
-            'example_test.c',
-            'example_test.h',
-        ])
+        expect_files = set(
+            [
+                "example_test.c",
+                "example_test.h",
+            ]
+        )
         self.assertEqual(expect_files, got_files)
 
         for filename in expect_files:
-            with open(os.path.join(args.out, filename), 'r') as genfile:
-                with open(os.path.join(SELFDIR, 'data', 'gen_ch', filename), 'r') as infile:
+            with open(os.path.join(args.out, filename), "r") as genfile:
+                with open(os.path.join(SELFDIR, "data", "gen_ch", filename), "r") as infile:
                     self.assertMultiLineEqual(infile.read(), genfile.read())

@@ -22,10 +22,13 @@
 #
 import logging
 import os
-import pytest
 import subprocess
+
 import ace
+import pytest
+
 from camp.generators.lib.campch import yang_to_c
+
 from .util import ADMS_DIR, DTNMA_TOOLS_DIR, adm_files, run_camp
 
 OUT_DIR = os.path.join(DTNMA_TOOLS_DIR, "src")
@@ -64,11 +67,11 @@ def test_adms(adm):
     # generates a new file
     norm_name = adm_set.load_from_file(filepath).norm_name
     filename = f"{yang_to_c(norm_name)}.c"
-    LOGGER.info('Looking for implementation source %s', filename)
+    LOGGER.info("Looking for implementation source %s", filename)
     outdir = _find_dir(filename, OUT_DIR)
     if outdir is None:
-        pytest.skip('No existing source')
-    LOGGER.info('Found at %s', outdir)
+        pytest.skip("No existing source")
+    LOGGER.info("Found at %s", outdir)
 
     # run camp
     exitcode = run_camp(filepath, outdir, only_sql=False, only_ch=True, scrape=True)

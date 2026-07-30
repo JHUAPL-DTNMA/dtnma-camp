@@ -22,11 +22,14 @@
 #
 import logging
 import os
+import tempfile
+
+import ace
 import psycopg2
 import pytest
-import tempfile
-import ace
+
 from camp.generators.lib.campch import yang_to_sql
+
 from .util import ADMS_DIR, adm_files, run_camp
 
 LOGGER = logging.getLogger(__name__)
@@ -47,11 +50,11 @@ def setup():
         host=os.environ["PGHOST"],
         port=int(os.environ.get("PGPORT", 5432)),
         user=os.environ["PGUSER"],
-        password=os.environ["PGPASSWORD"]
+        password=os.environ["PGPASSWORD"],
     )
 
     # reusable objects that the tests will need
-    yield conn,
+    yield (conn,)
 
     # teardown: close connections
     conn.close()
@@ -73,7 +76,7 @@ def test_adms(setup, adm):
     adm_set = ace.AdmSet()
     norm_name = adm_set.load_from_file(filepath).norm_name
     filename = f"{yang_to_sql(norm_name)}.sql"
-    LOGGER.info('Expecting SQL source %s', filename)
+    LOGGER.info("Expecting SQL source %s", filename)
 
     outdir = tempfile.TemporaryDirectory()
 
@@ -85,7 +88,7 @@ def test_adms(setup, adm):
     file_path = os.path.join(outdir.name, filename)
     with open(file_path, "r") as srcfile:
         script = srcfile.read()
-        LOGGER.info('Generated script:\n%s', script)
+        LOGGER.info("Generated script:\n%s", script)
 
         try:
             with conn.cursor() as curs:

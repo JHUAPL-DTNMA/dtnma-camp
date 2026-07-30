@@ -20,23 +20,24 @@
 # under the prime contract 80NM0018D0004 between the Caltech and NASA under
 # subcontract 1658085.
 #
-''' This module creates the sqlc file for the implementation version of the ADM.
-'''
+"""This module creates the sqlc file for the implementation version of the ADM."""
+
 import logging
 import os
-import jinja2
 from typing import TextIO
-from camp.generators.lib.campch import yang_to_c, update_jinja_env
+
+import jinja2
+
 from camp.generators.base import AbstractWriter, CHelperMixin
+from camp.generators.lib.campch import update_jinja_env, yang_to_c
 
 LOGGER = logging.getLogger(__name__)
 
 
 class Writer(AbstractWriter, CHelperMixin):
-    ''' The common header file writer.
-    '''
+    """The common header file writer."""
 
-    def __init__(self, admset, adm, out_path, dialect='pgsql'):
+    def __init__(self, admset, adm, out_path, dialect="pgsql"):
         super().__init__(admset, adm, out_path)
 
         self.c_norm_name = yang_to_c(self.adm.norm_name)
@@ -51,17 +52,17 @@ class Writer(AbstractWriter, CHelperMixin):
         SELFDIR = os.path.dirname(__file__)
 
         self._tmpl_env = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(os.path.join(SELFDIR, 'data')),
-            keep_trailing_newline=True
+            loader=jinja2.FileSystemLoader(os.path.join(SELFDIR, "data")),
+            keep_trailing_newline=True,
         )
-        update_jinja_env(self._tmpl_env, self.admset, sym_prefix='refda_adm')
+        update_jinja_env(self._tmpl_env, self.admset, sym_prefix="refda_adm")
 
         keys = dict(
             adm=self.adm,
         )
         try:
-            tmpl = self._tmpl_env.get_template(f'agent.{self.dialect}.jinja')
+            tmpl = self._tmpl_env.get_template(f"agent.{self.dialect}.jinja")
         except Exception as err:
-            LOGGER.exception('Failed to load template')
+            LOGGER.exception("Failed to load template")
             raise RuntimeError(f'Failed to load template "agent.{self.dialect}.jinja"') from err
         tmpl.stream(**keys).dump(outfile)
