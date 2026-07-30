@@ -58,13 +58,14 @@ docs = [
 
 [tool.pytest.ini_options]
 addopts = [
-    "--log-cli-level=warning",
     "--import-mode=importlib",
 ]
 testpaths = [
     "test",
 ]
 norecursedirs = "deps"
+log_cli = true
+log_cli_level = "WARNING"
 
 [tool.coverage.run]
 relative_files = true
