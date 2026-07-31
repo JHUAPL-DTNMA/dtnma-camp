@@ -10,7 +10,8 @@
 #define REFDA_ADM_EXAMPLE_TEST_H_
 
 #include "refda/agent.h"
-#include <cace/util/defs.h>
+
+#include "cace/util/defs.h"
 
 /*   START CUSTOM INCLUDES HERE */
 /*             NONE             */
