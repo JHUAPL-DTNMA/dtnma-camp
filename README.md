@@ -20,7 +20,11 @@ California Institute of Technology, sponsored by the United States Government
 under the prime contract 80NM0018D0004 between the Caltech and NASA under
 subcontract 1658085.
 -->
-# CAmpPython
+# DTNMA CAMP
+
+[![Sonar Coverage](https://img.shields.io/sonar/coverage/JHUAPL-DTNMA_dtnma-camp?server=https%3A%2F%2Fsonarcloud.io)](https://sonarcloud.io/project/overview?id=JHUAPL-DTNMA_dtnma-camp)
+[![PyPI Project](https://img.shields.io/pypi/v/dtnma-camp.svg)](https://pypi.org/project/dtnma-camp/)
+
 This is the C code generator for the DTN Management Architecture (DTNMA).
 It is part of the larger Asynchronous Network Managment System (ANMS) managed for [NASA AMMOS](https://ammos.nasa.gov/).
 
