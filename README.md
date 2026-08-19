@@ -22,6 +22,7 @@ subcontract 1658085.
 -->
 # DTNMA CAMP
 
+[![Documentation](https://github.com/JHUAPL-DTNMA/dtnma-camp/actions/workflows/docs.yaml/badge.svg)](https://jhuapl-dtnma.github.io/dtnma-camp/)
 [![Sonar Coverage](https://img.shields.io/sonar/coverage/JHUAPL-DTNMA_dtnma-camp?server=https%3A%2F%2Fsonarcloud.io)](https://sonarcloud.io/project/overview?id=JHUAPL-DTNMA_dtnma-camp)
 [![PyPI Project](https://img.shields.io/pypi/v/dtnma-camp.svg)](https://pypi.org/project/dtnma-camp/)
 
