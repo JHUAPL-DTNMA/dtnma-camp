@@ -95,4 +95,5 @@ camp = "camp.tools.camp:main"
 
 [project.urls]
 "Homepage" = "https://github.com/JHUAPL-DTNMA/dtnma-camp"
+"Documentation" = "https://jhuapl-dtnma.github.io/dtnma-camp/"
 "Bug Tracker" = "https://github.com/JHUAPL-DTNMA/dtnma-camp/issues"
