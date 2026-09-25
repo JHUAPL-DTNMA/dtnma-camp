@@ -112,24 +112,25 @@ git submodule update --init --recursive
 
 ### View Command Options for CAmp
 
-```
-    camp -h
+```sh
+camp -h
 ```
 
 ### Basic Usage
 
-The camp tool takes a YANG representation of an ADM for a network protocol as
-input and calls each of the included generators to generate files for the ADM.
+The camp tool takes a YANG representation of an ADM for a network protocol as input and calls each of the included generators to generate files for the ADM.
 
-> For information on how to format an ADM encoded as a YANG module file, please consult the 
-> Application Management Model (AMM) and ADM IETF drafts.
+> [!NOTE]
+> The included [`example-test.yang`](test/data/example-test.yang) and [`example-variety`](test/data/example-variety.yang) modules provides an example of how an ADM module should be formatted.
+> For more information on this data model, please consult the [DTNMA Application Data Model](https://datatracker.ietf.org/doc/draft-ietf-dtn-adm-yang/) IETF draft.
 
 Given the YANG representation of the ADM, run camp with:
 
-```
-   camp <adm.yang>
+```sh
+camp <adm.yang>
 ```
 
+The command argument only provides the principal module for which source is generated.
 The environment variables `ADM_PATH`, `XDG_DATA_HOME`, and `XDG_DATA_DIRS` affect module import search behavior as described in the [command documentation](https://jhuapl-dtnma.github.io/dtnma-camp/camp.html#environment-variables).
 
 ### Output
