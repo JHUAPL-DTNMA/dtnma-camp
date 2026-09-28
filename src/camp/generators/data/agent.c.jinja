@@ -277,6 +277,7 @@ cace_ari_set_objref_path_intid({{ptrname}}, {{refdobj.module.ns_org_enum | c_int
         cace_amm_semtype_cnst_set_textpat(cnst, {{cnst.pattern | c_str}});
         {%- else %}
         // FIXME unhandled constraint {{cnst}}
+        (void)cnst;
         {%- endif %}
     }
 {%- endfor %}
@@ -430,9 +431,10 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
     if (adm)
     {
         cace_amm_obj_desc_t *obj;
-        (void)obj;
+{%- set obj_uses = namespace(value=0) %}
 
 {%- if adm.ident %}
+{%- set obj_uses.value = 1 %}
 
         /**
          * Register IDENT objects
@@ -461,6 +463,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {%- endif %}
 
 {%- if adm.typedef %}
+{%- set obj_uses.value = 1 %}
 
         /**
          * Register TYPEDEF objects
@@ -479,6 +482,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {%- endif %}
 
 {%- if adm.const %}
+{%- set obj_uses.value = 1 %}
 
         /**
          * Register CONST objects
@@ -497,6 +501,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {%- endif %}
 
 {%- if adm.var %}
+{%- set obj_uses.value = 1 %}
 
         /**
          * Register VAR objects
@@ -517,6 +522,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {%- endif %}
 
 {%- if adm.edd %}
+{%- set obj_uses.value = 1 %}
 
         /**
          * Register EDD objects
@@ -537,6 +543,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {%- endif %}
 
 {%- if adm.ctrl %}
+{%- set obj_uses.value = 1 %}
 
         /**
          * Register CTRL objects
@@ -561,6 +568,7 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
 {%- endif %}
 
 {%- if adm.oper %}
+{%- set obj_uses.value = 1 %}
 
         /**
          * Register OPER objects
@@ -588,7 +596,9 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
         }
 {%- endfor %}
 {%- endif %}
+
 {%- if adm.sbr %}
+{%- set obj_uses.value = 1 %}
 
         /**
          * Register SBR objects
@@ -612,7 +622,9 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
         }
 {%- endfor %}
 {%- endif %}
+
 {%- if adm.tbr %}
+{%- set obj_uses.value = 1 %}
 
         /**
          * Register TBR objects
@@ -635,6 +647,10 @@ int {{adm | c_func(suffix='init')}}(refda_agent_t *agent)
             obj = refda_register_tbr(adm, cace_amm_idseg_ref_withenum({{obj.norm_name | c_str}}, {{obj | cpp_enum}}), objdata);
         }
 {%- endfor %}
+{%- endif %}
+
+{%- if obj_uses.value == 0 %}
+        (void)obj;
 {%- endif %}
     }
 
