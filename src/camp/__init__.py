@@ -20,3 +20,15 @@
 # under the prime contract 80NM0018D0004 between the Caltech and NASA under
 # subcontract 1658085.
 #
+
+import importlib.metadata
+
+# make linters happy
+__all__ = [
+    "__version__",
+]
+
+try:
+    __version__ = importlib.metadata.version("dtnma-camp")
+except importlib.metadata.PackageNotFoundError:
+    __version__ = "0.0.0-dev"

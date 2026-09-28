@@ -44,6 +44,8 @@ import traceback
 
 import ace
 
+import camp
+
 # Import all generators
 from camp.generators import (
     create_impl_c,
@@ -57,6 +59,7 @@ LOGGER = logging.getLogger(__name__)
 def get_parser() -> argparse.ArgumentParser:
     """Construct the argument parser."""
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {camp.__version__}")
     parser.add_argument(
         "--log-level",
         choices=("debug", "info", "warning", "error"),
