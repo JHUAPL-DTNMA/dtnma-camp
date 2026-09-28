@@ -23,9 +23,9 @@
 import os
 import sys
 
-from pkg_resources import get_distribution
-
 sys.path.insert(0, os.path.abspath("../src/"))
+
+from camp import __version__
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -38,7 +38,8 @@ sys.path.insert(0, os.path.abspath("../src/"))
 project = "CAMP"
 copyright = "2020-2026, The Johns Hopkins University Applied Physics Laboratory"
 author = "JHU/APL"
-release = get_distribution("dtnma-camp").version
+release = __version__
+version = ".".join(__version__.split(".")[:2])
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
